@@ -33,7 +33,7 @@ module ICON {
     }
 
  /**
-  * shapes
+  * shapess
   */
     class Bullet implements IShape {
         private ICON_BULLET_RED = "";
