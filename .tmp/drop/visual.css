@@ -3,25 +3,46 @@
   height: 100%;
   display: block;
   position: relative;
+  font-family: "Segoe UI Light", Verdana, Sans-Serif;
+  font-size: 0.875em;
+  /* 14px as 1em = 16px */
 }
-.visual-PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD_DEBUG .fixed_headers {
-  width: 80%;
-  table-layout: fixed;
+.visual-PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD_DEBUG table {
+  /**font-family: "Segoe UI Light", Verdana, Sans-Serif;**/
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
 }
-.visual-PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD_DEBUG .fixed_headers th {
-  text-decoration: underline;
+.visual-PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD_DEBUG table {
+  border-collapse: collapse;
+  cursor: default;
 }
-.visual-PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD_DEBUG .fixed_headers th,
-.visual-PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD_DEBUG .fixed_headers td {
-  padding: 5px;
+.visual-PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD_DEBUG table.tr {
+  border: 5px solid red;
+  border-bottom: 1pt solid #59B4D9;
+  cursor: pointer;
+}
+.visual-PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD_DEBUG th {
+  font-size: 0.925em;
+  color: white;
   text-align: center;
+  background-color: burlywood;
+  border-left: 1px solid #FFFFFF;
+  border-right: 1px solid #FFFFFF;
+  padding-left: 10px;
+  padding-right: 10px;
+  vertical-align: middle;
+  cursor: default;
+  font-weight: normal;
 }
-.visual-PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD_DEBUG .fixed_headers thead tr {
-  display: block;
-  position: relative;
+.visual-PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD_DEBUG td {
+  font-size: 0.875em;
+  border-bottom: 1px dashed burlywood;
+  vertical-align: middle;
+  padding-top: 5px;
+  cursor: default;
 }
-.visual-PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD_DEBUG .fixed_headers tbody {
-  max-height: 50px;
-  overflow: auto;
-  width: 80%;
+.visual-PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD_DEBUG table tbody td {
+  text-align: left;
+}
+.visual-PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD_DEBUG table tbody td + td {
+  text-align: right;
 }

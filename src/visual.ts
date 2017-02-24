@@ -18,7 +18,8 @@ module powerbi.extensibility.visual {
         constructor(options: VisualConstructorOptions) {
 
             this.cleanDataModel();
-            this.icons = this.getIcons("arrow");
+            this.icons = this.getIcons("BULLET");
+            
             this.target = d3.select(options.element);
             //div to target table
             this.div = this.target.append('div')
@@ -60,6 +61,7 @@ module powerbi.extensibility.visual {
                 let indicaLength = indicador[0].values.length;
                 let valsLenght = vals.length;
                 let countCollumn = valsLenght / indicaLength;
+                var score;
                 //set name indicador
                 this.dataViewModel.categories.name = indicador[0].source.displayName;
                 //set names of collumns
@@ -83,8 +85,20 @@ module powerbi.extensibility.visual {
                     for (var k = 0; k < valsLenght; k++) {
 
                         if (vals[k].values[i] != null) {
-                            this.dataViewModel.values[this.getIdValues(vals[k].source.displayName, countCollumn)]
-                                .rows[this.getIdGroup(vals[k].source.groupName)] = <any>vals[k].values[i];
+                            //////////////set icon/////
+                            
+                             if(k==valsLenght-1){
+                                 score =  this.getScore(+vals[k].values[i],+vals[k].values[i]);
+                                 debugger
+                                 this.dataViewModel.values[this.getIdValues(vals[k].source.displayName, countCollumn)]
+                                     .rows[this.getIdGroup(vals[k].source.groupName)] = <any>this.icons[score].toString();
+                                     debugger
+                             }else{////////////////////////////
+                                 this.dataViewModel.values[this.getIdValues(vals[k].source.displayName, countCollumn)]
+                                     .rows[this.getIdGroup(vals[k].source.groupName)] = <any>vals[k].values[i];
+                             }
+                            
+                            
                         }
 
                     }//end for values*/
@@ -94,6 +108,22 @@ module powerbi.extensibility.visual {
           //  }//end if
 
         }
+      private getScore(real: number, buject: number) {
+           
+           let score: number;
+           score = (1 + (real - buject) / Math.abs(buject)) * 100;
+           return 0;
+           // > 100 – Verde; >= 70 - Amarelo; < 70 – Vermelho
+         /*  if (score > 100) {
+               return 2;
+           } else if (score >= 70) {
+               return 1;
+           } else {
+               return 0;
+           }*/
+
+       }
+
         /**
          * get id grouped
          */
@@ -122,7 +152,7 @@ module powerbi.extensibility.visual {
              return column;
         }
         /**
-         * get values to draw
+         * get values to draw TODO
          */
         private getValuesToDraw(){
 
@@ -135,12 +165,16 @@ module powerbi.extensibility.visual {
             var values = this.dataViewModel.values;
             let j:number;
             var object = {};
-            var locale = NL.numberFormat(".2f");
+            var temp;
+
            for(let i=0;i<count;i++){
                for(j = 0; j < countColumns; j++){
                    object[this.dataViewModel.categories.name] = indicador[i].toString();
-                   object[values[j].name] =  locale(+values[j].rows[i]);
-                   //toFixed(2).replace(/(\d)(?=(\d{3})+\.)/g, '$1,'); 
+                   temp = values[j].rows[i];
+                   if(temp[0]!="<"){
+                      temp = temp.toFixed(2).replace(/(\d)(?=(\d{3})+\.)/g, '$1,');
+                   }
+                   object[values[j].name] = temp;//.toFixed(2).replace(/(\d)(?=(\d{3})+\.)/g, '$1,'); 
                }
                rows[i] = object;
                object = {};
@@ -185,7 +219,7 @@ module powerbi.extensibility.visual {
                 })
                 .enter()
                 .append('td')
-                .html(function(d){return d.value;});                
+                .html(function(d){return d.value});                
         }
         /**
          * get my colletion of icons

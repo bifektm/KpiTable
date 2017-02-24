@@ -134,37 +134,6 @@ var Collection;
     }());
     Collection.Dictionary = Dictionary;
 })(Collection || (Collection = {}));
-var powerbi;
-(function (powerbi) {
-    var extensibility;
-    (function (extensibility) {
-        var visual;
-        (function (visual) {
-            var PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD;
-            (function (PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD) {
-                function formatNumber(d) {
-                    var prefix = d3.formatPrefix(d);
-                    return d3.round(prefix.scale(d), 2) + ' ' + prefix.symbol;
-                }
-                PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD.formatNumber = formatNumber;
-                PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD.NL = d3.locale({
-                    "decimal": ",",
-                    "thousands": ".",
-                    "grouping": [3],
-                    "currency": ["", "€"],
-                    "dateTime": "%a %b %e %X %Y",
-                    "date": "%m/%d/%Y",
-                    "time": "%H:%M:%S",
-                    "periods": ["AM", "PM"],
-                    "days": ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"],
-                    "shortDays": ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"],
-                    "months": ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"],
-                    "shortMonths": ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
-                });
-            })(PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD = visual.PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD || (visual.PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD = {}));
-        })(visual = extensibility.visual || (extensibility.visual = {}));
-    })(extensibility = powerbi.extensibility || (powerbi.extensibility = {}));
-})(powerbi || (powerbi = {}));
 var ICON;
 (function (ICON) {
     /**
@@ -180,10 +149,10 @@ var ICON;
             if (shape == null) {
                 throw new Error("null string object");
             }
-            if (shape.toUpperCase() == "bullet") {
+            if (shape.toUpperCase() == "BULLET") {
                 return new Bullet().getIcon();
             }
-            if (shape.toUpperCase() == "arrow") {
+            if (shape.toUpperCase() == "ARROW") {
                 return new Arrow().getIcon();
             }
             return [];
@@ -191,28 +160,32 @@ var ICON;
         return ShapeFactory;
     }());
     ICON.ShapeFactory = ShapeFactory;
+    //########################## SHAPES ##########################
     /**
-     * shapes
+     * class bullet
      */
     var Bullet = (function () {
         function Bullet() {
-            this.ICON_BULLET_RED = "";
-            this.ICON_BULLET_YELLOW = "";
-            this.ICON_BULLET_GREEN = "";
+            this.ICON_BULLET_RED = '<svg width="16" height="16" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16"><path fill="#B22222" d="M7.5 0c.693 0 1.358.09 1.996.266s1.236.428 1.793.754 1.063.716 1.52 1.172.845.962 1.17 1.52.578 1.155.755 1.793S15 6.807 15 7.5s-.09 1.358-.266        1.996-.428.236-.754 1.793-.716 1.063-1.172 1.52-.962.845-1.52 1.17-1.155.578-1.793.755S8.193 15 7.5 15s-1.358-.09-1.996-.266-1.236-.428-1.793-.754-1.063-.716-1.52-1.172-.845-.962-1.17-1.52S.44 10.133.264 9.495 0 8.193 0 7.5s.09-1.358.266-1.996.428-1.236.754-1.793.716-1.063 1.172-1.52.962-.845 1.52-1.17S4.867.44 5.505.264 6.807 0 7.5 0z"/><path fill="#FFF" d="M7 4h1v5H7zM7 10h1v1H7z"/></svg>';
+            this.ICON_BULLET_YELLOW = '<svg width="16" height="16" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16"><path fill="#EE7600" d="M7.5 0L15 15H0L7.5 0z"/><path fill="#FFFFFF" d="M7 6h1v5H7zM7 12h1v1H7z"/></svg>';
+            this.ICON_BULLET_GREEN = '<svg width="16" height="16" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16"><path fill="#3CB371" d="M7.5 0c.688 0 1.353.09 1.992.267s1.238.43 1.794.754 1.063.716 1.52 1.173.847.963 1.172 1.52.576 1.155.754 1.794S15 6.812 15 7.5s-.09 1.353-.267 1.992-.43 1.238-.754 1.794-.716 1.063-1.173 1.52-.963.847-1.52 1.172-1.155.576-1.794.754S8.188 15 7.5 15s-1.353-.09-1.992-.267-1.238-.43-1.794-.754-1.063-.716-1.52-1.173-.847-.963-1.172-1.52-.576-1.154-.754-1.79S0 8.192 0 7.5c0-.688.09-1.353.267-1.992s.43-1.238.754-1.794.716-1.063 1.173-1.52.963-.847 1.52-1.172S4.867.446 5.503.268 6.808 0 7.5 0z"/><path fill="#FFF" d="M10.92 4.358l.66.66-5.486 5.485L3.42 7.83l.66-.66 2.014 2.015"/></svg>';
         }
         Bullet.prototype.getIcon = function () {
             return [this.ICON_BULLET_RED, this.ICON_BULLET_YELLOW, this.ICON_BULLET_GREEN];
         };
         return Bullet;
     }());
+    /**
+     * class Arrow
+     */
     var Arrow = (function () {
         function Arrow() {
-            this.ICON_TREND_UP = '<svg width="14" height="14" viewBox="0 0 9 9" xmlns="http://www.w3.org/2000/svg"><path d="M7.6.75H4.39V0h4.5v4.5h-.75V1.266L.526 8.888 0 8.36 7.6.75z" fill="#3CB371" fill-rule="evenodd"/></svg>';
-            this.ICON_TREND_STEADY = '<svg width="14" height="14" viewBox="0 0 9 9" xmlns="http://www.w3.org/2000/svg"><path d="M7.756 3.8l-2.27-2.27.53-.53 3.182 3.182-3.182 3.182-.53-.53 2.286-2.287L0 4.555V3.81l6.756-.01z" fill="#000" fill-rule="evenodd"/></svg>';
-            this.ICON_TREND_DOWN = '<svg width="14" height="14" viewBox="0 0 9 9" xmlns="http://www.w3.org/2000/svg"><path d="M8.89 4.388v4.5h-4.5v-.75h3.215L0 .528.527 0 8.14 7.605V4.388h.75" fill="#B22222" fill-rule="evenodd"/></svg>';
+            this.ICON_TREND_UP = '<svg width="16" height="16" viewBox="0 0 9 9" xmlns="http://www.w3.org/2000/svg"><path d="M7.6.75H4.39V0h4.5v4.5h-.75V1.266L.526 8.888 0 8.36 7.6.75z" fill="#3CB371" fill-rule="evenodd"/></svg>';
+            this.ICON_TREND_STEADY = '<svg width="16" height="16" viewBox="0 0 9 9" xmlns="http://www.w3.org/2000/svg"><path d="M7.756 3.8l-2.27-2.27.53-.53 3.182 3.182-3.182 3.182-.53-.53 2.286-2.287L0 4.555V3.81l6.756-.01z" fill="#000" fill-rule="evenodd"/></svg>';
+            this.ICON_TREND_DOWN = '<svg width="16" height="16" viewBox="0 0 9 9" xmlns="http://www.w3.org/2000/svg"><path d="M8.89 4.388v4.5h-4.5v-.75h3.215L0 .528.527 0 8.14 7.605V4.388h.75" fill="#B22222" fill-rule="evenodd"/></svg>';
         }
         Arrow.prototype.getIcon = function () {
-            return [this.ICON_TREND_DOWN, this.ICON_TREND_STEADY, this.ICON_TREND_DOWN];
+            return [this.ICON_TREND_DOWN, this.ICON_TREND_STEADY, this.ICON_TREND_UP];
         };
         return Arrow;
     }());
@@ -231,7 +204,7 @@ var powerbi;
                      */
                     function Visual(options) {
                         this.cleanDataModel();
-                        this.icons = this.getIcons("arrow");
+                        this.icons = this.getIcons("BULLET");
                         this.target = d3.select(options.element);
                         //div to target table
                         this.div = this.target.append('div')
@@ -266,6 +239,7 @@ var powerbi;
                         var indicaLength = indicador[0].values.length;
                         var valsLenght = vals.length;
                         var countCollumn = valsLenght / indicaLength;
+                        var score;
                         //set name indicador
                         this.dataViewModel.categories.name = indicador[0].source.displayName;
                         //set names of collumns
@@ -282,12 +256,35 @@ var powerbi;
                             //set kpis
                             for (var k = 0; k < valsLenght; k++) {
                                 if (vals[k].values[i] != null) {
-                                    this.dataViewModel.values[this.getIdValues(vals[k].source.displayName, countCollumn)]
-                                        .rows[this.getIdGroup(vals[k].source.groupName)] = vals[k].values[i];
+                                    //////////////set icon/////
+                                    if (k == valsLenght - 1) {
+                                        score = this.getScore(+vals[k].values[i], +vals[k].values[i]);
+                                        debugger;
+                                        this.dataViewModel.values[this.getIdValues(vals[k].source.displayName, countCollumn)]
+                                            .rows[this.getIdGroup(vals[k].source.groupName)] = this.icons[score].toString();
+                                        debugger;
+                                    }
+                                    else {
+                                        this.dataViewModel.values[this.getIdValues(vals[k].source.displayName, countCollumn)]
+                                            .rows[this.getIdGroup(vals[k].source.groupName)] = vals[k].values[i];
+                                    }
                                 }
                             } //end for values*/
                         } //end for indicador
                         //  }//end if
+                    };
+                    Visual.prototype.getScore = function (real, buject) {
+                        var score;
+                        score = (1 + (real - buject) / Math.abs(buject)) * 100;
+                        return 0;
+                        // > 100 – Verde; >= 70 - Amarelo; < 70 – Vermelho
+                        /*  if (score > 100) {
+                              return 2;
+                          } else if (score >= 70) {
+                              return 1;
+                          } else {
+                              return 0;
+                          }*/
                     };
                     /**
                      * get id grouped
@@ -316,7 +313,7 @@ var powerbi;
                         return column;
                     };
                     /**
-                     * get values to draw
+                     * get values to draw TODO
                      */
                     Visual.prototype.getValuesToDraw = function () {
                         var rows = [];
@@ -328,11 +325,15 @@ var powerbi;
                         var values = this.dataViewModel.values;
                         var j;
                         var object = {};
-                        var locale = PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD.NL.numberFormat(".2f");
+                        var temp;
                         for (var i = 0; i < count; i++) {
                             for (j = 0; j < countColumns; j++) {
                                 object[this.dataViewModel.categories.name] = indicador[i].toString();
-                                object[values[j].name] = locale(+values[j].rows[i]);
+                                temp = values[j].rows[i];
+                                if (temp[0] != "<") {
+                                    temp = temp.toFixed(2).replace(/(\d)(?=(\d{3})+\.)/g, '$1,');
+                                }
+                                object[values[j].name] = temp; //.toFixed(2).replace(/(\d)(?=(\d{3})+\.)/g, '$1,'); 
                             }
                             rows[i] = object;
                             object = {};
