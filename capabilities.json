@@ -1,0 +1,37 @@
+{
+    "dataRoles": [
+        {
+            "displayName": "Indicador",
+            "name": "Indicador",
+            "kind": "GroupingOrMeasure"
+        },
+        {
+            "displayName": "values",
+            "name": "values",
+            "kind": "GroupingOrMeasure"
+        }
+    ],
+    "dataViewMappings": [
+        {
+            "categorical": {
+                "categories": {
+                    "bind": {
+                        "to": "Indicador"
+                    }
+                },
+                "values": {
+                    "group": {
+                        "by": "Indicador",
+                        "select": [
+                            {
+                                "for": {
+                                    "in": "values"
+                                }
+                            }
+                        ]
+                    }
+                }
+            }
+        }
+    ]
+}

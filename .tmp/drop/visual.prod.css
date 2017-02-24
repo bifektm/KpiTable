@@ -1,0 +1,27 @@
+.visual-PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD_DEBUG .wrapper {
+  width: 100%;
+  height: 100%;
+  display: block;
+  position: relative;
+}
+.visual-PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD_DEBUG .fixed_headers {
+  width: 80%;
+  table-layout: fixed;
+}
+.visual-PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD_DEBUG .fixed_headers th {
+  text-decoration: underline;
+}
+.visual-PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD_DEBUG .fixed_headers th,
+.visual-PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD_DEBUG .fixed_headers td {
+  padding: 5px;
+  text-align: center;
+}
+.visual-PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD_DEBUG .fixed_headers thead tr {
+  display: block;
+  position: relative;
+}
+.visual-PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD_DEBUG .fixed_headers tbody {
+  max-height: 50px;
+  overflow: auto;
+  width: 80%;
+}
