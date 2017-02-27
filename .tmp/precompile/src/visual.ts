@@ -18,7 +18,7 @@ module powerbi.extensibility.visual.PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD 
         constructor(options: VisualConstructorOptions) {
 
             this.cleanDataModel();
-            this.icons = this.getIcons("BULLET");
+            this.icons = this.getIcons("ARROW");//ARROW
             
             this.target = d3.select(options.element);
             //div to target table
@@ -112,7 +112,7 @@ module powerbi.extensibility.visual.PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD 
            
            let score: number;
            score = (1 + (real - buject) / Math.abs(buject)) * 100;
-           return 0;
+           return 1;
            // > 100 – Verde; >= 70 - Amarelo; < 70 – Vermelho
          /*  if (score > 100) {
                return 2;
