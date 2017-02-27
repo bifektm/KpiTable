@@ -72,6 +72,9 @@ var powerbi;
         (function (visual) {
             var PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD;
             (function (PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD) {
+                /**
+                 * type score
+                 */
                 var Type;
                 (function (Type) {
                     Type[Type["ICON"] = 0] = "ICON";
@@ -134,6 +137,29 @@ var Collection;
     }());
     Collection.Dictionary = Dictionary;
 })(Collection || (Collection = {}));
+var COMMON;
+(function (COMMON) {
+    /**
+    * get score
+    */
+    function getScore(score) {
+        try {
+            if (score > 1) {
+                return 2;
+            }
+            else if (score >= 0.7) {
+                return 1;
+            }
+            else {
+                return 0;
+            }
+        }
+        catch (Error) {
+            return 1;
+        }
+    }
+    COMMON.getScore = getScore;
+})(COMMON || (COMMON = {}));
 var ICON;
 (function (ICON) {
     /**
@@ -204,7 +230,7 @@ var powerbi;
                      */
                     function Visual(options) {
                         this.cleanDataModel();
-                        this.icons = this.getIcons("ARROW"); //ARROW
+                        this.icons = this.getIcons("BULLET"); //ARROW
                         this.target = d3.select(options.element);
                         //div to target table
                         this.div = this.target.append('div')
@@ -225,6 +251,9 @@ var powerbi;
                             values: []
                         };
                     };
+                    Visual.prototype.getModel = function () {
+                        return this.dataViewModel;
+                    };
                     Visual.prototype.parseData = function (dataViews) {
                         //valid? // division 0
                         if (!dataViews
@@ -235,60 +264,57 @@ var powerbi;
                             return;
                         var indicador = dataViews[0].categorical.categories;
                         var vals = dataViews[0].categorical.values;
-                        // if (indicador && vals) {
-                        var indicaLength = indicador[0].values.length;
-                        var valsLenght = vals.length;
-                        var countCollumn = valsLenght / indicaLength;
-                        var score;
-                        //set name indicador
-                        this.dataViewModel.categories.name = indicador[0].source.displayName;
-                        //set names of collumns
-                        for (var j = 0; j < countCollumn; j++) {
-                            this.dataViewModel.values.push({
-                                name: vals[j].source.displayName,
-                                type: PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD.Type.NOTHING,
-                                rows: []
-                            });
-                        }
-                        //set values of indicador
-                        for (var i = 0; i < indicaLength; i++) {
-                            this.dataViewModel.categories.rows.push(indicador[0].values[i].toString());
-                            //set kpis
-                            for (var k = 0; k < valsLenght; k++) {
-                                if (vals[k].values[i] != null) {
-                                    //////////////set icon/////
-                                    if (k == valsLenght - 1) {
-                                        score = this.getScore(+vals[k].values[i], +vals[k].values[i]);
-                                        debugger;
-                                        this.dataViewModel.values[this.getIdValues(vals[k].source.displayName, countCollumn)]
-                                            .rows[this.getIdGroup(vals[k].source.groupName)] = this.icons[score].toString();
-                                        debugger;
-                                    }
-                                    else {
-                                        this.dataViewModel.values[this.getIdValues(vals[k].source.displayName, countCollumn)]
-                                            .rows[this.getIdGroup(vals[k].source.groupName)] = vals[k].values[i];
-                                    }
-                                }
-                            } //end for values*/
-                        } //end for indicador
-                        //  }//end if
-                    };
-                    Visual.prototype.getScore = function (real, buject) {
-                        var score;
-                        score = (1 + (real - buject) / Math.abs(buject)) * 100;
-                        return 1;
-                        // > 100 – Verde; >= 70 - Amarelo; < 70 – Vermelho
-                        /*  if (score > 100) {
-                              return 2;
-                          } else if (score >= 70) {
-                              return 1;
-                          } else {
-                              return 0;
-                          }*/
-                    };
+                        if (indicador && vals) {
+                            var indicaLength = indicador[0].values.length;
+                            var valsLenght = vals.length;
+                            var countCollumn = valsLenght / indicaLength;
+                            var score, item, type, groupId, valuesId;
+                            //set name indicador
+                            this.dataViewModel.categories.name = indicador[0].source.displayName;
+                            //set names of collumns
+                            for (var j = 0; j < countCollumn; j++) {
+                                this.dataViewModel.values.push({
+                                    name: vals[j].source.displayName,
+                                    type: PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD.Type.NOTHING,
+                                    rows: []
+                                });
+                            }
+                            //TODO SETTINGS
+                            this.dataViewModel.values[2].type = PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD.Type.ICON;
+                            //set values of indicador
+                            for (var i = 0; i < indicaLength; i++) {
+                                this.dataViewModel.categories.rows.push(indicador[0].values[i].toString());
+                                //set kpis
+                                for (var k = 0; k < valsLenght; k++) {
+                                    item = vals[k].values[i];
+                                    if (item != null) {
+                                        groupId = this.getIdGroup(vals[k].source.groupName);
+                                        valuesId = this.getIdValues(vals[k].source.displayName, countCollumn);
+                                        type = this.dataViewModel.values[valuesId].type;
+                                        if (type == PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD.Type.ICON) {
+                                            score = COMMON.getScore(+item);
+                                            this.dataViewModel.values[valuesId]
+                                                .rows[groupId] = this.icons[score].toString();
+                                        }
+                                        else if (type == PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD.Type.ICONTEXT) {
+                                            score = COMMON.getScore(+item);
+                                            this.dataViewModel.values[valuesId]
+                                                .rows[groupId] = item.toFixed(2).replace(/(\d)(?=(\d{3})+\.)/g, '$1,')
+                                                + " " + this.icons[score].toString();
+                                        }
+                                        else {
+                                            this.dataViewModel.values[valuesId]
+                                                .rows[groupId] = item.toFixed(2).replace(/(\d)(?=(\d{3})+\.)/g, '$1,');
+                                        }
+                                    } //end id nulls
+                                } //end for values*/
+                                ;
+                            } //end for indicador
+                        } //end if
+                    }; //end method     
                     /**
-                     * get id grouped
-                     */
+                    * get id grouped
+                    */
                     Visual.prototype.getIdValues = function (compare, count) {
                         for (var i = 0; i < count; i++) {
                             if (this.dataViewModel.values[i].name == compare.toString()) {
@@ -329,11 +355,7 @@ var powerbi;
                         for (var i = 0; i < count; i++) {
                             for (j = 0; j < countColumns; j++) {
                                 object[this.dataViewModel.categories.name] = indicador[i].toString();
-                                temp = values[j].rows[i];
-                                if (temp[0] != "<") {
-                                    temp = temp.toFixed(2).replace(/(\d)(?=(\d{3})+\.)/g, '$1,');
-                                }
-                                object[values[j].name] = temp; //.toFixed(2).replace(/(\d)(?=(\d{3})+\.)/g, '$1,'); 
+                                object[values[j].name] = values[j].rows[i];
                             }
                             rows[i] = object;
                             object = {};

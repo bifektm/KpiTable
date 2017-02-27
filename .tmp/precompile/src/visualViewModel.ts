@@ -18,10 +18,21 @@ module powerbi.extensibility.visual.PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD 
         categories: IGroupViewModel//indicador group
         values: IValueViewModel[];
     }
+    /**
+     * type score
+     */
     export enum Type{
         ICON,
         ICONTEXT,
         TEXT,
         NOTHING
     }
+    /**
+     * settings
+     */
+    export interface ISettings{
+       typeCell : Type;
+       
+    }
+
 }

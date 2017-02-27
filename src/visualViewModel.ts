@@ -18,10 +18,21 @@ module powerbi.extensibility.visual {
         categories: IGroupViewModel//indicador group
         values: IValueViewModel[];
     }
+    /**
+     * type score
+     */
     export enum Type{
         ICON,
         ICONTEXT,
         TEXT,
         NOTHING
     }
+    /**
+     * settings
+     */
+    export interface ISettings{
+       typeCell : Type;
+       
+    }
+
 }

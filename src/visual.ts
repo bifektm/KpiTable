@@ -10,7 +10,7 @@ module powerbi.extensibility.visual {
         private tHead: d3.Selection<HTMLElement>;
         private tBody: d3.Selection<HTMLElement>;
         private div: d3.Selection<HTMLElement>;
-        private dataViewModel: ITableViewModel;
+        public dataViewModel: ITableViewModel;
         private icons : string[];
         /**
          * CONSTRUCTOR OF VISUAL
@@ -18,13 +18,12 @@ module powerbi.extensibility.visual {
         constructor(options: VisualConstructorOptions) {
 
             this.cleanDataModel();
-            this.icons = this.getIcons("ARROW");//ARROW
+            this.icons = this.getIcons("BULLET");//ARROW
             
             this.target = d3.select(options.element);
             //div to target table
             this.div = this.target.append('div')
-                .classed('wrapper',true);               
-               
+                .classed('wrapper',true);     
         }
         /**
          * UPDATE OF VISUAL
@@ -43,6 +42,10 @@ module powerbi.extensibility.visual {
                 values: []
             };
         }
+        
+        public  getModel(){
+            return this.dataViewModel;
+        }
         private parseData(dataViews: DataView[]) {
 
             //valid? // division 0
@@ -56,12 +59,13 @@ module powerbi.extensibility.visual {
             let indicador = dataViews[0].categorical.categories;
             let vals = dataViews[0].categorical.values;
 
-           // if (indicador && vals) {
+           if (indicador && vals) {
 
                 let indicaLength = indicador[0].values.length;
                 let valsLenght = vals.length;
                 let countCollumn = valsLenght / indicaLength;
-                var score;
+                var score,item,type,groupId,valuesId;
+            
                 //set name indicador
                 this.dataViewModel.categories.name = indicador[0].source.displayName;
                 //set names of collumns
@@ -73,6 +77,9 @@ module powerbi.extensibility.visual {
                         rows: []
                     });
                 }
+                //TODO SETTINGS
+               this.dataViewModel.values[2].type = Type.ICON;
+               
                 //set values of indicador
                 for (let i = 0; i < indicaLength; i++) {
 
@@ -80,51 +87,43 @@ module powerbi.extensibility.visual {
                         indicador[0].values[i].toString()
                     );
 
-
                     //set kpis
-                    for (var k = 0; k < valsLenght; k++) {
+                    for (var k = 0; k < valsLenght ; k++) {
 
-                        if (vals[k].values[i] != null) {
-                            //////////////set icon/////
-                            
-                             if(k==valsLenght-1){
-                                 score =  this.getScore(+vals[k].values[i],+vals[k].values[i]);
-                                 debugger
-                                 this.dataViewModel.values[this.getIdValues(vals[k].source.displayName, countCollumn)]
-                                     .rows[this.getIdGroup(vals[k].source.groupName)] = <any>this.icons[score].toString();
-                                     debugger
-                             }else{////////////////////////////
-                                 this.dataViewModel.values[this.getIdValues(vals[k].source.displayName, countCollumn)]
-                                     .rows[this.getIdGroup(vals[k].source.groupName)] = <any>vals[k].values[i];
+                        item = vals[k].values[i];
+                       
+                        if ( item != null) { //null itens
+
+                            groupId = this.getIdGroup(vals[k].source.groupName);
+                            valuesId = this.getIdValues(vals[k].source.displayName, countCollumn);
+                            type = this.dataViewModel.values[valuesId].type; 
+
+                             if(type == Type.ICON){
+                                 score =  COMMON.getScore(+item);
+                                 this.dataViewModel.values[valuesId]
+                                     .rows[groupId] = <any>this.icons[score].toString();
+                             }else if(type == Type.ICONTEXT){
+                                 score =  COMMON.getScore(+item);
+                                  this.dataViewModel.values[valuesId]
+                                     .rows[groupId] =  <any>item.toFixed(2).replace(/(\d)(?=(\d{3})+\.)/g, '$1,') 
+                                     + " " + <any>this.icons[score].toString();
+                             }else{
+                                 this.dataViewModel.values[valuesId]
+                                     .rows[groupId] = <number>item.toFixed(2).replace(/(\d)(?=(\d{3})+\.)/g, '$1,');
+                                   
                              }
-                            
-                            
-                        }
+                          
+                        }//end id nulls
+                        
 
                     }//end for values*/
-
+;
                 }//end for indicador
 
-          //  }//end if
+            }//end if
 
-        }
-      private getScore(real: number, buject: number) {
-           
-           let score: number;
-           score = (1 + (real - buject) / Math.abs(buject)) * 100;
-           return 1;
-           // > 100 – Verde; >= 70 - Amarelo; < 70 – Vermelho
-         /*  if (score > 100) {
-               return 2;
-           } else if (score >= 70) {
-               return 1;
-           } else {
-               return 0;
-           }*/
-
-       }
-
-        /**
+        }//end method     
+         /**
          * get id grouped
          */
         private getIdValues(compare: any, count: number): number {
@@ -170,11 +169,7 @@ module powerbi.extensibility.visual {
            for(let i=0;i<count;i++){
                for(j = 0; j < countColumns; j++){
                    object[this.dataViewModel.categories.name] = indicador[i].toString();
-                   temp = values[j].rows[i];
-                   if(temp[0]!="<"){
-                      temp = temp.toFixed(2).replace(/(\d)(?=(\d{3})+\.)/g, '$1,');
-                   }
-                   object[values[j].name] = temp;//.toFixed(2).replace(/(\d)(?=(\d{3})+\.)/g, '$1,'); 
+                   object[values[j].name] = values[j].rows[i]; 
                }
                rows[i] = object;
                object = {};
