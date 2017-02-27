@@ -17,6 +17,5 @@ module COMMON {
             } catch (Error) { return 1 }
 
         }
-
        
 }

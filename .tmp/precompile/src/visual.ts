@@ -10,13 +10,17 @@ module powerbi.extensibility.visual.PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD 
         private tHead: d3.Selection<HTMLElement>;
         private tBody: d3.Selection<HTMLElement>;
         private div: d3.Selection<HTMLElement>;
+        private rows : d3.Selection<HTMLElement>;
         public dataViewModel: ITableViewModel;
         private icons : string[];
+        private selectionManager: ISelectionManager;
+        private host: IVisualHost;
         /**
          * CONSTRUCTOR OF VISUAL
          */
         constructor(options: VisualConstructorOptions) {
-
+            this.host = options.host;
+            this.selectionManager = options.host.createSelectionManager();
             this.cleanDataModel();
             this.icons = this.getIcons("BULLET");//ARROW
             
@@ -33,6 +37,9 @@ module powerbi.extensibility.visual.PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD 
             this.parseData(optionsUpdate.dataViews);
 
             this.drawTable(optionsInit);
+           
+           
+
             //this.updateContainerViewports(optionsUpdate.viewport);
             this.cleanDataModel();
         }
@@ -43,9 +50,6 @@ module powerbi.extensibility.visual.PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD 
             };
         }
         
-        public  getModel(){
-            return this.dataViewModel;
-        }
         private parseData(dataViews: DataView[]) {
 
             //valid? // division 0
@@ -83,9 +87,12 @@ module powerbi.extensibility.visual.PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD 
                 //set values of indicador
                 for (let i = 0; i < indicaLength; i++) {
 
-                    this.dataViewModel.categories.rows.push(
-                        indicador[0].values[i].toString()
-                    );
+                    this.dataViewModel.categories.rows.push({
+                        row:indicador[0].values[i].toString(),
+                        selectionId: this.host.createSelectionIdBuilder()
+                    .withCategory(indicador[0], i)
+                    .createSelectionId()
+                    });
 
                     //set kpis
                     for (var k = 0; k < valsLenght ; k++) {
@@ -117,12 +124,13 @@ module powerbi.extensibility.visual.PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD 
                         
 
                     }//end for values*/
-;
+
                 }//end for indicador
 
             }//end if
 
-        }//end method     
+        }//end method 
+
          /**
          * get id grouped
          */
@@ -139,7 +147,12 @@ module powerbi.extensibility.visual.PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD 
          * get id grouped
          */
         private getIdGroup(compare: any): number {
-            return this.dataViewModel.categories.rows.indexOf(compare.toString());
+           let count = this.dataViewModel.categories.rows.length;
+            for (let i = 0; i < count; i++) {
+                if (this.dataViewModel.categories.rows[i].row == compare.toString()) {
+                    return i;
+                }
+            }
         }
         //get columns to draw
         private getColumnsToDraw(){
@@ -154,7 +167,7 @@ module powerbi.extensibility.visual.PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD 
          * get values to draw TODO
          */
         private getValuesToDraw(){
-
+            
             var rows = [];
             let count:number;
             let countColumns:number;
@@ -162,18 +175,23 @@ module powerbi.extensibility.visual.PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD 
             countColumns = this.dataViewModel.values.length;
             var indicador = this.dataViewModel.categories.rows;
             var values = this.dataViewModel.values;
+            
             let j:number;
             var object = {};
             var temp;
 
            for(let i=0;i<count;i++){
                for(j = 0; j < countColumns; j++){
-                   object[this.dataViewModel.categories.name] = indicador[i].toString();
+                   
+                   object[this.dataViewModel.categories.name] = indicador[i].row.toString();
                    object[values[j].name] = values[j].rows[i]; 
+                   object["selectionId"] = values[j].rows[i].selectionId;
                }
                rows[i] = object;
+               
                object = {};
            }
+          
              return rows;
         }
         /**
@@ -202,19 +220,35 @@ module powerbi.extensibility.visual.PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD 
                        .insert('th')
                        .html(function (column){return column;});
              this.tBody = this.table.append('tbody');
-             var rows = this.tBody.selectAll("tr")
+             this.rows = this.tBody.selectAll("tr")
                         .data(values)
                         .enter()
                         .append("tr");  
-             var cells = rows.selectAll('td')
+               var cells = this.rows.selectAll('td')
                 .data(function(row){
                     return columns.map(function(column){
-                         return {column:column,value:row[column]}
+                        console.log(row[column].selectionId);
+                         return {column:column,value:row[column],id:row[column].selectionId}
                     });
                 })
                 .enter()
                 .append('td')
-                .html(function(d){return d.value});                
+                .html(function(d){return d.value}); 
+
+            cells.on('click', function(d) {
+               // console.log(JSON.stringify(d));
+                this.selectionManager.select(d.id).then((ids: ISelectionId[]) => {
+                    cells.attr({
+                        'fill': ids.length > 0 ? "red" : "red"
+                    });
+
+                    d3.select(this).attr({
+                        'fill': "red"
+                    });
+                });
+
+                (<Event>d3.event).stopPropagation
+            });               
         }
         /**
          * get my colletion of icons

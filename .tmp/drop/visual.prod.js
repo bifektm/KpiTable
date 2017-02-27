@@ -229,6 +229,8 @@ var powerbi;
                      * CONSTRUCTOR OF VISUAL
                      */
                     function Visual(options) {
+                        this.host = options.host;
+                        this.selectionManager = options.host.createSelectionManager();
                         this.cleanDataModel();
                         this.icons = this.getIcons("BULLET"); //ARROW
                         this.target = d3.select(options.element);
@@ -250,9 +252,6 @@ var powerbi;
                             categories: { name: "", rows: [] },
                             values: []
                         };
-                    };
-                    Visual.prototype.getModel = function () {
-                        return this.dataViewModel;
                     };
                     Visual.prototype.parseData = function (dataViews) {
                         //valid? // division 0
@@ -283,7 +282,12 @@ var powerbi;
                             this.dataViewModel.values[2].type = PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD.Type.ICON;
                             //set values of indicador
                             for (var i = 0; i < indicaLength; i++) {
-                                this.dataViewModel.categories.rows.push(indicador[0].values[i].toString());
+                                this.dataViewModel.categories.rows.push({
+                                    row: indicador[0].values[i].toString(),
+                                    selectionId: this.host.createSelectionIdBuilder()
+                                        .withCategory(indicador[0], i)
+                                        .createSelectionId()
+                                });
                                 //set kpis
                                 for (var k = 0; k < valsLenght; k++) {
                                     item = vals[k].values[i];
@@ -308,10 +312,9 @@ var powerbi;
                                         }
                                     } //end id nulls
                                 } //end for values*/
-                                ;
                             } //end for indicador
                         } //end if
-                    }; //end method     
+                    }; //end method 
                     /**
                     * get id grouped
                     */
@@ -326,7 +329,12 @@ var powerbi;
                      * get id grouped
                      */
                     Visual.prototype.getIdGroup = function (compare) {
-                        return this.dataViewModel.categories.rows.indexOf(compare.toString());
+                        var count = this.dataViewModel.categories.rows.length;
+                        for (var i = 0; i < count; i++) {
+                            if (this.dataViewModel.categories.rows[i].row == compare.toString()) {
+                                return i;
+                            }
+                        }
                     };
                     //get columns to draw
                     Visual.prototype.getColumnsToDraw = function () {
@@ -354,8 +362,9 @@ var powerbi;
                         var temp;
                         for (var i = 0; i < count; i++) {
                             for (j = 0; j < countColumns; j++) {
-                                object[this.dataViewModel.categories.name] = indicador[i].toString();
+                                object[this.dataViewModel.categories.name] = indicador[i].row.toString();
                                 object[values[j].name] = values[j].rows[i];
+                                object["selectionId"] = values[j].rows[i].selectionId;
                             }
                             rows[i] = object;
                             object = {};
@@ -383,19 +392,33 @@ var powerbi;
                             .insert('th')
                             .html(function (column) { return column; });
                         this.tBody = this.table.append('tbody');
-                        var rows = this.tBody.selectAll("tr")
+                        this.rows = this.tBody.selectAll("tr")
                             .data(values)
                             .enter()
                             .append("tr");
-                        var cells = rows.selectAll('td')
+                        var cells = this.rows.selectAll('td')
                             .data(function (row) {
                             return columns.map(function (column) {
-                                return { column: column, value: row[column] };
+                                console.log(row[column].selectionId);
+                                return { column: column, value: row[column], id: row[column].selectionId };
                             });
                         })
                             .enter()
                             .append('td')
                             .html(function (d) { return d.value; });
+                        cells.on('click', function (d) {
+                            var _this = this;
+                            // console.log(JSON.stringify(d));
+                            this.selectionManager.select(d.id).then(function (ids) {
+                                cells.attr({
+                                    'fill': ids.length > 0 ? "red" : "red"
+                                });
+                                d3.select(_this).attr({
+                                    'fill': "red"
+                                });
+                            });
+                            d3.event.stopPropagation;
+                        });
                     };
                     /**
                      * get my colletion of icons
