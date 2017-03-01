@@ -80,7 +80,7 @@ module powerbi.extensibility.visual {
                         type: Type.NOTHING,
                         rows: []
                     });
-                }
+                } 
                 //TODO SETTINGS
                this.dataViewModel.values[2].type = Type.ICON;
                
