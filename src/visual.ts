@@ -188,7 +188,7 @@ module powerbi.extensibility.visual {
                    object["selectionId"] = values[j].rows[i].selectionId;
                }
                rows[i] = object;
-               
+               console.log(JSON.stringify(object));
                object = {};
            }
           

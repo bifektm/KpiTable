@@ -367,6 +367,7 @@ var powerbi;
                                 object["selectionId"] = values[j].rows[i].selectionId;
                             }
                             rows[i] = object;
+                            console.log(JSON.stringify(object));
                             object = {};
                         }
                         return rows;
