@@ -17,6 +17,7 @@ module powerbi.extensibility.visual {
     export interface IRowCategory{
         row :any
         selectionId: ISelectionId; //id tr
+        kpis : IKPI;
     }
 
     export interface ITableViewModel {
@@ -36,8 +37,15 @@ module powerbi.extensibility.visual {
      * settings
      */
     export interface ISettings{
-       typeCell : Type;
+       typeCol : Type;
        
+    }
+    
+    export interface IKPI{
+        polarity?: number;
+        min?: number;
+        med?:number;
+        max?:number;
     }
 
 }

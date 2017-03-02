@@ -49,4 +49,23 @@ module powerbi.extensibility.visual.PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD 
         }
         return defaultValue;
     }
+    /**
+     * logExceptions
+     */
+    export function logExceptions(): MethodDecorator {
+        return function (target: Object, propertyKey: string, descriptor: TypedPropertyDescriptor<Function>)
+        : TypedPropertyDescriptor<Function> {
+
+            return {
+                value: function () {
+                    try {
+                        return descriptor.value.apply(this, arguments);
+                    } catch (e) {
+                        console.error(e);
+                        throw e;
+                    }
+                }
+            }
+        }
+    }
 }

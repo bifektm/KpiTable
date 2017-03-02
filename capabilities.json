@@ -1,8 +1,28 @@
 {
     "dataRoles": [
         {
-            "displayName": "Indicador",
-            "name": "Indicador",
+            "displayName": "indicator",
+            "name": "indicator",
+            "kind": "GroupingOrMeasure"
+        },
+        {
+            "displayName": "Polarity (0,1)",
+            "name": "polarity",
+            "kind": "GroupingOrMeasure"
+        },
+        {
+            "displayName": "MIN %",
+            "name": "min",
+            "kind": "GroupingOrMeasure"
+        },
+        {
+            "displayName": "MED %",
+            "name": "med",
+            "kind": "GroupingOrMeasure"
+        },
+        {
+            "displayName": "MAX %",
+            "name": "max",
             "kind": "GroupingOrMeasure"
         },
         {
@@ -16,16 +36,100 @@
             "categorical": {
                 "categories": {
                     "bind": {
-                        "to": "Indicador"
+                        "to": "indicator"
                     }
                 },
                 "values": {
                     "group": {
-                        "by": "Indicador",
+                        "by": "indicator",
+                        "select": [
+                            {
+                                "bind": {
+                                    "to": "values"
+                                }
+                            }
+                        ]
+                    }
+                }
+            }
+        },
+        {
+            "categorical": {
+                "categories": {
+                    "bind": {
+                        "to": "indicator"
+                    }
+                },
+                "values": {
+                    "group": {
+                        "by": "indicator",
+                        "select": [
+                            {
+                                "bind": {
+                                    "to": "polarity"
+                                }
+                            }
+                        ]
+                    }
+                }
+            }
+        },
+        {
+            "categorical": {
+                "categories": {
+                    "bind": {
+                        "to": "indicator"
+                    }
+                },
+                "values": {
+                    "group": {
+                        "by": "indicator",
+                        "select": [
+                            {
+                                "bind": {
+                                    "to": "min"
+                                }
+                            }
+                        ]
+                    }
+                }
+            }
+        },
+        {
+            "categorical": {
+                "categories": {
+                    "bind": {
+                        "to": "indicator"
+                    }
+                },
+                "values": {
+                    "group": {
+                        "by": "indicator",
+                        "select": [
+                            {
+                                "bind": {
+                                    "to": "med"
+                                }
+                            }
+                        ]
+                    }
+                }
+            }
+        },
+        {
+            "categorical": {
+                "categories": {
+                    "bind": {
+                        "to": "indicator"
+                    }
+                },
+                "values": {
+                    "group": {
+                        "by": "indicator",
                         "select": [
                             {
                                 "for": {
-                                    "in": "values"
+                                    "in": "max"
                                 }
                             }
                         ]
@@ -33,5 +137,6 @@
                 }
             }
         }
+
     ]
 }

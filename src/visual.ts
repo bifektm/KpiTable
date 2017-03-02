@@ -1,6 +1,6 @@
 
 module powerbi.extensibility.visual {
-
+  
    export class Visual implements IVisual {
         /**
          * VARS
@@ -15,12 +15,14 @@ module powerbi.extensibility.visual {
         private icons : string[];
         private selectionManager: ISelectionManager;
         private host: IVisualHost;
+    
         /**
          * CONSTRUCTOR OF VISUAL
          */
         constructor(options: VisualConstructorOptions) {
             this.host = options.host;
             this.selectionManager = options.host.createSelectionManager();
+            
             this.cleanDataModel();
             this.icons = this.getIcons("BULLET");//ARROW
             
@@ -37,19 +39,24 @@ module powerbi.extensibility.visual {
             this.parseData(optionsUpdate.dataViews);
 
             this.drawTable(optionsInit);
-           
-           
-
-            //this.updateContainerViewports(optionsUpdate.viewport);
+            
             this.cleanDataModel();
+            //this.updateContainerViewports(optionsUpdate.viewport);
         }
+
+        /**
+         * clear data model
+         */
         private cleanDataModel(){
             this.dataViewModel = {
                 categories: { name: "", rows: [] },
                 values: []
             };
         }
-        
+
+        /**
+         * parse data
+         */
         private parseData(dataViews: DataView[]) {
 
             //valid? // division 0
@@ -62,14 +69,17 @@ module powerbi.extensibility.visual {
 
             let indicador = dataViews[0].categorical.categories;
             let vals = dataViews[0].categorical.values;
-
+            let polarity = dataViews[1].categorical.values;
+            let min = dataViews[2].categorical.values;
+            let med = dataViews[3].categorical.values;
+            let max = dataViews[4].categorical.values;
            if (indicador && vals) {
 
                 let indicaLength = indicador[0].values.length;
                 let valsLenght = vals.length;
                 let countCollumn = valsLenght / indicaLength;
                 var score,item,type,groupId,valuesId;
-            
+              // console.log(JSON.stringify(indicador));
                 //set name indicador
                 this.dataViewModel.categories.name = indicador[0].source.displayName;
                 //set names of collumns
@@ -83,15 +93,22 @@ module powerbi.extensibility.visual {
                 }
                 //TODO SETTINGS
                this.dataViewModel.values[2].type = Type.ICON;
-               
+               //#################################################
                 //set values of indicador
                 for (let i = 0; i < indicaLength; i++) {
-
+           console.log(JSON.stringify(med[i]));
                     this.dataViewModel.categories.rows.push({
                         row:indicador[0].values[i].toString(),
-                        selectionId: this.host.createSelectionIdBuilder()
-                    .withCategory(indicador[0], i)
-                    .createSelectionId()
+                        kpis:{
+                            polarity: +polarity[i].values[i],
+                            min: +min[i].values[i],
+                            med: +med[i].values[i],
+                            max: +max[i].values[i]
+                        },
+                        selectionId:  this.host.createSelectionIdBuilder()
+                            .withCategory(indicador[0], i)
+                            .createSelectionId()
+
                     });
 
                     //set kpis
@@ -128,7 +145,7 @@ module powerbi.extensibility.visual {
                 }//end for indicador
 
             }//end if
-
+//console.log(JSON.stringify(this.dataViewModel));
         }//end method 
 
          /**
@@ -178,18 +195,19 @@ module powerbi.extensibility.visual {
             
             let j:number;
             var object = {};
-            var temp;
+            var temp = [];
 
            for(let i=0;i<count;i++){
                for(j = 0; j < countColumns; j++){
                    
                    object[this.dataViewModel.categories.name] = indicador[i].row.toString();
                    object[values[j].name] = values[j].rows[i]; 
-                   object["selectionId"] = values[j].rows[i].selectionId;
+                   object["selectionId"] = indicador[i].selectionId;
                }
+
                rows[i] = object;
-               console.log(JSON.stringify(object)); 
-               object = {};
+               
+               object = {}; 
            }
           
              return rows;
@@ -197,6 +215,7 @@ module powerbi.extensibility.visual {
         /**
          * draw table to my target
          */
+        @logExceptions()
         private drawTable(options: VisualConstructorOptions) {
 
             if(this.dataViewModel.categories.rows.length < 1){return;}
@@ -220,35 +239,55 @@ module powerbi.extensibility.visual {
                        .insert('th')
                        .html(function (column){return column;});
              this.tBody = this.table.append('tbody');
-             this.rows = this.tBody.selectAll("tr")
+             
+            this.rows = this.tBody.selectAll("tr")
                         .data(values)
                         .enter()
-                        .append("tr");  
-               var cells = this.rows.selectAll('td')
+                        .append("tr")
+                        .attr("id",function(d,i){
+                            //console.log(JSON.stringify(d));
+                            return d.selectionId.selector.data[0].key;
+                        });
+                        
+                       
+
+            var cells = this.rows.selectAll('td')
+            .data(function(row){return d3.permute(row,columns) })
+            .enter()
+            .append('td')
+            .html(function (d){return <any>d;});
+                          
+               /*var cells = this.rows.selectAll('td')
                 .data(function(row){
                     return columns.map(function(column){
-                        console.log(row[column].selectionId);
-                         return {column:column,value:row[column],id:row[column].selectionId}
+                         return {column:column,value:row[column]}
                     });
+                        
                 })
                 .enter()
                 .append('td')
-                .html(function(d){return d.value}); 
+                .html(function(d){return d.value}); */
 
-            cells.on('click', function(d) {
-               // console.log(JSON.stringify(d));
-                this.selectionManager.select(d.id).then((ids: ISelectionId[]) => {
-                    cells.attr({
-                        'fill': ids.length > 0 ? "red" : "red"
+            this.rows.on('click', function(d) {
+              
+             //console.log(JSON.stringify(d));
+                this.selectionManager.select(d3.select(this).attr('id')).then((ids: ISelectionId[]) => {
+                   
+                    this.rows.attr({
+                        'style': ids.length > 0 ? "color:red" : "color:red"
                     });
 
                     d3.select(this).attr({
-                        'fill': "red"
+                        'style': "color:red"
                     });
                 });
 
-                (<Event>d3.event).stopPropagation
-            });               
+                (<Event>d3.event).stopPropagation();
+            });
+              
+            this.selectionManager.clear().then(() => {
+                //called when clearing the selection has been completed successfully
+            });             
         }
         /**
          * get my colletion of icons
