@@ -187,6 +187,14 @@ var COMMON;
         }
     }
     COMMON.getScore = getScore;
+    /**
+     * check icon -> styling
+     */
+    function isIcon(cell) {
+        var matcher = new RegExp("<svg");
+        return matcher.test(cell);
+    }
+    COMMON.isIcon = isIcon;
 })(COMMON || (COMMON = {}));
 var ICON;
 (function (ICON) {
@@ -259,8 +267,13 @@ var powerbi;
                     function Visual(options) {
                         this.host = options.host;
                         this.selectionManager = options.host.createSelectionManager();
+                        //init settings
+                        this.settings = {
+                            typeCol: PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD.Type.ICON,
+                            fontSize: "16px",
+                            iconType: this.getIcons("BULLET") //ARROW
+                        };
                         this.cleanDataModel();
-                        this.icons = this.getIcons("BULLET"); //ARROW
                         this.target = d3.select(options.element);
                         //div to target table
                         this.div = this.target.append('div')
@@ -270,6 +283,7 @@ var powerbi;
                      * UPDATE OF VISUAL
                      */
                     Visual.prototype.update = function (optionsUpdate, optionsInit) {
+                        this.parseObjects(optionsUpdate.dataViews);
                         this.parseData(optionsUpdate.dataViews);
                         this.drawTable(optionsInit);
                         this.cleanDataModel();
@@ -283,6 +297,13 @@ var powerbi;
                             categories: { name: "", rows: [] },
                             values: []
                         };
+                    };
+                    /**
+                     * parse objects of options
+                     */
+                    //TODO
+                    Visual.prototype.parseObjects = function (dataViews) {
+                        var objects = dataViews[0].metadata.objects;
                     };
                     /**
                      * parse data
@@ -345,13 +366,13 @@ var powerbi;
                                         if (type == PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD.Type.ICON) {
                                             score = COMMON.getScore(+item);
                                             this.dataViewModel.values[valuesId]
-                                                .rows[groupId] = this.icons[score].toString();
+                                                .rows[groupId] = this.settings.iconType[score].toString();
                                         }
                                         else if (type == PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD.Type.ICONTEXT) {
                                             score = COMMON.getScore(+item);
                                             this.dataViewModel.values[valuesId]
                                                 .rows[groupId] = item.toFixed(2).replace(/(\d)(?=(\d{3})+\.)/g, '$1,')
-                                                + " " + this.icons[score].toString();
+                                                + " " + this.settings.iconType[score].toString();
                                         }
                                         else {
                                             this.dataViewModel.values[valuesId]
@@ -361,7 +382,6 @@ var powerbi;
                                 } //end for values*/
                             } //end for indicador
                         } //end if
-                        //console.log(JSON.stringify(this.dataViewModel));
                     }; //end method 
                     /**
                     * get id grouped
@@ -452,6 +472,12 @@ var powerbi;
                             .data(function (row) { return d3.permute(row, columns); })
                             .enter()
                             .append('td')
+                            .style("text-align", function (d) {
+                            console.log(COMMON.isIcon(d));
+                            if (COMMON.isIcon(d)) {
+                                return "center";
+                            }
+                        })
                             .html(function (d) { return d; });
                         /*var cells = this.rows.selectAll('td')
                          .data(function(row){
@@ -496,6 +522,44 @@ var powerbi;
                         var height = viewport.height - 0.1;
                         this.table.attr('width', width);
                         this.table.attr('height', height);
+                    };
+                    /**
+                     * Enumerates through the objects defined in the capabilities and adds the properties to the format pane
+                     *
+                     * @function
+                     * @param {EnumerateVisualObjectInstancesOptions} options - Map of defined objects
+                     */
+                    Visual.prototype.enumerateObjectInstances = function (options) {
+                        var objectName = options.objectName;
+                        var objectEnumeration = [];
+                        switch (objectName) {
+                            case 'table':
+                                objectEnumeration.push({
+                                    objectName: objectName,
+                                    properties: {
+                                        FontSize: {
+                                            fontSize: true
+                                        }
+                                    },
+                                    selector: null
+                                });
+                                break;
+                            case 'kPIMesures':
+                                objectEnumeration.push({
+                                    objectName: objectName,
+                                    properties: {
+                                        typeMesure: true
+                                    },
+                                    selector: null
+                                });
+                                break;
+                        }
+                        ;
+                        var propertToChange = {
+                            replace: objectEnumeration
+                        };
+                        this.host.persistProperties(propertToChange);
+                        return objectEnumeration;
                     };
                     /**
                      * DESTROY

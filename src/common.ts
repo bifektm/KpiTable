@@ -5,7 +5,7 @@ module COMMON {
          /**
          * get score
          */
-        export function getScore(score: number) {
+        export function getScore(score: number):number {
             try {
                 if (score > 1) {
                     return 2;
@@ -17,5 +17,12 @@ module COMMON {
             } catch (Error) { return 1 }
 
         }
-       
+
+        /**
+         * check icon -> styling
+         */
+       export function isIcon(cell : string):boolean{
+           var matcher = new RegExp("<svg");
+           return matcher.test(cell);
+       }
 }

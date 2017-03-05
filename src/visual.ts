@@ -12,9 +12,9 @@ module powerbi.extensibility.visual {
         private div: d3.Selection<HTMLElement>;
         private rows : d3.Selection<HTMLElement>;
         public dataViewModel: ITableViewModel;
-        private icons : string[];
         private selectionManager: ISelectionManager;
         private host: IVisualHost;
+        private settings : ISettings;
     
         /**
          * CONSTRUCTOR OF VISUAL
@@ -22,10 +22,14 @@ module powerbi.extensibility.visual {
         constructor(options: VisualConstructorOptions) {
             this.host = options.host;
             this.selectionManager = options.host.createSelectionManager();
-            
+            //init settings
+            this.settings = {
+                typeCol:Type.ICON,
+                fontSize : "16px",
+                iconType: this.getIcons("BULLET")//ARROW
+            }
             this.cleanDataModel();
-            this.icons = this.getIcons("BULLET");//ARROW
-            
+
             this.target = d3.select(options.element);
             //div to target table
             this.div = this.target.append('div')
@@ -35,11 +39,9 @@ module powerbi.extensibility.visual {
          * UPDATE OF VISUAL
          */
         public update(optionsUpdate: VisualUpdateOptions, optionsInit: VisualConstructorOptions) {
-            
+            this.parseObjects(optionsUpdate.dataViews);
             this.parseData(optionsUpdate.dataViews);
-
             this.drawTable(optionsInit);
-            
             this.cleanDataModel();
             //this.updateContainerViewports(optionsUpdate.viewport);
         }
@@ -53,7 +55,13 @@ module powerbi.extensibility.visual {
                 values: []
             };
         }
-
+        /**
+         * parse objects of options
+         */
+        //TODO
+        private parseObjects(dataViews: DataView[]){
+            let objects = dataViews[0].metadata.objects;
+        }
         /**
          * parse data
          */
@@ -125,12 +133,12 @@ module powerbi.extensibility.visual {
                              if(type == Type.ICON){
                                  score =  COMMON.getScore(+item);
                                  this.dataViewModel.values[valuesId]
-                                     .rows[groupId] = <any>this.icons[score].toString();
+                                     .rows[groupId] = <any>this.settings.iconType[score].toString();
                              }else if(type == Type.ICONTEXT){
                                  score =  COMMON.getScore(+item);
                                   this.dataViewModel.values[valuesId]
                                      .rows[groupId] =  <any>item.toFixed(2).replace(/(\d)(?=(\d{3})+\.)/g, '$1,') 
-                                     + " " + <any>this.icons[score].toString();
+                                     + " " + <any>this.settings.iconType[score].toString();
                              }else{
                                  this.dataViewModel.values[valuesId]
                                      .rows[groupId] = <number>item.toFixed(2).replace(/(\d)(?=(\d{3})+\.)/g, '$1,');
@@ -145,7 +153,7 @@ module powerbi.extensibility.visual {
                 }//end for indicador
 
             }//end if
-//console.log(JSON.stringify(this.dataViewModel));
+
         }//end method 
 
          /**
@@ -255,6 +263,12 @@ module powerbi.extensibility.visual {
             .data(function(row){return d3.permute(row,columns) })
             .enter()
             .append('td')
+            .style("text-align",function(d){
+                console.log(COMMON.isIcon(<string>d));
+                  if(COMMON.isIcon(<string>d)){
+                      return "center";
+                  }
+            })
             .html(function (d){return <any>d;});
                           
                /*var cells = this.rows.selectAll('td')
@@ -306,6 +320,47 @@ module powerbi.extensibility.visual {
 
             this.table.attr('width', width);
             this.table.attr('height', height);
+        }
+
+        /**
+         * Enumerates through the objects defined in the capabilities and adds the properties to the format pane
+         *
+         * @function
+         * @param {EnumerateVisualObjectInstancesOptions} options - Map of defined objects
+         */
+        public enumerateObjectInstances(options: EnumerateVisualObjectInstancesOptions): VisualObjectInstanceEnumeration {
+            let objectName = options.objectName;
+            let objectEnumeration: VisualObjectInstance[] = [];
+
+            switch (objectName) {
+                case 'table':
+                    objectEnumeration.push({
+                        objectName: objectName,
+                        properties: {
+                            FontSize: {
+                                fontSize: true
+                            }
+                        },
+                        selector: null
+                    });
+                    break;
+                case 'kPIMesures':
+                    objectEnumeration.push({
+                        objectName: objectName,
+                        properties: {
+                            typeMesure: true
+                        },
+                        selector: null
+                    });
+                    break;
+                
+
+            };
+              let propertToChange: VisualObjectInstancesToPersist = {
+                    replace: objectEnumeration
+                }
+                this.host.persistProperties(propertToChange);
+            return objectEnumeration;
         }
         /**
          * DESTROY 

@@ -137,6 +137,39 @@
                 }
             }
         }
-
-    ]
+    ],
+    "objects": {
+        "table": {
+            "displayName": "Table Settings",
+            "properties": {
+                "Fontsize": {
+                    "displayName": "Font size",
+                    "type": {
+                        "numeric": true
+                    }
+                }
+            }
+        },
+        "kPIMesures": {
+            "displayName": "KPI Mesures",
+            "properties": {
+                "typeMesure": {
+                    "displayName": "Icon Column",
+                    
+                    "type": {
+                        "enumeration": [
+                            {
+                                "value": "1",
+                                "displayName": "Score"
+                            },
+                            {
+                                "value": "2",
+                                "displayName": "Variation"
+                            }
+                        ]
+                    }
+                }
+            }
+        }
+    }
 }

@@ -1,4 +1,7 @@
 module powerbi.extensibility.visual {
+    
+        
+
     /**
      * Gets property value for a particular object.
      *

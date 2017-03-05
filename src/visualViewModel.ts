@@ -38,7 +38,8 @@ module powerbi.extensibility.visual {
      */
     export interface ISettings{
        typeCol : Type;
-       
+       fontSize : any;
+       iconType : string[];
     }
     
     export interface IKPI{
