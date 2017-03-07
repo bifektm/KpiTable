@@ -37,5 +37,8 @@ module powerbi.extensibility.visual {
      */
     export interface IOptions{
         min:any;
+        kpi:any;
+        columns:any;
+        icon:any;
     }
 }

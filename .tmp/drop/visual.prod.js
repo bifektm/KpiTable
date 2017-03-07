@@ -440,6 +440,7 @@ var powerbi;
                      */
                     Visual.prototype.enumerateObjectInstances = function (options) {
                         var objectName = options.objectName;
+                        var objectEnumerations = new objectEnumerations();
                         var objectEnumeration = [];
                         var _ = this.tableOptions;
                         switch (objectName) {
@@ -447,7 +448,9 @@ var powerbi;
                                 objectEnumeration.push({
                                     objectName: objectName,
                                     properties: {
-                                        zom: _.min
+                                        collumns: _.columns,
+                                        kpi: _.kpi,
+                                        icon: _.icon,
                                     },
                                     selector: null
                                 });
@@ -460,9 +463,11 @@ var powerbi;
                      * set settings in options
                      */
                     Visual.prototype.setSettings = function () {
-                        var obj = PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD.getValue(this.objects, "kPIMeasures", "zoom", 20);
                         this.tableOptions = {
-                            min: obj
+                            min: PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD.getValue(this.objects, "kPIMeasures", "zoom", 20),
+                            kpi: PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD.getValue(this.objects, "kPIMeasures", "kpi", 0),
+                            columns: PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD.getValue(this.objects, "kPIMeasures", "collumns", { value: "1", displayName: "xxxx" }),
+                            icon: PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD.getValue(this.objects, "kPIMeasures", "icon", "text")
                         };
                         console.log(JSON.stringify(this.tableOptions));
                     };

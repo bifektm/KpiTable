@@ -1,6 +1,7 @@
 
 module powerbi.extensibility.visual {
- 
+  import PBI = powerbi;
+
    export class Visual implements IVisual {
         /**
          * VARS
@@ -22,7 +23,7 @@ module powerbi.extensibility.visual {
          */
         constructor(options: VisualConstructorOptions) {
             this.host = options.host;
-            
+        
             //this.selectionManager = options.host.createSelectionManager();
             //init settings
             this.settings = {
@@ -225,6 +226,7 @@ module powerbi.extensibility.visual {
         @logExceptions()
         public enumerateObjectInstances(options: EnumerateVisualObjectInstancesOptions): VisualObjectInstanceEnumeration {
             let objectName = options.objectName;
+            var objectEnumerations = new objectEnumerations();
             let objectEnumeration: VisualObjectInstance[] = [];
             var _ =this.tableOptions;
             
@@ -233,7 +235,10 @@ module powerbi.extensibility.visual {
                      objectEnumeration.push({
                         objectName: objectName,
                         properties: {
-                            zom:_.min
+                            collumns: _.columns,
+                            kpi:_.kpi,
+                            icon: _.icon,
+                            
                         },
                         selector: null
                     });
@@ -248,11 +253,12 @@ module powerbi.extensibility.visual {
         */
         @logExceptions()
         private setSettings() {
-            
-                
-                var obj = getValue(this.objects,"kPIMeasures","zoom",20);
+
                 this.tableOptions = {
-                    min: obj
+                    min: getValue(this.objects,"kPIMeasures","zoom",20),
+                    kpi: getValue(this.objects,"kPIMeasures","kpi",0),
+                    columns:getValue(this.objects,"kPIMeasures","collumns",{value:"1",displayName:"xxxx"}),
+                    icon: getValue(this.objects,"kPIMeasures","icon","text")
                 };            
            console.log(JSON.stringify(this.tableOptions));             
         }  
