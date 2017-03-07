@@ -36,7 +36,6 @@ module powerbi.extensibility.visual {
      * prop
      */
     export interface IOptions{
-        typeMeasure:any;
-        Min:any;
+        min:any;
     }
 }

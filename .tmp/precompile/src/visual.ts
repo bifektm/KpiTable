@@ -1,6 +1,6 @@
 
 module powerbi.extensibility.visual.PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD  {
-  import options = powerbi.visuals.plugins;
+ 
    export class Visual implements IVisual {
         /**
          * VARS
@@ -15,7 +15,7 @@ module powerbi.extensibility.visual.PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD 
         private host: IVisualHost;
         private settings : ISettings;
         private tableOptions : IOptions;
-        private objects : DataViewObjects;
+        private objects : any;
     
         /**
          * CONSTRUCTOR OF VISUAL
@@ -31,7 +31,10 @@ module powerbi.extensibility.visual.PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD 
                 iconType: this.getIcons("BULLET"),//ARROW
                 polarity:[]
             }
-            
+            /*this.tableOptions = {
+                typeMeasure:getValue(this.objects,"typeMeasure","KPI",[]),
+                Min : getValue<number>(this.objects,"Min","text",10)
+            }*/
             this.cleanDataModel();
 
             this.target = d3.select(options.element);
@@ -43,15 +46,15 @@ module powerbi.extensibility.visual.PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD 
          * UPDATE OF VISUAL
          */
         public update(optionsUpdate: VisualUpdateOptions, optionsInit: VisualConstructorOptions) {
-            this.tableOptions = {
-                typeMeasure:true,
-                Min : getValue(this.objects,"Min","text",10)
-            }
-            this.parseObjects(optionsUpdate.dataViews);
-            this.parseData(optionsUpdate.dataViews);
-            this.drawTable(optionsInit);
-            this.cleanDataModel();
-            this.updateContainerViewports(optionsUpdate.viewport);
+             
+               this.cleanDataModel();
+               this.parseData(optionsUpdate.dataViews);
+               this.drawTable(optionsInit);
+               this.updateContainerViewports(optionsUpdate.viewport);
+               this.objects = optionsUpdate.dataViews[0].metadata.objects;
+               this.setSettings();
+               //TODO
+               this.target.select('div').style("font-Size",this.tableOptions.min+"px");
 
         }
 
@@ -64,13 +67,8 @@ module powerbi.extensibility.visual.PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD 
                 values: []
             };
         }
-        /**
-         * parse objects of options
-         */
-        //TODO
-        private parseObjects(dataViews: DataView[]){
-             this.objects = dataViews[0].metadata.objects;
-        }
+        
+        
         /**
          * parse data
          */
@@ -229,14 +227,13 @@ module powerbi.extensibility.visual.PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD 
             let objectName = options.objectName;
             let objectEnumeration: VisualObjectInstance[] = [];
             var _ =this.tableOptions;
+            
             switch (objectName) {
                 case 'kPIMeasures':
                      objectEnumeration.push({
                         objectName: objectName,
                         properties: {
-                            show:true,
-                            typeMeasure:_.typeMeasure,
-                            Min:_.Min
+                            zom:_.min
                         },
                         selector: null
                     });
@@ -246,32 +243,19 @@ module powerbi.extensibility.visual.PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD 
             return objectEnumeration;
         }
        
-
-     /*  public static capabilities: powerbi.VisualCapabilities = {
-           objects: {
-               flipButton: {
-                   displayName: 'Flip Button',
-                   properties: {
-                       button: {
-                           type: { bool: true },
-                           displayName: 'Button'
-                       }
-                   }
-               },
-               textField: {
-                   displayName: 'Text Field',
-                   properties: {
-                       text: {
-                           type: { text: 'Default Text' },
-                           displayName: 'Text'
-                       }
-                   }
-               }
-           }
-
-
-       }*/
-
+       /**
+        * set settings in options
+        */
+        @logExceptions()
+        private setSettings() {
+            
+                
+                var obj = getValue(this.objects,"kPIMeasures","zoom",20);
+                this.tableOptions = {
+                    min: obj
+                };            
+           console.log(JSON.stringify(this.tableOptions));             
+        }  
         /**
          * DESTROY 
          */

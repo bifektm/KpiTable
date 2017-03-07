@@ -35,35 +35,13 @@
         "kPIMeasures": {
             "displayName": "KPI Measure",
             "properties": {
-                "show": {
-                    "displayName": "KPI Measure",
-                    "type": {
-                        "bool": true
-                    },
-                    "placeHolderText": "KPI Measure"
-                },
-                "typeMeasure": {
-                    "displayName": "KPI",
-                    "type": {
-                        "enumeration": [
-                            {
-                                "value": "1",
-                                "displayName": "Score"
-                            },
-                            {
-                                "value": "2",
-                                "displayName": "Variation"
-                            }
-                        ]
-                    }
-                    
-                },
-                "Min":{
-                    "displayName": "text",
+                "zoom":{
+                    "displayName": "zoom",
                     "type": {
                         "numeric": true
                     }
                 }
+                
             }
         }
     }

@@ -286,6 +286,10 @@ var powerbi;
                             iconType: this.getIcons("BULLET"),
                             polarity: []
                         };
+                        /*this.tableOptions = {
+                            typeMeasure:getValue(this.objects,"typeMeasure","KPI",[]),
+                            Min : getValue<number>(this.objects,"Min","text",10)
+                        }*/
                         this.cleanDataModel();
                         this.target = d3.select(options.element);
                         //div to target table
@@ -296,15 +300,14 @@ var powerbi;
                      * UPDATE OF VISUAL
                      */
                     Visual.prototype.update = function (optionsUpdate, optionsInit) {
-                        this.tableOptions = {
-                            typeMeasure: true,
-                            Min: PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD.getValue(this.objects, "Min", "text", 10)
-                        };
-                        this.parseObjects(optionsUpdate.dataViews);
+                        this.cleanDataModel();
                         this.parseData(optionsUpdate.dataViews);
                         this.drawTable(optionsInit);
-                        this.cleanDataModel();
                         this.updateContainerViewports(optionsUpdate.viewport);
+                        this.objects = optionsUpdate.dataViews[0].metadata.objects;
+                        this.setSettings();
+                        //TODO
+                        this.target.select('div').style("font-Size", this.tableOptions.min + "px");
                     };
                     /**
                      * clear data model
@@ -314,13 +317,6 @@ var powerbi;
                             columns: [],
                             values: []
                         };
-                    };
-                    /**
-                     * parse objects of options
-                     */
-                    //TODO
-                    Visual.prototype.parseObjects = function (dataViews) {
-                        this.objects = dataViews[0].metadata.objects;
                     };
                     /**
                      * parse data
@@ -451,9 +447,7 @@ var powerbi;
                                 objectEnumeration.push({
                                     objectName: objectName,
                                     properties: {
-                                        show: true,
-                                        typeMeasure: _.typeMeasure,
-                                        Min: _.Min
+                                        zom: _.min
                                     },
                                     selector: null
                                 });
@@ -462,30 +456,16 @@ var powerbi;
                         ;
                         return objectEnumeration;
                     };
-                    /*  public static capabilities: powerbi.VisualCapabilities = {
-                          objects: {
-                              flipButton: {
-                                  displayName: 'Flip Button',
-                                  properties: {
-                                      button: {
-                                          type: { bool: true },
-                                          displayName: 'Button'
-                                      }
-                                  }
-                              },
-                              textField: {
-                                  displayName: 'Text Field',
-                                  properties: {
-                                      text: {
-                                          type: { text: 'Default Text' },
-                                          displayName: 'Text'
-                                      }
-                                  }
-                              }
-                          }
-               
-               
-                      }*/
+                    /**
+                     * set settings in options
+                     */
+                    Visual.prototype.setSettings = function () {
+                        var obj = PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD.getValue(this.objects, "kPIMeasures", "zoom", 20);
+                        this.tableOptions = {
+                            min: obj
+                        };
+                        console.log(JSON.stringify(this.tableOptions));
+                    };
                     /**
                      * DESTROY
                      */
@@ -510,6 +490,12 @@ var powerbi;
                     __metadata("design:paramtypes", [Object]),
                     __metadata("design:returntype", Object)
                 ], Visual.prototype, "enumerateObjectInstances", null);
+                __decorate([
+                    PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD.logExceptions(),
+                    __metadata("design:type", Function),
+                    __metadata("design:paramtypes", []),
+                    __metadata("design:returntype", void 0)
+                ], Visual.prototype, "setSettings", null);
                 PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD.Visual = Visual;
             })(PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD = visual.PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD || (visual.PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD = {}));
         })(visual = extensibility.visual || (extensibility.visual = {}));
