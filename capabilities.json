@@ -1,161 +1,49 @@
 {
     "dataRoles": [
         {
-            "displayName": "indicator",
-            "name": "indicator",
+            "displayName": "Rows",
+            "name": "rows",
             "kind": "GroupingOrMeasure"
         },
         {
-            "displayName": "Polarity (0,1)",
+            "displayName": "Polarity",
             "name": "polarity",
-            "kind": "GroupingOrMeasure"
-        },
-        {
-            "displayName": "MIN %",
-            "name": "min",
-            "kind": "GroupingOrMeasure"
-        },
-        {
-            "displayName": "MED %",
-            "name": "med",
-            "kind": "GroupingOrMeasure"
-        },
-        {
-            "displayName": "MAX %",
-            "name": "max",
-            "kind": "GroupingOrMeasure"
-        },
-        {
-            "displayName": "values",
-            "name": "values",
             "kind": "GroupingOrMeasure"
         }
     ],
     "dataViewMappings": [
         {
-            "categorical": {
-                "categories": {
-                    "bind": {
-                        "to": "indicator"
-                    }
-                },
-                "values": {
-                    "group": {
-                        "by": "indicator",
-                        "select": [
-                            {
-                                "bind": {
-                                    "to": "values"
-                                }
+            "table": {
+                "rows": {
+                    "select": [
+                        {
+                            "for": {
+                                "in": "rows"
                             }
-                        ]
-                    }
-                }
-            }
-        },
-        {
-            "categorical": {
-                "categories": {
-                    "bind": {
-                        "to": "indicator"
-                    }
-                },
-                "values": {
-                    "group": {
-                        "by": "indicator",
-                        "select": [
-                            {
-                                "bind": {
-                                    "to": "polarity"
-                                }
+                        },
+                        {
+                            "for": {
+                                "in": "polarity"
                             }
-                        ]
-                    }
-                }
-            }
-        },
-        {
-            "categorical": {
-                "categories": {
-                    "bind": {
-                        "to": "indicator"
-                    }
-                },
-                "values": {
-                    "group": {
-                        "by": "indicator",
-                        "select": [
-                            {
-                                "bind": {
-                                    "to": "min"
-                                }
-                            }
-                        ]
-                    }
-                }
-            }
-        },
-        {
-            "categorical": {
-                "categories": {
-                    "bind": {
-                        "to": "indicator"
-                    }
-                },
-                "values": {
-                    "group": {
-                        "by": "indicator",
-                        "select": [
-                            {
-                                "bind": {
-                                    "to": "med"
-                                }
-                            }
-                        ]
-                    }
-                }
-            }
-        },
-        {
-            "categorical": {
-                "categories": {
-                    "bind": {
-                        "to": "indicator"
-                    }
-                },
-                "values": {
-                    "group": {
-                        "by": "indicator",
-                        "select": [
-                            {
-                                "for": {
-                                    "in": "max"
-                                }
-                            }
-                        ]
-                    }
+                        }
+                    ]
                 }
             }
         }
     ],
     "objects": {
-        "table": {
-            "displayName": "Table Settings",
+        "kPIMeasures": {
+            "displayName": "KPI Measure",
             "properties": {
-                "Fontsize": {
-                    "displayName": "Font size",
+                "show": {
+                    "displayName": "KPI Measure",
                     "type": {
-                        "numeric": true
-                    }
-                }
-            }
-        },
-        "kPIMesures": {
-            "displayName": "KPI Mesures",
-            "properties": {
-                "typeMesure": {
-                    "displayName": "Icon Column",
-                    
+                        "bool": true
+                    },
+                    "placeHolderText": "KPI Measure"
+                },
+                "typeMeasure": {
+                    "displayName": "KPI",
                     "type": {
                         "enumeration": [
                             {
@@ -167,6 +55,13 @@
                                 "displayName": "Variation"
                             }
                         ]
+                    }
+                    
+                },
+                "Min":{
+                    "displayName": "text",
+                    "type": {
+                        "numeric": true
                     }
                 }
             }

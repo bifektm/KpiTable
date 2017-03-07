@@ -25,4 +25,14 @@ module COMMON {
            var matcher = new RegExp("<svg");
            return matcher.test(cell);
        }
+       /**
+        * format number
+        */
+        export function formatNumber(num:any){
+            try{
+                return num.toFixed(2).replace(/(\d)(?=(\d{3})+\.)/g, '$1,')
+            }catch(Error){
+                return num;
+            }
+        }
 }

@@ -2,27 +2,17 @@ module powerbi.extensibility.visual {
     /**
      * table
      */
-    export interface IGroupViewModel {
-        name: string;
-        rows : IRowCategory[]
-        
-    }
-
-    export interface IValueViewModel {
-        rows: any[];
-        name: string;
-        type: Type 
-       
-    }
-    export interface IRowCategory{
-        row :any
-        selectionId: ISelectionId; //id tr
-        kpis : IKPI;
-    }
-
     export interface ITableViewModel {
-        categories: IGroupViewModel//indicador group
-        values: IValueViewModel[];
+        columns: IColumns[]
+        values: IRows[];
+    }
+    export interface IRows{
+        row:string[]
+        id:number
+    }
+    export interface IColumns{
+        name:string;
+        type: Type
     }
     /**
      * type score
@@ -40,13 +30,13 @@ module powerbi.extensibility.visual {
        typeCol : Type;
        fontSize : any;
        iconType : string[];
+       polarity : number[];
     }
-    
-    export interface IKPI{
-        polarity?: number;
-        min?: number;
-        med?:number;
-        max?:number;
+    /**
+     * prop
+     */
+    export interface IOptions{
+        typeMeasure:any;
+        Min:any;
     }
-
 }

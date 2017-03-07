@@ -195,6 +195,18 @@ var COMMON;
         return matcher.test(cell);
     }
     COMMON.isIcon = isIcon;
+    /**
+     * format number
+     */
+    function formatNumber(num) {
+        try {
+            return num.toFixed(2).replace(/(\d)(?=(\d{3})+\.)/g, '$1,');
+        }
+        catch (Error) {
+            return num;
+        }
+    }
+    COMMON.formatNumber = formatNumber;
 })(COMMON || (COMMON = {}));
 var ICON;
 (function (ICON) {
@@ -266,12 +278,13 @@ var powerbi;
                      */
                     function Visual(options) {
                         this.host = options.host;
-                        this.selectionManager = options.host.createSelectionManager();
+                        //this.selectionManager = options.host.createSelectionManager();
                         //init settings
                         this.settings = {
-                            typeCol: PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD.Type.ICON,
+                            typeCol: PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD.Type.TEXT,
                             fontSize: "16px",
-                            iconType: this.getIcons("BULLET") //ARROW
+                            iconType: this.getIcons("BULLET"),
+                            polarity: []
                         };
                         this.cleanDataModel();
                         this.target = d3.select(options.element);
@@ -283,18 +296,22 @@ var powerbi;
                      * UPDATE OF VISUAL
                      */
                     Visual.prototype.update = function (optionsUpdate, optionsInit) {
+                        this.tableOptions = {
+                            typeMeasure: true,
+                            Min: PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD.getValue(this.objects, "Min", "text", 10)
+                        };
                         this.parseObjects(optionsUpdate.dataViews);
                         this.parseData(optionsUpdate.dataViews);
                         this.drawTable(optionsInit);
                         this.cleanDataModel();
-                        //this.updateContainerViewports(optionsUpdate.viewport);
+                        this.updateContainerViewports(optionsUpdate.viewport);
                     };
                     /**
                      * clear data model
                      */
                     Visual.prototype.cleanDataModel = function () {
                         this.dataViewModel = {
-                            categories: { name: "", rows: [] },
+                            columns: [],
                             values: []
                         };
                     };
@@ -303,7 +320,7 @@ var powerbi;
                      */
                     //TODO
                     Visual.prototype.parseObjects = function (dataViews) {
-                        var objects = dataViews[0].metadata.objects;
+                        this.objects = dataViews[0].metadata.objects;
                     };
                     /**
                      * parse data
@@ -312,145 +329,68 @@ var powerbi;
                         //valid? // division 0
                         if (!dataViews
                             || !dataViews[0]
-                            || !dataViews[0].categorical
-                            || !dataViews[0].categorical.categories
-                            || !dataViews[0].categorical.values)
+                            || !dataViews[0].table
+                            || !dataViews[0].table.rows
+                            || !dataViews[0].table.columns)
                             return;
-                        var indicador = dataViews[0].categorical.categories;
-                        var vals = dataViews[0].categorical.values;
-                        var polarity = dataViews[1].categorical.values;
-                        var min = dataViews[2].categorical.values;
-                        var med = dataViews[3].categorical.values;
-                        var max = dataViews[4].categorical.values;
-                        if (indicador && vals) {
-                            var indicaLength = indicador[0].values.length;
-                            var valsLenght = vals.length;
-                            var countCollumn = valsLenght / indicaLength;
-                            var score, item, type, groupId, valuesId;
-                            // console.log(JSON.stringify(indicador));
-                            //set name indicador
-                            this.dataViewModel.categories.name = indicador[0].source.displayName;
+                        var rows = dataViews[0].table.columns;
+                        var values = dataViews[0].table.rows;
+                        var polarity;
+                        // let polarity = dataViews[1].categorical.values;
+                        if (rows && values) {
+                            var rowsLength = rows.length;
+                            var valuesLenght = values.length;
+                            var score, item, type;
+                            var row = { row: [], id: 0 };
+                            //let col : IColumns = {name:"",type : null};console.log(JSON.stringify(rows[j].roles));
                             //set names of collumns
-                            for (var j = 0; j < countCollumn; j++) {
-                                this.dataViewModel.values.push({
-                                    name: vals[j].source.displayName,
-                                    type: PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD.Type.NOTHING,
-                                    rows: []
+                            for (var j = 0; j < rowsLength; j++) {
+                                //TODO  if (rows[j].roles["polarity"]) { polarity = j; continue; }
+                                this.dataViewModel.columns.push({
+                                    name: rows[j].displayName,
+                                    type: this.settings.typeCol
                                 });
                             }
-                            //TODO SETTINGS
-                            this.dataViewModel.values[2].type = PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD.Type.ICON;
                             //#################################################
-                            //set values of indicador
-                            for (var i = 0; i < indicaLength; i++) {
-                                console.log(JSON.stringify(med[i]));
-                                this.dataViewModel.categories.rows.push({
-                                    row: indicador[0].values[i].toString(),
-                                    kpis: {
-                                        polarity: +polarity[i].values[i],
-                                        min: +min[i].values[i],
-                                        med: +med[i].values[i],
-                                        max: +max[i].values[i]
-                                    },
-                                    selectionId: this.host.createSelectionIdBuilder()
-                                        .withCategory(indicador[0], i)
-                                        .createSelectionId()
-                                });
-                                //set kpis
-                                for (var k = 0; k < valsLenght; k++) {
-                                    item = vals[k].values[i];
+                            //set values of rows
+                            for (var i = 0; i < valuesLenght; i++) {
+                                row.id = i;
+                                for (var k = 0; k < rowsLength; k++) {
+                                    //TODO if (k == polarity) { this.settings.polarity.push(+values[i][k]);continue; }
+                                    item = values[i][k];
                                     if (item != null) {
-                                        groupId = this.getIdGroup(vals[k].source.groupName);
-                                        valuesId = this.getIdValues(vals[k].source.displayName, countCollumn);
-                                        type = this.dataViewModel.values[valuesId].type;
+                                        type = this.dataViewModel.columns[k].type;
                                         if (type == PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD.Type.ICON) {
                                             score = COMMON.getScore(+item);
-                                            this.dataViewModel.values[valuesId]
-                                                .rows[groupId] = this.settings.iconType[score].toString();
+                                            row.row[k] = this.settings.iconType[score].toString();
                                         }
                                         else if (type == PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD.Type.ICONTEXT) {
                                             score = COMMON.getScore(+item);
-                                            this.dataViewModel.values[valuesId]
-                                                .rows[groupId] = item.toFixed(2).replace(/(\d)(?=(\d{3})+\.)/g, '$1,')
+                                            row.row[k] = COMMON.formatNumber(item)
                                                 + " " + this.settings.iconType[score].toString();
                                         }
                                         else {
-                                            this.dataViewModel.values[valuesId]
-                                                .rows[groupId] = item.toFixed(2).replace(/(\d)(?=(\d{3})+\.)/g, '$1,');
+                                            row.row[k] = COMMON.formatNumber(item);
                                         }
                                     } //end id nulls
-                                } //end for values*/
-                            } //end for indicador
+                                } //end for 
+                                this.dataViewModel.values.push(row);
+                                row = { row: [], id: 0 };
+                            } //end for 
                         } //end if
                     }; //end method 
-                    /**
-                    * get id grouped
-                    */
-                    Visual.prototype.getIdValues = function (compare, count) {
-                        for (var i = 0; i < count; i++) {
-                            if (this.dataViewModel.values[i].name == compare.toString()) {
-                                return i;
-                            }
-                        }
-                    };
-                    /**
-                     * get id grouped
-                     */
-                    Visual.prototype.getIdGroup = function (compare) {
-                        var count = this.dataViewModel.categories.rows.length;
-                        for (var i = 0; i < count; i++) {
-                            if (this.dataViewModel.categories.rows[i].row == compare.toString()) {
-                                return i;
-                            }
-                        }
-                    };
-                    //get columns to draw
-                    Visual.prototype.getColumnsToDraw = function () {
-                        var column = [];
-                        column[0] = this.dataViewModel.categories.name;
-                        for (var _i = 0, _a = this.dataViewModel.values; _i < _a.length; _i++) {
-                            var entry = _a[_i];
-                            column.push(entry.name);
-                        }
-                        return column;
-                    };
-                    /**
-                     * get values to draw TODO
-                     */
-                    Visual.prototype.getValuesToDraw = function () {
-                        var rows = [];
-                        var count;
-                        var countColumns;
-                        count = this.dataViewModel.categories.rows.length;
-                        countColumns = this.dataViewModel.values.length;
-                        var indicador = this.dataViewModel.categories.rows;
-                        var values = this.dataViewModel.values;
-                        var j;
-                        var object = {};
-                        var temp = [];
-                        for (var i = 0; i < count; i++) {
-                            for (j = 0; j < countColumns; j++) {
-                                object[this.dataViewModel.categories.name] = indicador[i].row.toString();
-                                object[values[j].name] = values[j].rows[i];
-                                object["selectionId"] = indicador[i].selectionId;
-                            }
-                            rows[i] = object;
-                            object = {};
-                        }
-                        return rows;
-                    };
                     /**
                      * draw table to my target
                      */
                     Visual.prototype.drawTable = function (options) {
-                        if (this.dataViewModel.categories.rows.length < 1) {
+                        if (this.dataViewModel.columns.length < 1) {
                             return;
                         }
                         //if exists, remove existing table
                         this.target.select('table').remove();
                         // get columns and values
-                        var columns = this.getColumnsToDraw();
-                        var values = this.getValuesToDraw();
+                        var columns = this.dataViewModel.columns;
+                        var values = this.dataViewModel.values;
                         //init table
                         this.table = this.div.append('table')
                             .classed("fixed_headers", true);
@@ -458,53 +398,26 @@ var powerbi;
                         this.tHead.selectAll('th').data(columns)
                             .enter()
                             .insert('th')
-                            .html(function (column) { return column; });
+                            .html(function (column) { return column.name; });
                         this.tBody = this.table.append('tbody');
-                        this.rows = this.tBody.selectAll("tr")
+                        var rows = this.tBody.selectAll("tr")
                             .data(values)
                             .enter()
-                            .append("tr")
-                            .attr("id", function (d, i) {
-                            //console.log(JSON.stringify(d));
-                            return d.selectionId.selector.data[0].key;
-                        });
-                        var cells = this.rows.selectAll('td')
-                            .data(function (row) { return d3.permute(row, columns); })
+                            .append("tr");
+                        var cells = rows.selectAll('td')
+                            .data(function (row) {
+                            return columns.map(function (column, i) {
+                                return { column: column, value: row.row[i] };
+                            });
+                        })
                             .enter()
                             .append('td')
                             .style("text-align", function (d) {
-                            console.log(COMMON.isIcon(d));
-                            if (COMMON.isIcon(d)) {
+                            if (COMMON.isIcon(d.value)) {
                                 return "center";
                             }
                         })
-                            .html(function (d) { return d; });
-                        /*var cells = this.rows.selectAll('td')
-                         .data(function(row){
-                             return columns.map(function(column){
-                                  return {column:column,value:row[column]}
-                             });
-                                 
-                         })
-                         .enter()
-                         .append('td')
-                         .html(function(d){return d.value}); */
-                        this.rows.on('click', function (d) {
-                            var _this = this;
-                            //console.log(JSON.stringify(d));
-                            this.selectionManager.select(d3.select(this).attr('id')).then(function (ids) {
-                                _this.rows.attr({
-                                    'style': ids.length > 0 ? "color:red" : "color:red"
-                                });
-                                d3.select(_this).attr({
-                                    'style': "color:red"
-                                });
-                            });
-                            d3.event.stopPropagation();
-                        });
-                        this.selectionManager.clear().then(function () {
-                            //called when clearing the selection has been completed successfully
-                        });
+                            .html(function (d) { return d.value; });
                     };
                     /**
                      * get my colletion of icons
@@ -532,35 +445,47 @@ var powerbi;
                     Visual.prototype.enumerateObjectInstances = function (options) {
                         var objectName = options.objectName;
                         var objectEnumeration = [];
+                        var _ = this.tableOptions;
                         switch (objectName) {
-                            case 'table':
+                            case 'kPIMeasures':
                                 objectEnumeration.push({
                                     objectName: objectName,
                                     properties: {
-                                        FontSize: {
-                                            fontSize: true
-                                        }
-                                    },
-                                    selector: null
-                                });
-                                break;
-                            case 'kPIMesures':
-                                objectEnumeration.push({
-                                    objectName: objectName,
-                                    properties: {
-                                        typeMesure: true
+                                        show: true,
+                                        typeMeasure: _.typeMeasure,
+                                        Min: _.Min
                                     },
                                     selector: null
                                 });
                                 break;
                         }
                         ;
-                        var propertToChange = {
-                            replace: objectEnumeration
-                        };
-                        this.host.persistProperties(propertToChange);
                         return objectEnumeration;
                     };
+                    /*  public static capabilities: powerbi.VisualCapabilities = {
+                          objects: {
+                              flipButton: {
+                                  displayName: 'Flip Button',
+                                  properties: {
+                                      button: {
+                                          type: { bool: true },
+                                          displayName: 'Button'
+                                      }
+                                  }
+                              },
+                              textField: {
+                                  displayName: 'Text Field',
+                                  properties: {
+                                      text: {
+                                          type: { text: 'Default Text' },
+                                          displayName: 'Text'
+                                      }
+                                  }
+                              }
+                          }
+               
+               
+                      }*/
                     /**
                      * DESTROY
                      */
@@ -570,9 +495,21 @@ var powerbi;
                 __decorate([
                     PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD.logExceptions(),
                     __metadata("design:type", Function),
+                    __metadata("design:paramtypes", [Array]),
+                    __metadata("design:returntype", void 0)
+                ], Visual.prototype, "parseData", null);
+                __decorate([
+                    PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD.logExceptions(),
+                    __metadata("design:type", Function),
                     __metadata("design:paramtypes", [Object]),
                     __metadata("design:returntype", void 0)
                 ], Visual.prototype, "drawTable", null);
+                __decorate([
+                    PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD.logExceptions(),
+                    __metadata("design:type", Function),
+                    __metadata("design:paramtypes", [Object]),
+                    __metadata("design:returntype", Object)
+                ], Visual.prototype, "enumerateObjectInstances", null);
                 PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD.Visual = Visual;
             })(PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD = visual.PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD || (visual.PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD = {}));
         })(visual = extensibility.visual || (extensibility.visual = {}));
