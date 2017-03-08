@@ -8,27 +8,34 @@ module powerbi.extensibility.visual {
     }
     export interface IRows{
         row:string[]
-        id:number
+        id:number;
+        polarity:number;
     }
     export interface IColumns{
         name:string;
-        type: Type
+        iconType: IconType;
+        type: Type;
+    }
+    /**
+     * type of column
+     */
+    export enum Type{
+       SCORE,
+       VARIATION,
+       NOTHING
     }
     /**
      * type score
      */
-    export enum Type{
+    export enum IconType{
         ICON,
         ICONTEXT,
-        TEXT,
-        NOTHING
+        TEXT
     }
     /**
      * settings
      */
     export interface ISettings{
-       typeCol : Type;
-       fontSize : any;
        iconType : string[];
        polarity : number[];
     }
@@ -36,9 +43,20 @@ module powerbi.extensibility.visual {
      * prop
      */
     export interface IOptions{
-        min:any;
+        zoom:any;
         kpi:any;
         columns:any;
         icon:any;
+        color:any;
+    }
+    //TEMP parse json
+    export interface IConfig{
+        columns:ICol[];
+        polarity:any[]
+    }
+    export interface ICol{
+        colId:number;
+        typeColumn:string;
+        iconType:string;
     }
 }

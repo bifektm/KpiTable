@@ -11,9 +11,9 @@
     ".api/v1.5.0/PowerBI-visuals.d.ts",
     "typings/index.d.ts",
     "src/objectEnumerationUtility.ts",
-    "src/visualViewModel.ts",
-    "src/collection.ts",
+    "src/structData.ts",
     "src/common.ts",
+    "src/options.ts",
     "src/icon.ts",
     "src/visual.ts"
   ]

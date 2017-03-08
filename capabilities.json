@@ -4,12 +4,7 @@
             "displayName": "Rows",
             "name": "rows",
             "kind": "GroupingOrMeasure"
-        },
-        {
-            "displayName": "Polarity",
-            "name": "polarity",
-            "kind": "GroupingOrMeasure"
-        }
+        }     
     ],
     "dataViewMappings": [
         {
@@ -19,12 +14,7 @@
                         {
                             "for": {
                                 "in": "rows"
-                            }
-                        },
-                        {
-                            "for": {
-                                "in": "polarity"
-                            }
+                            }      
                         }
                     ]
                 }
@@ -35,22 +25,11 @@
         "kPIMeasures": {
             "displayName": "KPI Measure",
             "properties": {
-                "zoom":{
-                    "displayName": "zoom",
-                    "type": {
-                        "numeric": true
-                    }
-                },
                 "collumns":{
-                    "displayName": "columns",
-                    "type": {
-                        "enumeration": [
-                            {
-                                "value": "1","displayName": ""
-                            }
-                        ]
-                            
-                        
+                    "displayName": "config*",
+                    "description": "{\n\t\"columns\": [{\n\t\t\"colId\": 3,\n\t\t\"typeColumn\": \"SCORE\",\n\t\t\"iconType\": \"arrow\"\n\t}, {\n\t\t\"colId\": 4,\n\t\t\"typeColumn\": \"variation\",\n\t\t\"iconType\": \"\"\n\t}],\n\t\"polarity\": [1, 1, 1, 0, 1, 0, 1, 0]\n}",
+                    "type":{
+                        "text": true
                     }
                 },
                 "kpi":{
@@ -89,6 +68,29 @@
                                 "displayName": "Arrow"
                             }
                         ] 
+                    }
+                }
+            }
+        },
+        "TableOptions":{
+            "displayName": "Table Options",
+            "properties": {
+                "zoom" :{
+                    "displayName": "Zoom",
+                    "type": {
+                        "formatting": {
+                            "fontSize": true
+                        }
+                    }
+                },
+                "color":{
+                    "displayName": "Color Columns",
+                    "type": {
+                        "fill": {
+                            "solid": {
+                                "color":true
+                            }
+                        }
                     }
                 }
             }
