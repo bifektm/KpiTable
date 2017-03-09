@@ -1,8 +1,10 @@
 
+
 module powerbi.extensibility.visual {
 
-
     export class Visual implements IVisual {
+   
+   
         /**
          * VARS
          */
@@ -17,55 +19,56 @@ module powerbi.extensibility.visual {
         private settings: ISettings;
         private tableOptions: IOptions;
         private objects: any;
-        private config: IConfig;
-
+        private config: IConfig[];
+        private json:boolean;
+   
         /**
          * CONSTRUCTOR OF VISUAL
          */
         constructor(options: VisualConstructorOptions) {
             this.host = options.host;
-
-            //this.selectionManager = options.host.createSelectionManager();
-            //init settings
-            this.settings = {
-                iconType: this.getIcons("ARROW"),//ARROW
-                polarity: []
-            }
             this.cleanConfig();
             this.cleanDataModel();
-
+            
             this.target = d3.select(options.element);
-            //div to target table
-            this.div = this.target.append('div')
+            
+            this.div = this.target.append('div')       //div to target table
                 .classed('wrapper', true);
         }
-        //TEMP CONFIG JSON
+        //###################### TEMP CONFIG JSON ############################################
 
         private parseConfig(): boolean {
             let obj;
+            let valid :boolean;
+            valid = false;
+            if(this.tableOptions.columns == "{}"){return valid;}
             try {
                 obj = JSON.parse(this.tableOptions.columns);
-                this.config.polarity = obj.polarity;
-                for (let i = 0; i < obj.columns.length; i++) {
-                    this.config.columns.push({
-                        colId:obj.columns[i].colId,
-                        iconType:obj.columns[i].iconType,
-                        typeColumn:obj.columns[i].typeColumn
-                    });
-                   
+                
+                for (let i = 0; i < obj.length; i++) {
+                    this.config.push({
+                        columnName:     obj[i].columnName,
+                        typeColumn:     obj[i].typeColumn,
+                        iconType:       obj[i].iconType,
+                        visualValue:    obj[i].visualValue,
+                        columnPolarity: obj[i].columnPolarity
+                    });     
                 }
-                return true;
-            } catch (Error) { return false; }
+                (this.config.length > 0) ? valid = true : valid = false;
+                return valid;
+            } catch (Error) { console.warn("json invalid!"); return valid; }
         }
+        //#################################################################################
         /**
          * UPDATE OF VISUAL
          */
         public update(optionsUpdate: VisualUpdateOptions, optionsInit: VisualConstructorOptions) {
-
+            this.host.persistProperties([{
+                "removeObject":"color"
+            }]);
             this.objects = optionsUpdate.dataViews[0].metadata.objects;
             this.setSettings();
-            if (!this.parseConfig()) return;
-
+            this.json = this.parseConfig();
             this.cleanDataModel();
             this.parseData(optionsUpdate.dataViews);
             this.drawTable(optionsInit);
@@ -78,10 +81,7 @@ module powerbi.extensibility.visual {
          * clean config
          */
         private cleanConfig() {
-            this.config = {
-                columns: [],
-                polarity: []
-            }
+            this.config =[];
         }
         /**
          * clear data model
@@ -91,6 +91,15 @@ module powerbi.extensibility.visual {
                 columns: [],
                 values: []
             };
+        }
+        //temp for json
+        private getColumnIdByName(name: string,num:number) {
+
+          for(let i = 0; i < num; i++){
+              if(name.toUpperCase() == this.dataViewModel.columns[i].name.toUpperCase()){ return i;}
+          }
+          this.json = false;
+          return -1;
         }
         /**
          * parse data
@@ -109,33 +118,56 @@ module powerbi.extensibility.visual {
             let rows = dataViews[0].table.columns;
             let values = dataViews[0].table.rows;
             let conf = this.config;
-            if (rows && values && conf) {
+            let confLength = this.config.length;
+            if (rows && values) {
 
                 let rowsLength = rows.length;
                 let valuesLenght = values.length;
                 var score, item, iconType, type;
-                let row: IRows = { row: [], id: 0, polarity: 1 };
-                let totalConf: number = conf.columns.length;
-                let p = 0;
+                let row: IRows = { row: [], id: 0 };
+                
                 //set names of collumns
                 for (let j = 0; j < rowsLength; j++) {
                     this.dataViewModel.columns.push({
                         name: rows[j].displayName,
                         iconType: IconType.TEXT,
-                        type: Type.NOTHING
+                        type: Type.NOTHING,
+                        icon:[]
                     });
                 }
                 //####################### TEMP ##########################
-                for (let p = 0; p < totalConf; p++) {
-                    if (conf.columns[p].typeColumn.toUpperCase() == "SCORE") {
-                        this.settings.iconType = this.getIcons(conf.columns[p].iconType);
-                        this.dataViewModel.columns[conf.columns[p].colId].type = Type.SCORE;
-                        this.dataViewModel.columns[conf.columns[p].colId].iconType = IconType.ICONTEXT;
-                    } else {
-                        this.dataViewModel.columns[conf.columns[p].colId].type = Type.VARIATION;
+                
+                if (this.json) {
+                   var id;
+                    for (let c = 0; c < confLength; c++) {
+                         id = this.getColumnIdByName(conf[c].columnName,rowsLength);
+                         //if(id == -1){break;}
+                        if (conf[c].typeColumn.toUpperCase() == "SCORE") {
+                            try{
+                                this.dataViewModel.columns[id].icon = this.getIcons(conf[c].iconType);
+                                this.dataViewModel.columns[id].type = Type.SCORE;
+                                switch(conf[c].visualValue.toUpperCase()){
+                                    case 'ICON':
+                                        this.dataViewModel.columns[id].iconType = IconType.ICON;
+                                        break;
+                                    case 'ICONTEXT' :
+                                        this.dataViewModel.columns[id].iconType = IconType.ICONTEXT;
+                                        break;
+                                    default : 
+                                          this.dataViewModel.columns[id].iconType = IconType.TEXT;
+                                           
+                                }
+                                
+                            }catch(Error){}
+                            
+                        } else {
+                            this.dataViewModel.columns[id].type = Type.VARIATION;
+                        }
                     }
                 }
-
+                
+                
+               //####################### TEMP ##########################
                 //set values of rows
                 for (let i = 0; i < valuesLenght; i++) {
                     row.id = <number>i;
@@ -149,19 +181,22 @@ module powerbi.extensibility.visual {
                                 score = COMMON.Core.getScore(+item);
                                 if (iconType == IconType.ICON) {
 
-                                    row.row[k] = <any>this.settings.iconType[score].toString();
+                                    row.row[k] = this.dataViewModel.columns[k].icon[score];
 
                                 } else if (iconType == IconType.ICONTEXT) {
                                     row.row[k] = COMMON.Core.formatNumber(<any>item)
-                                        + " " + <any>this.settings.iconType[score].toString();
+                                        + " " + this.dataViewModel.columns[k].icon[score];
                                 } else { //only text
                                     row.row[k] = <any>item;
                                 }
                             } else if (type == Type.VARIATION) { //type variation
                                 try {
-                                    row.polarity = <number>this.config.polarity[i]; //get polarity
+                                    //row.polarity = <number>this.config.polarity[i]; //get polarity
                                     row.row[k] = <any>item;
-                                } catch (Error) { console.error("error json config") }
+                                } catch (Error) { 
+                                    row.row[k] = <any>item;
+                                    //console.error("error json config");
+                                 }
 
                             } else {
                                 row.row[k] = <any>item;
@@ -169,7 +204,7 @@ module powerbi.extensibility.visual {
                         }//end id nulls
                     }//end for    
                     this.dataViewModel.values.push(row);
-                    row = { row: [], id: 0, polarity: 1 };
+                    row = { row: [], id: 0};
                 }//end for 
             }//end if
         }//end method 
@@ -234,8 +269,12 @@ module powerbi.extensibility.visual {
          * get my colletion of icons
          */
         private getIcons(name: string): string[] {
-
-            return ICON.ShapeFactory.getShape(name);
+            try {
+                return ICON.ShapeFactory.getShape(name);
+            } catch (Error) {
+                return ICON.ShapeFactory.getShape("ARROW");
+            }
+            
         }
         /**
          * update viewport's
@@ -255,8 +294,9 @@ module powerbi.extensibility.visual {
          * @function
          * @param {EnumerateVisualObjectInstancesOptions} options - Map of defined objects
          */
-        
+        @logExceptions()
         public enumerateObjectInstances(options: EnumerateVisualObjectInstancesOptions): VisualObjectInstanceEnumeration {
+            
             let objectName = options.objectName;
             let objectEnumeration: VisualObjectInstance[] = [];
             var _ = this.tableOptions;
@@ -266,10 +306,9 @@ module powerbi.extensibility.visual {
                     objectEnumeration.push({
                         objectName: objectName,
                         properties: {
-                            collumns: _.columns
-                            /*kpi: _.kpi,
-                            icon: _.icon,*/
-
+                            collumns: _.columns,
+                            kpi:_.kpi,
+                            icon:_.icon
                         },
                         selector: null
                     });
@@ -279,20 +318,21 @@ module powerbi.extensibility.visual {
                         objectName: objectName,
                         properties: {
                             zoom: _.zoom,
-                            color: _.color.solid.color
+                            color:_.color
                         },
                         selector: null
                     });
                     break;
 
             };
+            
             return objectEnumeration;
         }
 
         /**
          * set settings in options
          */
-        
+        //_.color.solid.color
         private setSettings() {
 
             this.tableOptions = {
@@ -300,8 +340,10 @@ module powerbi.extensibility.visual {
                 kpi: getValue(this.objects, "kPIMeasures", "kpi", 0),
                 columns: getValue(this.objects, "kPIMeasures", "collumns", "{}"),
                 icon: getValue(this.objects, "kPIMeasures", "icon", "text"),
-                color: getValue(this.objects, "TableOptions", "color", true)
-            };            
+                color: getValue(this.objects, "TableOptions", "color", "#015c55")
+            }; 
+           // console.log(JSON.stringify(this.tableOptions));  
+            
         }
         /**
          * DESTROY 

@@ -23,10 +23,10 @@
   cursor: pointer;
 }
 .visual-PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD_DEBUG th {
-  font-size: 0.925em;
+  font-size: 0.9em;
   color: white;
   text-align: center;
-  background-color: cornflowerblue;
+  background-color: #015c55;
   border-left: 1px solid #FFFFFF;
   border-right: 1px solid #FFFFFF;
   padding-left: 10px;
@@ -34,6 +34,7 @@
   vertical-align: middle;
   cursor: default;
   font-weight: normal;
+  height: 30%;
 }
 .visual-PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD_DEBUG td {
   font-size: 0.875em;

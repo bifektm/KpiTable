@@ -283,46 +283,50 @@ var powerbi;
                      */
                     function Visual(options) {
                         this.host = options.host;
-                        //this.selectionManager = options.host.createSelectionManager();
-                        //init settings
-                        this.settings = {
-                            iconType: this.getIcons("ARROW"),
-                            polarity: []
-                        };
                         this.cleanConfig();
                         this.cleanDataModel();
                         this.target = d3.select(options.element);
-                        //div to target table
-                        this.div = this.target.append('div')
+                        this.div = this.target.append('div') //div to target table
                             .classed('wrapper', true);
                     }
-                    //TEMP CONFIG JSON
+                    //###################### TEMP CONFIG JSON ############################################
                     Visual.prototype.parseConfig = function () {
                         var obj;
+                        var valid;
+                        valid = false;
+                        if (this.tableOptions.columns == "{}") {
+                            return valid;
+                        }
                         try {
                             obj = JSON.parse(this.tableOptions.columns);
-                            this.config.polarity = obj.polarity;
-                            for (var i = 0; i < obj.columns.length; i++) {
-                                this.config.columns.push({
-                                    colId: obj.columns[i].colId,
-                                    iconType: obj.columns[i].iconType,
-                                    typeColumn: obj.columns[i].typeColumn
+                            for (var i = 0; i < obj.length; i++) {
+                                this.config.push({
+                                    columnName: obj[i].columnName,
+                                    typeColumn: obj[i].typeColumn,
+                                    iconType: obj[i].iconType,
+                                    visualValue: obj[i].visualValue,
+                                    columnPolarity: obj[i].columnPolarity
                                 });
                             }
-                            return true;
+                            (this.config.length > 0) ? valid = true : valid = false;
+                            return valid;
                         }
                         catch (Error) {
-                            return false;
+                            console.warn("json invalid!");
+                            return valid;
                         }
                     };
+                    //#################################################################################
                     /**
                      * UPDATE OF VISUAL
                      */
                     Visual.prototype.update = function (optionsUpdate, optionsInit) {
+                        this.host.persistProperties([{
+                                "removeObject": "color"
+                            }]);
                         this.objects = optionsUpdate.dataViews[0].metadata.objects;
                         this.setSettings();
-                        if (!this.parseConfig())
-                            return;
+                        this.json = this.parseConfig();
                         this.cleanDataModel();
                         this.parseData(optionsUpdate.dataViews);
                         this.drawTable(optionsInit);
@@ -335,10 +339,7 @@ var powerbi;
                      * clean config
                      */
                     Visual.prototype.cleanConfig = function () {
-                        this.config = {
-                            columns: [],
-                            polarity: []
-                        };
+                        this.config = [];
                     };
                     /**
                      * clear data model
@@ -348,6 +349,16 @@ var powerbi;
                             columns: [],
                             values: []
                         };
+                    };
+                    //temp for json
+                    Visual.prototype.getColumnIdByName = function (name, num) {
+                        for (var i = 0; i < num; i++) {
+                            if (name.toUpperCase() == this.dataViewModel.columns[i].name.toUpperCase()) {
+                                return i;
+                            }
+                        }
+                        this.json = false;
+                        return -1;
                     };
                     /**
                      * parse data
@@ -363,32 +374,50 @@ var powerbi;
                         var rows = dataViews[0].table.columns;
                         var values = dataViews[0].table.rows;
                         var conf = this.config;
-                        if (rows && values && conf) {
+                        var confLength = this.config.length;
+                        if (rows && values) {
                             var rowsLength = rows.length;
                             var valuesLenght = values.length;
                             var score, item, iconType, type;
-                            var row = { row: [], id: 0, polarity: 1 };
-                            var totalConf = conf.columns.length;
-                            var p = 0;
+                            var row = { row: [], id: 0 };
                             //set names of collumns
                             for (var j = 0; j < rowsLength; j++) {
                                 this.dataViewModel.columns.push({
                                     name: rows[j].displayName,
                                     iconType: PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD.IconType.TEXT,
-                                    type: PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD.Type.NOTHING
+                                    type: PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD.Type.NOTHING,
+                                    icon: []
                                 });
                             }
                             //####################### TEMP ##########################
-                            for (var p_1 = 0; p_1 < totalConf; p_1++) {
-                                if (conf.columns[p_1].typeColumn.toUpperCase() == "SCORE") {
-                                    this.settings.iconType = this.getIcons(conf.columns[p_1].iconType);
-                                    this.dataViewModel.columns[conf.columns[p_1].colId].type = PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD.Type.SCORE;
-                                    this.dataViewModel.columns[conf.columns[p_1].colId].iconType = PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD.IconType.ICONTEXT;
-                                }
-                                else {
-                                    this.dataViewModel.columns[conf.columns[p_1].colId].type = PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD.Type.VARIATION;
+                            if (this.json) {
+                                var id;
+                                for (var c = 0; c < confLength; c++) {
+                                    id = this.getColumnIdByName(conf[c].columnName, rowsLength);
+                                    //if(id == -1){break;}
+                                    if (conf[c].typeColumn.toUpperCase() == "SCORE") {
+                                        try {
+                                            this.dataViewModel.columns[id].icon = this.getIcons(conf[c].iconType);
+                                            this.dataViewModel.columns[id].type = PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD.Type.SCORE;
+                                            switch (conf[c].visualValue.toUpperCase()) {
+                                                case 'ICON':
+                                                    this.dataViewModel.columns[id].iconType = PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD.IconType.ICON;
+                                                    break;
+                                                case 'ICONTEXT':
+                                                    this.dataViewModel.columns[id].iconType = PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD.IconType.ICONTEXT;
+                                                    break;
+                                                default:
+                                                    this.dataViewModel.columns[id].iconType = PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD.IconType.TEXT;
+                                            }
+                                        }
+                                        catch (Error) { }
+                                    }
+                                    else {
+                                        this.dataViewModel.columns[id].type = PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD.Type.VARIATION;
+                                    }
                                 }
                             }
+                            //####################### TEMP ##########################
                             //set values of rows
                             for (var i = 0; i < valuesLenght; i++) {
                                 row.id = i;
@@ -401,11 +430,11 @@ var powerbi;
                                             iconType = this.dataViewModel.columns[k].iconType;
                                             score = COMMON.Core.getScore(+item);
                                             if (iconType == PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD.IconType.ICON) {
-                                                row.row[k] = this.settings.iconType[score].toString();
+                                                row.row[k] = this.dataViewModel.columns[k].icon[score];
                                             }
                                             else if (iconType == PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD.IconType.ICONTEXT) {
                                                 row.row[k] = COMMON.Core.formatNumber(item)
-                                                    + " " + this.settings.iconType[score].toString();
+                                                    + " " + this.dataViewModel.columns[k].icon[score];
                                             }
                                             else {
                                                 row.row[k] = item;
@@ -413,11 +442,11 @@ var powerbi;
                                         }
                                         else if (type == PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD.Type.VARIATION) {
                                             try {
-                                                row.polarity = this.config.polarity[i]; //get polarity
+                                                //row.polarity = <number>this.config.polarity[i]; //get polarity
                                                 row.row[k] = item;
                                             }
                                             catch (Error) {
-                                                console.error("error json config");
+                                                row.row[k] = item;
                                             }
                                         }
                                         else {
@@ -426,7 +455,7 @@ var powerbi;
                                     } //end id nulls
                                 } //end for    
                                 this.dataViewModel.values.push(row);
-                                row = { row: [], id: 0, polarity: 1 };
+                                row = { row: [], id: 0 };
                             } //end for 
                         } //end if
                     }; //end method 
@@ -479,7 +508,12 @@ var powerbi;
                      * get my colletion of icons
                      */
                     Visual.prototype.getIcons = function (name) {
-                        return ICON.ShapeFactory.getShape(name);
+                        try {
+                            return ICON.ShapeFactory.getShape(name);
+                        }
+                        catch (Error) {
+                            return ICON.ShapeFactory.getShape("ARROW");
+                        }
                     };
                     /**
                      * update viewport's
@@ -507,7 +541,9 @@ var powerbi;
                                 objectEnumeration.push({
                                     objectName: objectName,
                                     properties: {
-                                        collumns: _.columns
+                                        collumns: _.columns,
+                                        kpi: _.kpi,
+                                        icon: _.icon
                                     },
                                     selector: null
                                 });
@@ -517,7 +553,7 @@ var powerbi;
                                     objectName: objectName,
                                     properties: {
                                         zoom: _.zoom,
-                                        color: _.color.solid.color
+                                        color: _.color
                                     },
                                     selector: null
                                 });
@@ -529,14 +565,16 @@ var powerbi;
                     /**
                      * set settings in options
                      */
+                    //_.color.solid.color
                     Visual.prototype.setSettings = function () {
                         this.tableOptions = {
                             zoom: PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD.getValue(this.objects, "TableOptions", "zoom", 20),
                             kpi: PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD.getValue(this.objects, "kPIMeasures", "kpi", 0),
                             columns: PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD.getValue(this.objects, "kPIMeasures", "collumns", "{}"),
                             icon: PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD.getValue(this.objects, "kPIMeasures", "icon", "text"),
-                            color: PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD.getValue(this.objects, "TableOptions", "color", true)
+                            color: PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD.getValue(this.objects, "TableOptions", "color", "#015c55")
                         };
+                        // console.log(JSON.stringify(this.tableOptions));  
                     };
                     /**
                      * DESTROY
@@ -556,6 +594,12 @@ var powerbi;
                     __metadata("design:paramtypes", [Object]),
                     __metadata("design:returntype", void 0)
                 ], Visual.prototype, "drawTable", null);
+                __decorate([
+                    PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD.logExceptions(),
+                    __metadata("design:type", Function),
+                    __metadata("design:paramtypes", [Object]),
+                    __metadata("design:returntype", Object)
+                ], Visual.prototype, "enumerateObjectInstances", null);
                 PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD.Visual = Visual;
             })(PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD = visual.PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD || (visual.PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD = {}));
         })(visual = extensibility.visual || (extensibility.visual = {}));

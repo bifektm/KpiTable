@@ -9,12 +9,12 @@ module powerbi.extensibility.visual.PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD 
     export interface IRows{
         row:string[]
         id:number;
-        polarity:number;
     }
     export interface IColumns{
         name:string;
         iconType: IconType;
         type: Type;
+        icon :string[];
     }
     /**
      * type of column
@@ -37,7 +37,6 @@ module powerbi.extensibility.visual.PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD 
      */
     export interface ISettings{
        iconType : string[];
-       polarity : number[];
     }
     /**
      * prop
@@ -51,12 +50,12 @@ module powerbi.extensibility.visual.PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD 
     }
     //TEMP parse json
     export interface IConfig{
-        columns:ICol[];
-        polarity:any[]
-    }
-    export interface ICol{
-        colId:number;
+        columnName:string;
         typeColumn:string;
         iconType:string;
+        visualValue:string;
+        columnPolarity:string;
+        
     }
+    
 }

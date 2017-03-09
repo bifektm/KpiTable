@@ -4,6 +4,11 @@
             "displayName": "Rows",
             "name": "rows",
             "kind": "GroupingOrMeasure"
+        },
+         {
+            "displayName": "Polarity",
+            "name": "polarity",
+            "kind": "GroupingOrMeasure" 
         }     
     ],
     "dataViewMappings": [
@@ -14,10 +19,11 @@
                         {
                             "for": {
                                 "in": "rows"
-                            }      
+                            }
                         }
                     ]
-                }
+                },
+                "dataVolume": 1
             }
         }
     ],
@@ -26,8 +32,8 @@
             "displayName": "KPI Measure",
             "properties": {
                 "collumns":{
-                    "displayName": "config*",
-                    "description": "{\n\t\"columns\": [{\n\t\t\"colId\": 3,\n\t\t\"typeColumn\": \"SCORE\",\n\t\t\"iconType\": \"arrow\"\n\t}, {\n\t\t\"colId\": 4,\n\t\t\"typeColumn\": \"variation\",\n\t\t\"iconType\": \"\"\n\t}],\n\t\"polarity\": [1, 1, 1, 0, 1, 0, 1, 0]\n}",
+                    "displayName": "columnsConfig*",
+                    "description": "[{\n\t\"columnName\": \"Indicador-Score\",\n\t\"typeColumn\": \"score\",\n\t\"iconType\": \"arrow\",\n\t\"visualValue\": \"icon\",\n\t\"columnPolarity\": \"\"\n}, {\n\t\"columnName\": \"Indicador-Valor (var. h)\",\n\t\"typeColumn\": \"variation\",n\t\"iconType\":\"\",\n\t\"visualValue\": \"\",\n\t\"columnPolarity\": \"polaridade\"\n}]",
                     "type":{
                         "text": true
                     }
