@@ -181,6 +181,34 @@ var COMMON;
                 return num;
             }
         };
+        /**
+         * get polaritys
+         */
+        Core.getPolarity = function (data, rows) {
+            var polarity = [];
+            var obj = { columnName: "", polarity: [] };
+            var i;
+            for (i = 0; i < data.length; i++) {
+                if (data[i].roles["polarity"] == true) {
+                    obj.columnName = data[i].displayName;
+                    obj.polarity = this.getValuesPolarity(i, rows);
+                    polarity.push(obj);
+                }
+            }
+            console.log(JSON.stringify(polarity));
+            return polarity;
+        };
+        /**
+         * get values polarity
+         */
+        Core.getValuesPolarity = function (id, rows) {
+            var values = [];
+            //console.log(JSON.stringify(rows));
+            for (var i = 0; i < rows.length; i++) {
+                values.push(rows[i][6]);
+            }
+            return values;
+        };
         return Core;
     }());
     COMMON.Core = Core;
@@ -283,7 +311,7 @@ var powerbi;
                      */
                     function Visual(options) {
                         this.host = options.host;
-                        this.cleanConfig();
+                        this.config = [];
                         this.cleanDataModel();
                         this.target = d3.select(options.element);
                         this.div = this.target.append('div') //div to target table
@@ -321,9 +349,8 @@ var powerbi;
                      * UPDATE OF VISUAL
                      */
                     Visual.prototype.update = function (optionsUpdate, optionsInit) {
-                        this.host.persistProperties([{
-                                "removeObject": "color"
-                            }]);
+                        var data = optionsUpdate.dataViews[0];
+                        COMMON.Core.getPolarity(data.metadata.columns, data.table.rows);
                         this.objects = optionsUpdate.dataViews[0].metadata.objects;
                         this.setSettings();
                         this.json = this.parseConfig();
@@ -333,13 +360,7 @@ var powerbi;
                         this.updateContainerViewports(optionsUpdate.viewport);
                         STYLE.Customize.setZoom(this.target, this.tableOptions.zoom);
                         STYLE.Customize.setColor(this.tHead, this.tableOptions.color);
-                        this.cleanConfig();
-                    };
-                    /**
-                     * clean config
-                     */
-                    Visual.prototype.cleanConfig = function () {
-                        this.config = [];
+                        this.config = []; //clean config
                     };
                     /**
                      * clear data model
@@ -347,7 +368,8 @@ var powerbi;
                     Visual.prototype.cleanDataModel = function () {
                         this.dataViewModel = {
                             columns: [],
-                            values: []
+                            values: [],
+                            polarity: []
                         };
                     };
                     //temp for json
@@ -357,7 +379,6 @@ var powerbi;
                                 return i;
                             }
                         }
-                        this.json = false;
                         return -1;
                     };
                     /**
@@ -375,6 +396,7 @@ var powerbi;
                         var values = dataViews[0].table.rows;
                         var conf = this.config;
                         var confLength = this.config.length;
+                        // let polarityColId:number;
                         if (rows && values) {
                             var rowsLength = rows.length;
                             var valuesLenght = values.length;
@@ -421,6 +443,7 @@ var powerbi;
                             //set values of rows
                             for (var i = 0; i < valuesLenght; i++) {
                                 row.id = i;
+                                //  polarityColId = this.getColumnIdByName(this.getPolarityByName(dataViews), rowsLength);
                                 for (var k = 0; k < rowsLength; k++) {
                                     item = values[i][k];
                                     if (item != null) {
@@ -442,7 +465,7 @@ var powerbi;
                                         }
                                         else if (type == PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD.Type.VARIATION) {
                                             try {
-                                                //row.polarity = <number>this.config.polarity[i]; //get polarity
+                                                // row.polarity = <number>this.config.polarity[i]; //get polarity
                                                 row.row[k] = item;
                                             }
                                             catch (Error) {
@@ -582,6 +605,12 @@ var powerbi;
                     Visual.prototype.destroy = function () { };
                     return Visual;
                 }());
+                __decorate([
+                    PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD.logExceptions(),
+                    __metadata("design:type", Function),
+                    __metadata("design:paramtypes", [Object, Object]),
+                    __metadata("design:returntype", void 0)
+                ], Visual.prototype, "update", null);
                 __decorate([
                     PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD.logExceptions(),
                     __metadata("design:type", Function),

@@ -16,7 +16,6 @@ module powerbi.extensibility.visual.PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD 
         public dataViewModel: ITableViewModel;
         private selectionManager: ISelectionManager;
         private host: IVisualHost;
-        private settings: ISettings;
         private tableOptions: IOptions;
         private objects: any;
         private config: IConfig[];
@@ -27,7 +26,7 @@ module powerbi.extensibility.visual.PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD 
          */
         constructor(options: VisualConstructorOptions) {
             this.host = options.host;
-            this.cleanConfig();
+            this.config =[];
             this.cleanDataModel();
             
             this.target = d3.select(options.element);
@@ -62,10 +61,10 @@ module powerbi.extensibility.visual.PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD 
         /**
          * UPDATE OF VISUAL
          */
+         @logExceptions()
         public update(optionsUpdate: VisualUpdateOptions, optionsInit: VisualConstructorOptions) {
-            this.host.persistProperties([{
-                "removeObject":"color"
-            }]);
+            var data = optionsUpdate.dataViews[0];
+             COMMON.Core.getPolarity(data.metadata.columns,<any>data.table.rows);
             this.objects = optionsUpdate.dataViews[0].metadata.objects;
             this.setSettings();
             this.json = this.parseConfig();
@@ -75,21 +74,17 @@ module powerbi.extensibility.visual.PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD 
             this.updateContainerViewports(optionsUpdate.viewport);
             STYLE.Customize.setZoom(this.target, this.tableOptions.zoom);
             STYLE.Customize.setColor(this.tHead, this.tableOptions.color);
-            this.cleanConfig();
+            this.config =[]; //clean config
         }
-        /**
-         * clean config
-         */
-        private cleanConfig() {
-            this.config =[];
-        }
+        
         /**
          * clear data model
          */
         private cleanDataModel() {
             this.dataViewModel = {
                 columns: [],
-                values: []
+                values: [],
+                polarity:[]
             };
         }
         //temp for json
@@ -98,7 +93,6 @@ module powerbi.extensibility.visual.PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD 
           for(let i = 0; i < num; i++){
               if(name.toUpperCase() == this.dataViewModel.columns[i].name.toUpperCase()){ return i;}
           }
-          this.json = false;
           return -1;
         }
         /**
@@ -114,27 +108,30 @@ module powerbi.extensibility.visual.PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD 
                 || !dataViews[0].table.rows
                 || !dataViews[0].table.columns)
                 return;
-
+            
             let rows = dataViews[0].table.columns;
             let values = dataViews[0].table.rows;
             let conf = this.config;
             let confLength = this.config.length;
+           // let polarityColId:number;
             if (rows && values) {
 
                 let rowsLength = rows.length;
                 let valuesLenght = values.length;
                 var score, item, iconType, type;
-                let row: IRows = { row: [], id: 0 };
+                let row: IRows = { row: [], id: 0};
                 
                 //set names of collumns
                 for (let j = 0; j < rowsLength; j++) {
-                    this.dataViewModel.columns.push({
-                        name: rows[j].displayName,
-                        iconType: IconType.TEXT,
-                        type: Type.NOTHING,
-                        icon:[]
-                    });
+                    
+                        this.dataViewModel.columns.push({
+                            name: rows[j].displayName,
+                            iconType: IconType.TEXT,
+                            type: Type.NOTHING,
+                            icon: []
+                        });
                 }
+                
                 //####################### TEMP ##########################
                 
                 if (this.json) {
@@ -168,45 +165,52 @@ module powerbi.extensibility.visual.PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD 
                 
                 
                //####################### TEMP ##########################
+
                 //set values of rows
                 for (let i = 0; i < valuesLenght; i++) {
                     row.id = <number>i;
+                  //  polarityColId = this.getColumnIdByName(this.getPolarityByName(dataViews), rowsLength);
+
                     for (var k = 0; k < rowsLength; k++) {
                         item = values[i][k];
-                        if (item != null) { //null itens
-                            type = this.dataViewModel.columns[k].type;
-                            //type score
-                            if (type == Type.SCORE) {
-                                iconType = this.dataViewModel.columns[k].iconType;
-                                score = COMMON.Core.getScore(+item);
-                                if (iconType == IconType.ICON) {
+                       
 
-                                    row.row[k] = this.dataViewModel.columns[k].icon[score];
+                            if (item != null) { //null itens
 
-                                } else if (iconType == IconType.ICONTEXT) {
-                                    row.row[k] = COMMON.Core.formatNumber(<any>item)
-                                        + " " + this.dataViewModel.columns[k].icon[score];
-                                } else { //only text
+
+                                type = this.dataViewModel.columns[k].type;
+                                //type score
+                                if (type == Type.SCORE) {
+                                    iconType = this.dataViewModel.columns[k].iconType;
+                                    score = COMMON.Core.getScore(+item);
+                                    if (iconType == IconType.ICON) {
+
+                                        row.row[k] = this.dataViewModel.columns[k].icon[score];
+
+                                    } else if (iconType == IconType.ICONTEXT) {
+                                        row.row[k] = COMMON.Core.formatNumber(<any>item)
+                                            + " " + this.dataViewModel.columns[k].icon[score];
+                                    } else { //only text
+                                        row.row[k] = <any>item;
+                                    }
+                                } else if (type == Type.VARIATION) { //type variation
+                                    try {
+                                       // row.polarity = <number>this.config.polarity[i]; //get polarity
+                                        row.row[k] = <any>item;
+                                    } catch (Error) {
+                                        row.row[k] = <any>item;
+                                        //console.error("error json config");
+                                    }
+
+                                } else {
                                     row.row[k] = <any>item;
                                 }
-                            } else if (type == Type.VARIATION) { //type variation
-                                try {
-                                    //row.polarity = <number>this.config.polarity[i]; //get polarity
-                                    row.row[k] = <any>item;
-                                } catch (Error) { 
-                                    row.row[k] = <any>item;
-                                    //console.error("error json config");
-                                 }
-
-                            } else {
-                                row.row[k] = <any>item;
-                            }
-                        }//end id nulls
-                    }//end for    
-                    this.dataViewModel.values.push(row);
-                    row = { row: [], id: 0};
-                }//end for 
-            }//end if
+                            }//end id nulls
+                        }//end for    
+                        this.dataViewModel.values.push(row);
+                        row = { row: [], id: 0};
+                    }//end for 
+                }//end if
         }//end method 
 
         /**

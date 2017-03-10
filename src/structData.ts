@@ -5,6 +5,7 @@ module powerbi.extensibility.visual {
     export interface ITableViewModel {
         columns: IColumns[]
         values: IRows[];
+        polarity:IPolarity[];
     }
     export interface IRows{
         row:string[]
@@ -15,6 +16,13 @@ module powerbi.extensibility.visual {
         iconType: IconType;
         type: Type;
         icon :string[];
+    }
+    /**
+     * polarity
+     */
+    export interface IPolarity{
+        columnName:string;
+        polarity:any[];
     }
     /**
      * type of column
@@ -31,12 +39,6 @@ module powerbi.extensibility.visual {
         ICON,
         ICONTEXT,
         TEXT
-    }
-    /**
-     * settings
-     */
-    export interface ISettings{
-       iconType : string[];
     }
     /**
      * prop

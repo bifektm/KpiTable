@@ -13,18 +13,25 @@
     ],
     "dataViewMappings": [
         {
-            "table": {
+            "table": 
+                {
                 "rows": {
                     "select": [
                         {
                             "for": {
                                 "in": "rows"
                             }
+                                       
+                        },
+                        {
+                            "for": {
+                                "in": "polarity"
+                            } 
                         }
                     ]
-                },
-                "dataVolume": 1
+                }
             }
+            
         }
     ],
     "objects": {

@@ -9,7 +9,7 @@ module COMMON {
              /**
              * get score
              */
-            static getScore(score: number): number {
+           public static getScore(score: number): number {
                 try {
                     if (score > 1) {
                         return 2;
@@ -24,7 +24,7 @@ module COMMON {
             /**
              * get color variation
              */
-            static getVariation(variation:number,polarity:number):string{
+           public static getVariation(variation:number,polarity:number):string{
                 if(variation > 0){
                     if(polarity == 0){return "red";}
                     else{return "green";}
@@ -36,12 +36,44 @@ module COMMON {
             /**
              * format number
              */
-            static formatNumber(num: any) {
+           public static formatNumber(num: any) {
                 try {
                     return num.toFixed(2).replace(/(\d)(?=(\d{3})+\.)/g, '$1,')
                 } catch (Error) {
                     return num;
                 }
+            }
+            /**
+             * get polaritys
+             */
+           public static getPolarity(data: any[],rows:any[]) {
+                var polarity = [];
+                let obj = {columnName : "",polarity : []};
+                let i;
+                for (i = 0; i < data.length; i++) {
+                    if (data[i].roles["polarity"] == true) {
+                        obj.columnName = data[i].displayName;
+                        obj.polarity = this.getValuesPolarity(i,rows);
+                        polarity.push(obj);
+                    }
+
+                }
+                console.log(JSON.stringify(polarity));
+             
+                return polarity;
+            }
+            /**
+             * get values polarity
+             */
+            private static getValuesPolarity(id: number, rows: any[]) {
+                let values = [];
+                //console.log(JSON.stringify(rows));
+                for (let i = 0; i < rows.length; i++) {
+
+                        values.push(rows[i][6]);
+ 
+                }
+                return values;
             }
     } 
 
