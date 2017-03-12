@@ -1,11 +1,12 @@
-module powerbi.extensibility.visual {
+declare module strucData{}
+module strucData {
     /**
      * table
      */
     export interface ITableViewModel {
         columns: IColumns[]
         values: IRows[];
-        polarity:IPolarity[];
+        polarity:any[];
     }
     export interface IRows{
         row:string[]
@@ -17,13 +18,7 @@ module powerbi.extensibility.visual {
         type: Type;
         icon :string[];
     }
-    /**
-     * polarity
-     */
-    export interface IPolarity{
-        columnName:string;
-        polarity:any[];
-    }
+    
     /**
      * type of column
      */

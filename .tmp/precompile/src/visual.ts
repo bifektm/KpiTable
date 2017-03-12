@@ -13,13 +13,14 @@ module powerbi.extensibility.visual.PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD 
         private tHead: d3.Selection<HTMLElement>;
         private tBody: d3.Selection<HTMLElement>;
         private div: d3.Selection<HTMLElement>;
-        public dataViewModel: ITableViewModel;
+        public dataViewModel: strucData.ITableViewModel;
         private selectionManager: ISelectionManager;
         private host: IVisualHost;
-        private tableOptions: IOptions;
+        private tableOptions: strucData.IOptions;
         private objects: any;
-        private config: IConfig[];
+        private config: strucData.IConfig[];
         private json:boolean;
+        private polarity;
    
         /**
          * CONSTRUCTOR OF VISUAL
@@ -63,8 +64,9 @@ module powerbi.extensibility.visual.PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD 
          */
          @logExceptions()
         public update(optionsUpdate: VisualUpdateOptions, optionsInit: VisualConstructorOptions) {
+            this.cleanDataModel();
             var data = optionsUpdate.dataViews[0];
-             COMMON.Core.getPolarity(data.metadata.columns,<any>data.table.rows);
+            this.dataViewModel.polarity  = COMMON.Core.getPolarity(data.metadata.columns,<any>data.table.rows);
             this.objects = optionsUpdate.dataViews[0].metadata.objects;
             this.setSettings();
             this.json = this.parseConfig();
@@ -75,6 +77,7 @@ module powerbi.extensibility.visual.PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD 
             STYLE.Customize.setZoom(this.target, this.tableOptions.zoom);
             STYLE.Customize.setColor(this.tHead, this.tableOptions.color);
             this.config =[]; //clean config
+            console.log(JSON.stringify(this.polarity));
         }
         
         /**
@@ -119,15 +122,15 @@ module powerbi.extensibility.visual.PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD 
                 let rowsLength = rows.length;
                 let valuesLenght = values.length;
                 var score, item, iconType, type;
-                let row: IRows = { row: [], id: 0};
+                let row: strucData.IRows = { row: [], id: 0};
                 
                 //set names of collumns
                 for (let j = 0; j < rowsLength; j++) {
                     
                         this.dataViewModel.columns.push({
                             name: rows[j].displayName,
-                            iconType: IconType.TEXT,
-                            type: Type.NOTHING,
+                            iconType: strucData.IconType.TEXT,
+                            type: strucData.Type.NOTHING,
                             icon: []
                         });
                 }
@@ -142,23 +145,23 @@ module powerbi.extensibility.visual.PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD 
                         if (conf[c].typeColumn.toUpperCase() == "SCORE") {
                             try{
                                 this.dataViewModel.columns[id].icon = this.getIcons(conf[c].iconType);
-                                this.dataViewModel.columns[id].type = Type.SCORE;
+                                this.dataViewModel.columns[id].type = strucData.Type.SCORE;
                                 switch(conf[c].visualValue.toUpperCase()){
                                     case 'ICON':
-                                        this.dataViewModel.columns[id].iconType = IconType.ICON;
+                                        this.dataViewModel.columns[id].iconType = strucData.IconType.ICON;
                                         break;
                                     case 'ICONTEXT' :
-                                        this.dataViewModel.columns[id].iconType = IconType.ICONTEXT;
+                                        this.dataViewModel.columns[id].iconType = strucData.IconType.ICONTEXT;
                                         break;
                                     default : 
-                                          this.dataViewModel.columns[id].iconType = IconType.TEXT;
+                                          this.dataViewModel.columns[id].iconType = strucData.IconType.TEXT;
                                            
                                 }
                                 
                             }catch(Error){}
                             
                         } else {
-                            this.dataViewModel.columns[id].type = Type.VARIATION;
+                            this.dataViewModel.columns[id].type = strucData.Type.VARIATION;
                         }
                     }
                 }
@@ -180,20 +183,20 @@ module powerbi.extensibility.visual.PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD 
 
                                 type = this.dataViewModel.columns[k].type;
                                 //type score
-                                if (type == Type.SCORE) {
+                                if (type == strucData.Type.SCORE) {
                                     iconType = this.dataViewModel.columns[k].iconType;
                                     score = COMMON.Core.getScore(+item);
-                                    if (iconType == IconType.ICON) {
+                                    if (iconType == strucData.IconType.ICON) {
 
                                         row.row[k] = this.dataViewModel.columns[k].icon[score];
 
-                                    } else if (iconType == IconType.ICONTEXT) {
+                                    } else if (iconType == strucData.IconType.ICONTEXT) {
                                         row.row[k] = COMMON.Core.formatNumber(<any>item)
                                             + " " + this.dataViewModel.columns[k].icon[score];
                                     } else { //only text
                                         row.row[k] = <any>item;
                                     }
-                                } else if (type == Type.VARIATION) { //type variation
+                                } else if (type == strucData.Type.VARIATION) { //type variation
                                     try {
                                        // row.polarity = <number>this.config.polarity[i]; //get polarity
                                         row.row[k] = <any>item;
@@ -262,7 +265,7 @@ module powerbi.extensibility.visual.PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD 
                     }
                 })
                 .style('color', function (d) {
-                    if (d.type == Type.VARIATION) {
+                    if (d.type == strucData.Type.VARIATION) {
                         return COMMON.Core.getVariation(d.value, d.polarity);
                     }
                 })

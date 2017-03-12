@@ -92,36 +92,27 @@ var powerbi;
         })(visual = extensibility.visual || (extensibility.visual = {}));
     })(extensibility = powerbi.extensibility || (powerbi.extensibility = {}));
 })(powerbi || (powerbi = {}));
-var powerbi;
-(function (powerbi) {
-    var extensibility;
-    (function (extensibility) {
-        var visual;
-        (function (visual) {
-            var PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD;
-            (function (PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD) {
-                /**
-                 * type of column
-                 */
-                var Type;
-                (function (Type) {
-                    Type[Type["SCORE"] = 0] = "SCORE";
-                    Type[Type["VARIATION"] = 1] = "VARIATION";
-                    Type[Type["NOTHING"] = 2] = "NOTHING";
-                })(Type = PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD.Type || (PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD.Type = {}));
-                /**
-                 * type score
-                 */
-                var IconType;
-                (function (IconType) {
-                    IconType[IconType["ICON"] = 0] = "ICON";
-                    IconType[IconType["ICONTEXT"] = 1] = "ICONTEXT";
-                    IconType[IconType["TEXT"] = 2] = "TEXT";
-                })(IconType = PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD.IconType || (PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD.IconType = {}));
-            })(PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD = visual.PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD || (visual.PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD = {}));
-        })(visual = extensibility.visual || (extensibility.visual = {}));
-    })(extensibility = powerbi.extensibility || (powerbi.extensibility = {}));
-})(powerbi || (powerbi = {}));
+var strucData;
+(function (strucData) {
+    /**
+     * type of column
+     */
+    var Type;
+    (function (Type) {
+        Type[Type["SCORE"] = 0] = "SCORE";
+        Type[Type["VARIATION"] = 1] = "VARIATION";
+        Type[Type["NOTHING"] = 2] = "NOTHING";
+    })(Type = strucData.Type || (strucData.Type = {}));
+    /**
+     * type score
+     */
+    var IconType;
+    (function (IconType) {
+        IconType[IconType["ICON"] = 0] = "ICON";
+        IconType[IconType["ICONTEXT"] = 1] = "ICONTEXT";
+        IconType[IconType["TEXT"] = 2] = "TEXT";
+    })(IconType = strucData.IconType || (strucData.IconType = {}));
+})(strucData || (strucData = {}));
 var COMMON;
 (function (COMMON) {
     /**
@@ -186,16 +177,15 @@ var COMMON;
          */
         Core.getPolarity = function (data, rows) {
             var polarity = [];
-            var obj = { columnName: "", polarity: [] };
             var i;
             for (i = 0; i < data.length; i++) {
                 if (data[i].roles["polarity"] == true) {
-                    obj.columnName = data[i].displayName;
-                    obj.polarity = this.getValuesPolarity(i, rows);
-                    polarity.push(obj);
+                    polarity.push({
+                        columnName: data[i].displayName,
+                        polarity: this.getValuesPolarity(i, rows)
+                    });
                 }
             }
-            console.log(JSON.stringify(polarity));
             return polarity;
         };
         /**
@@ -203,9 +193,8 @@ var COMMON;
          */
         Core.getValuesPolarity = function (id, rows) {
             var values = [];
-            //console.log(JSON.stringify(rows));
             for (var i = 0; i < rows.length; i++) {
-                values.push(rows[i][6]);
+                values.push(rows[i][id]);
             }
             return values;
         };
@@ -349,8 +338,9 @@ var powerbi;
                      * UPDATE OF VISUAL
                      */
                     Visual.prototype.update = function (optionsUpdate, optionsInit) {
+                        this.cleanDataModel();
                         var data = optionsUpdate.dataViews[0];
-                        COMMON.Core.getPolarity(data.metadata.columns, data.table.rows);
+                        this.dataViewModel.polarity = COMMON.Core.getPolarity(data.metadata.columns, data.table.rows);
                         this.objects = optionsUpdate.dataViews[0].metadata.objects;
                         this.setSettings();
                         this.json = this.parseConfig();
@@ -361,6 +351,7 @@ var powerbi;
                         STYLE.Customize.setZoom(this.target, this.tableOptions.zoom);
                         STYLE.Customize.setColor(this.tHead, this.tableOptions.color);
                         this.config = []; //clean config
+                        console.log(JSON.stringify(this.polarity));
                     };
                     /**
                      * clear data model
@@ -406,8 +397,8 @@ var powerbi;
                             for (var j = 0; j < rowsLength; j++) {
                                 this.dataViewModel.columns.push({
                                     name: rows[j].displayName,
-                                    iconType: PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD.IconType.TEXT,
-                                    type: PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD.Type.NOTHING,
+                                    iconType: strucData.IconType.TEXT,
+                                    type: strucData.Type.NOTHING,
                                     icon: []
                                 });
                             }
@@ -420,22 +411,22 @@ var powerbi;
                                     if (conf[c].typeColumn.toUpperCase() == "SCORE") {
                                         try {
                                             this.dataViewModel.columns[id].icon = this.getIcons(conf[c].iconType);
-                                            this.dataViewModel.columns[id].type = PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD.Type.SCORE;
+                                            this.dataViewModel.columns[id].type = strucData.Type.SCORE;
                                             switch (conf[c].visualValue.toUpperCase()) {
                                                 case 'ICON':
-                                                    this.dataViewModel.columns[id].iconType = PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD.IconType.ICON;
+                                                    this.dataViewModel.columns[id].iconType = strucData.IconType.ICON;
                                                     break;
                                                 case 'ICONTEXT':
-                                                    this.dataViewModel.columns[id].iconType = PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD.IconType.ICONTEXT;
+                                                    this.dataViewModel.columns[id].iconType = strucData.IconType.ICONTEXT;
                                                     break;
                                                 default:
-                                                    this.dataViewModel.columns[id].iconType = PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD.IconType.TEXT;
+                                                    this.dataViewModel.columns[id].iconType = strucData.IconType.TEXT;
                                             }
                                         }
                                         catch (Error) { }
                                     }
                                     else {
-                                        this.dataViewModel.columns[id].type = PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD.Type.VARIATION;
+                                        this.dataViewModel.columns[id].type = strucData.Type.VARIATION;
                                     }
                                 }
                             }
@@ -449,13 +440,13 @@ var powerbi;
                                     if (item != null) {
                                         type = this.dataViewModel.columns[k].type;
                                         //type score
-                                        if (type == PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD.Type.SCORE) {
+                                        if (type == strucData.Type.SCORE) {
                                             iconType = this.dataViewModel.columns[k].iconType;
                                             score = COMMON.Core.getScore(+item);
-                                            if (iconType == PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD.IconType.ICON) {
+                                            if (iconType == strucData.IconType.ICON) {
                                                 row.row[k] = this.dataViewModel.columns[k].icon[score];
                                             }
-                                            else if (iconType == PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD.IconType.ICONTEXT) {
+                                            else if (iconType == strucData.IconType.ICONTEXT) {
                                                 row.row[k] = COMMON.Core.formatNumber(item)
                                                     + " " + this.dataViewModel.columns[k].icon[score];
                                             }
@@ -463,7 +454,7 @@ var powerbi;
                                                 row.row[k] = item;
                                             }
                                         }
-                                        else if (type == PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD.Type.VARIATION) {
+                                        else if (type == strucData.Type.VARIATION) {
                                             try {
                                                 // row.polarity = <number>this.config.polarity[i]; //get polarity
                                                 row.row[k] = item;
@@ -521,7 +512,7 @@ var powerbi;
                             }
                         })
                             .style('color', function (d) {
-                            if (d.type == PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD.Type.VARIATION) {
+                            if (d.type == strucData.Type.VARIATION) {
                                 return COMMON.Core.getVariation(d.value, d.polarity);
                             }
                         })
