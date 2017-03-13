@@ -6,11 +6,11 @@ module strucData {
     export interface ITableViewModel {
         columns: IColumns[]
         values: IRows[];
-        polarity:any[];
     }
     export interface IRows{
         row:string[]
         id:number;
+        polarity:any;
     }
     export interface IColumns{
         name:string;

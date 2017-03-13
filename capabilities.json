@@ -6,10 +6,15 @@
             "kind": "GroupingOrMeasure"
         },
          {
-            "displayName": "Polarity",
+            "displayName": "Other",
             "name": "polarity",
             "kind": "GroupingOrMeasure" 
-        }     
+        },
+         {
+            "displayName": "Config",
+            "name": "config",
+            "kind": "GroupingOrMeasure" 
+        }       
     ],
     "dataViewMappings": [
         {
@@ -27,22 +32,30 @@
                             "for": {
                                 "in": "polarity"
                             } 
+                        },
+                        {
+                            "for": {
+                                "in": "config"
+                            } 
                         }
                     ]
                 }
             }
             
+            
         }
+        
     ],
     "objects": {
         "kPIMeasures": {
             "displayName": "KPI Measure",
             "properties": {
                 "collumns":{
-                    "displayName": "columnsConfig*",
-                    "description": "[{\n\t\"columnName\": \"Indicador-Score\",\n\t\"typeColumn\": \"score\",\n\t\"iconType\": \"arrow\",\n\t\"visualValue\": \"icon\",\n\t\"columnPolarity\": \"\"\n}, {\n\t\"columnName\": \"Indicador-Valor (var. h)\",\n\t\"typeColumn\": \"variation\",n\t\"iconType\":\"\",\n\t\"visualValue\": \"\",\n\t\"columnPolarity\": \"polaridade\"\n}]",
+                    "displayName": "columns",
                     "type":{
-                        "text": true
+                        "enumeration": [
+
+                        ]
                     }
                 },
                 "kpi":{
