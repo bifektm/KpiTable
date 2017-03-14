@@ -9,16 +9,22 @@ module strucData {
     }
     export interface IRows{
         row:string[]
-        id:number;
-        polarity:any;
+        id:any;
+        polarity:IPolarity;
     }
     export interface IColumns{
         name:string;
         iconType: IconType;
         type: Type;
         icon :string[];
+        polarityColumn:string;
+        polarityPositionId:any;
     }
-    
+    export interface IPolarity{
+        columnName:string;
+        columnValue:string;
+        value:any;
+    }
     /**
      * type of column
      */

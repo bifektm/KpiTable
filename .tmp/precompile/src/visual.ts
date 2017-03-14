@@ -21,6 +21,7 @@ module powerbi.extensibility.visual.PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD 
         private polarity;
         private columnConfig;//temp
         private removeColumnnId=[];
+       
    
         /**
          * CONSTRUCTOR OF VISUAL
@@ -44,28 +45,18 @@ module powerbi.extensibility.visual.PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD 
          */
          @logExceptions()
         public update(optionsUpdate: VisualUpdateOptions, optionsInit: VisualConstructorOptions) {
-             this.cleanDataModel();                                    //clean dataModel
-             var data = optionsUpdate.dataViews;                       //get dataViews
-             this.polarity = COMMON.Core.getPolarity(data[0].metadata.columns,<any>data[0].table.rows);                       //get polarity
-             this.objects = this.getObjects(optionsUpdate.dataViews);  //get objects properties
-             this.config = this.getConfig(data);                       //get config columns
-             this.columnConfig = this.getNameConfig(data)              //get column config             
-             this.setSettings();                                       //set settings to options
-             this.parseData(optionsUpdate.dataViews);                  //set data to my model
-             this.drawTable(optionsInit);                              //draw table
-             this.updateContainerViewports(optionsUpdate.viewport);    //update viewport
-             this.tableStyling();                                      //table style 
-                                                 
+             this.cleanDataModel();                                                           //clean dataModel                   
+             this.polarity = COMMON.Core.getPolarity(optionsUpdate.dataViews);                //get polarity
+             this.objects = optionsUpdate.dataViews[0].metadata.objects;                      //get objects properties
+             this.config = COMMON.Core.getConfig(optionsUpdate.dataViews);                    //get config columns
+             this.columnConfig = COMMON.Core.getNameColumnConfig(optionsUpdate.dataViews);    //get column config             
+             this.setSettings();                                                              //set settings to options
+             this.parseData(optionsUpdate.dataViews);                                         //set data to my model
+             this.drawTable(optionsInit);                                                     //draw table
+             this.updateContainerViewports(optionsUpdate.viewport);                           //update viewport
+             this.tableStyling();                                                             //table style                                           
         }
-        /**
-         * get columns config
-         * @param data 
-         */
-         private getConfig(data: any[]) {
-
-             return COMMON.Core.getConfig(data[0].metadata.columns, data[0].table.rows);
-
-         }
+        
         /**
          * styling table
          */
@@ -75,27 +66,7 @@ module powerbi.extensibility.visual.PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD 
             STYLE.Customize.setColor(this.tHead, this.tableOptions.color);
 
         }
-        /**
-         * get column config
-         * @param data 
-         */
-        private getNameConfig(data: any[]){
-            try{
-                return <string>COMMON.Core.getNameColumnConfig(data[0].metadata.columns);
-            }catch(Error){
-                return "";
-            }
-            
-        }
-        
-       /** 
-        * @param dataViews 
-        */
-        private getObjects(dataViews: any[]){
-             try{
-                 return dataViews[0].metadata.objects;
-             }catch(Error){return null;}
-        }
+
        /**
         * clear data model
         */
@@ -107,18 +78,7 @@ module powerbi.extensibility.visual.PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD 
             this.config = [];
             this.columnConfig = [];
         }
-        /**
-         * get column id in model by name
-         * @param name 
-         * @param num 
-         */
-        private getColumnIdByName(name: string,num:number) {
-
-          for(let i = 0; i < num; i++){
-              if(name.toUpperCase() == this.dataViewModel.columns[i].name.toUpperCase()){ return i;}
-          }
-          return -1;
-        }
+        
         /**
          * check existing polarity
          * @param name 
@@ -145,7 +105,7 @@ module powerbi.extensibility.visual.PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD 
                 let confLength = this.config.length;
                 
                 for (let c = 0; c < confLength; c++) {
-                    id = this.getColumnIdByName(config[c].columnName, this.dataViewModel.columns.length);
+                    id = COMMON.Core.getColumnIdByName(config[c].columnName, this.dataViewModel.columns.length,this.dataViewModel.columns);
                     
                     if (config[c].typeColumn.toUpperCase() == "SCORE") {
                         try {
@@ -166,9 +126,11 @@ module powerbi.extensibility.visual.PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD 
 
                         } catch (Error) {throw new Error("type column name no match");}
 
-                    } else {
+                    } else if(config[c].typeColumn.toUpperCase() == "VARIATION") {
                         this.dataViewModel.columns[id].type = strucData.Type.VARIATION;
-                    }
+                        this.dataViewModel.columns[id].polarityColumn = config[c].columnPolarity;
+                        //this.dataViewModel.columns[id].polarityPositionId = this.dataViewModel.columns.indexOf({name:config[c].columnPolarity});
+                    }else{}
                 }
             }
         }
@@ -183,13 +145,15 @@ module powerbi.extensibility.visual.PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD 
                      
                    if(this.checkPolarity(rows[j].displayName) || this.columnConfig == rows[j].displayName){
                        this.removeColumnnId.push(j);
-                       continue;
+                       //continue;
                     }
                        this.dataViewModel.columns.push({
                             name: rows[j].displayName,
                             iconType: strucData.IconType.TEXT,
                             type: strucData.Type.NOTHING,
-                            icon: []
+                            icon: [],
+                            polarityColumn:"",
+                            polarityPositionId:null
                         });                       
                 }
                 
@@ -209,13 +173,20 @@ module powerbi.extensibility.visual.PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD 
         //set values of rows
         private setValuesInRows(values: any[], valuesLenght: number, rowsLength: number) {
             let score, item, iconType, type, polarityColId;
-            let row: strucData.IRows = { row: [], id: 0 , polarity:1};
+            let row: strucData.IRows = { row: [], id: 0 , polarity:{columnName:"",columnValue:"",value:null}};
+            
             for (let i = 0; i < valuesLenght; i++) { //rows
-                row.id = <number>i;
+                row.id = this.host.createSelectionIdBuilder()
+                        .withMeasure(values[i][0])
+                        .createSelectionId();
+                        
                 
                 for (var k = 0; k < rowsLength; k++) { //columns
                     
-                    if(this.removeColumnnId.indexOf(k) != -1){continue;}
+
+                   // if(this.removeColumnnId.indexOf(k) != -1){continue;}
+                        
+
                     item = values[i][k];
 
                     type = this.dataViewModel.columns[k].type; // get type of column (Score/variation)
@@ -234,14 +205,10 @@ module powerbi.extensibility.visual.PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD 
                             row.row[k] = <any>item;
                         }
                     } else if (type == strucData.Type.VARIATION) { //type variation
-                        try {  
+                       
                             polarityColId = this.getPolarityIDByName(this.getColumnPolarityInConfig(this.dataViewModel.columns[k].name));
                             row.polarity = <any>this.polarity[polarityColId].polarity[i]; //get polarity
                             row.row[k] = <any>item;
-                        } catch (Error) {
-                            row.row[k] = <any>item;
-                            
-                        }
 
                     } else {
                         row.row[k] = <any>item;
@@ -249,7 +216,7 @@ module powerbi.extensibility.visual.PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD 
 
                 }//end for    
                 this.dataViewModel.values.push(row);
-                row = { row: [], id: 0 , polarity:1};
+                row = { row: [], id: 0 , polarity:{columnName:"",columnValue:"",value:null}};
             }//end for 
 
         }
@@ -346,6 +313,29 @@ module powerbi.extensibility.visual.PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD 
                 })
                 .html(function (d) { return COMMON.Core.formatNumber(<any>d.value); });
 
+                   rows.on('click', function(d) {
+                 
+                    this.selectionManager.clear(); 
+                    rows.attr("bgcolor","#fff");
+                    //d3.select(this).attr("bgcolor","red");
+
+                   // console.log(JSON.stringify(d["row"][0]));
+
+                    //console.log(d.id);
+                 
+                    // Find the selectionId and select it
+                   
+                    this.selectionManager.select(d.id).then((ids: ISelectionId[]) => {
+                        ids.forEach(function (id) {
+                            console.log("foo: "+JSON.stringify(id));
+                        });
+                    });
+
+                    // This call applys the previously selected selectionId
+                    this.selectionManager.applySelectionFilter();
+                   
+                }.bind(this));
+                
         }
         
         /**

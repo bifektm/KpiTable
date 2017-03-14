@@ -13,14 +13,16 @@
 .visual-PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD_DEBUG table {
   width: 100%;
   border-collapse: collapse;
-  cursor: default;
-  height: 100%;
+  cursor: pointer;
   overflow: auto;
 }
 .visual-PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD_DEBUG table.tr {
   border: 5px solid red;
   border-bottom: 1pt solid #59B4D9;
   cursor: pointer;
+}
+.visual-PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD_DEBUG .selected {
+  background-color: lightgoldenrodyellow;
 }
 .visual-PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD_DEBUG th {
   font-size: 0.9em;

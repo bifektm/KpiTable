@@ -54,17 +54,17 @@ module COMMON {
          * @param data 
          * @param rows 
          */
-        public static getPolarity(data: any[], rows: any[]) {
+        public static getPolarity(data: any[]) {
             let polarity = [];
-
-            for (let i = 0; i < data.length; i++) {
-                if (data[i].roles["polarity"] == true) {
+            if(!data){return;}
+            let columns = data[0].metadata.columns;  
+            for (let i = 0; i < columns.length; i++) {
+                if (columns[i].roles["polarity"] == true) {
                     polarity.push({
-                        columnName: data[i].displayName,
-                        polarity: this.getValuesPolarity(i, rows)
+                        columnName: columns[i].displayName,
+                        polarity: this.getValuesPolarity(i, data[0].table.rows)
                     });
                 }
-
             }
             return polarity;
         }
@@ -87,12 +87,12 @@ module COMMON {
          */
         public static getNameColumnConfig(data: any[]){
             let name = null;
-
-            for (let i = 0; i < data.length; i++) {
-                if (data[i].roles["config"] == true) {
-                    return data[i].displayName;
+            if(!data){return;}
+            let columns = data[0].metadata.columns;
+            for (let i = 0; i < columns.length; i++) {
+                if (columns[i].roles["config"] == true) {
+                    return columns[i].displayName;
                 }
-
             }
             return name;
         }
@@ -101,15 +101,15 @@ module COMMON {
          * @param data 
          * @param rows 
          */
-        public static getConfig(data: any[], rows: any[]){
+        public static getConfig(data: any[]){
            let conf=null;
-
-            for (let i = 0; i < data.length; i++) {
-                if (data[i].roles["config"] == true) {
-                    conf = this.getDataConf(i,rows);
+            if(!data){return;}
+            let columns = data[0].metadata.columns;
+            for (let i = 0; i < columns.length; i++) {
+                if (columns[i].roles["config"] == true) {
+                    conf = this.getDataConf(i,data[0].table.rows);
                     return conf;
                 }
-
             }
             return conf;
 
@@ -135,25 +135,23 @@ module COMMON {
                         visualValue:    item.visualValue,
                         columnPolarity: item.columnPolarity
                     }); 
-                 });
-
-
-               /* for (let i = 0; i < obj.length; i++) {
-                        values.push({
-                        columnName:     obj[i].columnName,
-                        typeColumn:     obj[i].typeColumn,
-                        iconType:       obj[i].iconType,
-                        visualValue:    obj[i].visualValue,
-                        columnPolarity: obj[i].columnPolarity
-                    }); 
-                    
-                }*/
-                 
+                 });    
                 (values.length < 1 ) ? values = null : values;
                 return values;
-            } catch (Error) { console.warn("json invalid!"); return null; }
+            } catch (Error) { throw new Error("json invalid!");}
         }
-    
+         /**
+         * get column id in model by name
+         * @param name 
+         * @param num 
+         */
+        public static getColumnIdByName(name: string,num:number,data:any) {
+
+          for(let i = 0; i < num; i++){
+              if(name.toUpperCase() == data[i].name.toUpperCase()){ return i;}
+          }
+          return -1;
+        } 
     }
 
 }
