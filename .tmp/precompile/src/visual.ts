@@ -48,6 +48,7 @@ module powerbi.extensibility.visual.PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD 
          */
          @logExceptions()
         public update(optionsUpdate: VisualUpdateOptions, optionsInit: VisualConstructorOptions) {
+
              if(this.init || (optionsUpdate.viewport.height == this.height && optionsUpdate.viewport.width == this.width)){
              this.cleanDataModel();                                                           //clean dataModel                   
              this.polarity = COMMON.Core.getPolarity(optionsUpdate.dataViews);                //get polarity
@@ -57,12 +58,11 @@ module powerbi.extensibility.visual.PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD 
              this.setSettings();                                                              //set settings to options
              this.parseData(optionsUpdate.dataViews);                                         //set data to my model
              this.drawTable(optionsInit);                                                     //draw table
-
              this.tableStyling();                                                             //table style 
              } 
-             this.height = optionsUpdate.viewport.height;
-             this.width =  optionsUpdate.viewport.width; 
-             if(this.init){this.init=false;}
+             this.height = optionsUpdate.viewport.height;                                     //update height 
+             this.width =  optionsUpdate.viewport.width;                                      //update width
+             if(this.init){this.init=false;}                                                  //flag  prevent drawTable ever
         }
         
         /**
@@ -87,20 +87,6 @@ module powerbi.extensibility.visual.PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD 
             this.columnConfig = [];
         }
         
-        /**
-         * check existing polarity
-         * @param name 
-         */
-        private checkPolarity(name:string){
-            let exist = false;
-            if(this.polarity == null){return exist;}
-            for(let i = 0; i < this.polarity.length; i++){
-                if(this.polarity[i].columnName == name){
-                    return true;
-                }
-            }
-            return exist;
-        }
        
        /**
         * set config columns in dataview model
@@ -152,9 +138,9 @@ module powerbi.extensibility.visual.PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD 
            
                 for (let j = 0; j < rowsLength; j++) {
                      
-                   if(this.checkPolarity(rows[j].displayName) || this.columnConfig == rows[j].displayName){
+                   if(this.columnConfig == rows[j].displayName){
                        this.removeColumnnId.push(j);
-                       //continue;
+                       continue;
                     }
                        this.dataViewModel.columns.push({
                             name: rows[j].displayName,
@@ -182,7 +168,7 @@ module powerbi.extensibility.visual.PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD 
         //set values of rows
         private setValuesInRows(values: any[], valuesLenght: number, rowsLength: number) {
             let score, item, iconType, type, polarityColId;
-            let row: strucData.IRows = { row: [], id: 0 , polarity:{columnName:"",columnValue:"",value:null}};
+            let row: strucData.IRows = { row: [], id: 0 };
             
             for (let i = 0; i < valuesLenght; i++) { //rows
                 row.id = this.host.createSelectionIdBuilder()
@@ -216,7 +202,7 @@ module powerbi.extensibility.visual.PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD 
                     } else if (type == strucData.Type.VARIATION) { //type variation
                        
                             polarityColId = this.getPolarityIDByName(this.getColumnPolarityInConfig(this.dataViewModel.columns[k].name));
-                            row.polarity = <any>this.polarity[polarityColId].polarity[i]; //get polarity
+                            //row.polarity = <any>this.polarity[polarityColId].polarity[i]; //get polarity
                             row.row[k] = <any>item;
 
                     } else {
@@ -225,7 +211,7 @@ module powerbi.extensibility.visual.PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD 
 
                 }//end for    
                 this.dataViewModel.values.push(row);
-                row = { row: [], id: 0 , polarity:{columnName:"",columnValue:"",value:null}};
+                row = { row: [], id: 0 };
             }//end for 
 
         }
@@ -263,6 +249,7 @@ module powerbi.extensibility.visual.PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD 
                 this.setHeadersInDataModel(rows,rowsLength);             //set headers of collumns
                 this.setConfigColumns();                                 //set config columns in dataview model
                 this.setValuesInRows(values,valuesLenght,rowsLength);    //set values of rows
+                //console.log(JSON.stringify(this.dataViewModel));
             }
                 
         }
@@ -272,7 +259,7 @@ module powerbi.extensibility.visual.PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD 
          * @param options 
          */
         private drawTable(options: VisualConstructorOptions) {
-console.log("#################### desenhei");
+
             if (this.dataViewModel.columns.length < 1) { return; }
 
             //if exists, remove existing table
@@ -349,7 +336,6 @@ console.log("#################### desenhei");
 
         /**
          * Enumerates through the objects defined in the capabilities and adds the properties to the format pane
-         * @function
          * @param {EnumerateVisualObjectInstancesOptions} options - Map of defined objects
          */
         public enumerateObjectInstances(options: EnumerateVisualObjectInstancesOptions): VisualObjectInstanceEnumeration {

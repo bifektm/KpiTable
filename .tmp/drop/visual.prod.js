@@ -422,11 +422,11 @@ var powerbi;
                             this.drawTable(optionsInit); //draw table
                             this.tableStyling(); //table style 
                         }
-                        this.height = optionsUpdate.viewport.height;
-                        this.width = optionsUpdate.viewport.width;
+                        this.height = optionsUpdate.viewport.height; //update height 
+                        this.width = optionsUpdate.viewport.width; //update width
                         if (this.init) {
                             this.init = false;
-                        }
+                        } //flag  prevent drawTable ever
                     };
                     /**
                      * styling table
@@ -445,22 +445,6 @@ var powerbi;
                         };
                         this.config = [];
                         this.columnConfig = [];
-                    };
-                    /**
-                     * check existing polarity
-                     * @param name
-                     */
-                    Visual.prototype.checkPolarity = function (name) {
-                        var exist = false;
-                        if (this.polarity == null) {
-                            return exist;
-                        }
-                        for (var i = 0; i < this.polarity.length; i++) {
-                            if (this.polarity[i].columnName == name) {
-                                return true;
-                            }
-                        }
-                        return exist;
                     };
                     /**
                      * set config columns in dataview model
@@ -509,8 +493,9 @@ var powerbi;
                      */
                     Visual.prototype.setHeadersInDataModel = function (rows, rowsLength) {
                         for (var j = 0; j < rowsLength; j++) {
-                            if (this.checkPolarity(rows[j].displayName) || this.columnConfig == rows[j].displayName) {
+                            if (this.columnConfig == rows[j].displayName) {
                                 this.removeColumnnId.push(j);
+                                continue;
                             }
                             this.dataViewModel.columns.push({
                                 name: rows[j].displayName,
@@ -536,7 +521,7 @@ var powerbi;
                     //set values of rows
                     Visual.prototype.setValuesInRows = function (values, valuesLenght, rowsLength) {
                         var score, item, iconType, type, polarityColId;
-                        var row = { row: [], id: 0, polarity: { columnName: "", columnValue: "", value: null } };
+                        var row = { row: [], id: 0 };
                         for (var i = 0; i < valuesLenght; i++) {
                             row.id = this.host.createSelectionIdBuilder()
                                 .withMeasure(values[i][0])
@@ -561,7 +546,7 @@ var powerbi;
                                 }
                                 else if (type == strucData.Type.VARIATION) {
                                     polarityColId = this.getPolarityIDByName(this.getColumnPolarityInConfig(this.dataViewModel.columns[k].name));
-                                    row.polarity = this.polarity[polarityColId].polarity[i]; //get polarity
+                                    //row.polarity = <any>this.polarity[polarityColId].polarity[i]; //get polarity
                                     row.row[k] = item;
                                 }
                                 else {
@@ -569,7 +554,7 @@ var powerbi;
                                 }
                             } //end for    
                             this.dataViewModel.values.push(row);
-                            row = { row: [], id: 0, polarity: { columnName: "", columnValue: "", value: null } };
+                            row = { row: [], id: 0 };
                         } //end for 
                     };
                     /**
@@ -610,7 +595,6 @@ var powerbi;
                      * @param options
                      */
                     Visual.prototype.drawTable = function (options) {
-                        console.log("#################### desenhei");
                         if (this.dataViewModel.columns.length < 1) {
                             return;
                         }
@@ -669,7 +653,6 @@ var powerbi;
                     };
                     /**
                      * Enumerates through the objects defined in the capabilities and adds the properties to the format pane
-                     * @function
                      * @param {EnumerateVisualObjectInstancesOptions} options - Map of defined objects
                      */
                     Visual.prototype.enumerateObjectInstances = function (options) {
