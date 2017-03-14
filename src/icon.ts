@@ -28,7 +28,7 @@ module ICON {
             if (shape.toUpperCase() == "ARROW") {
                 return new Arrow().getIcon();
             }
-            return [];
+            return new Arrow().getIcon();
         }
     }
 

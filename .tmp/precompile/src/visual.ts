@@ -46,7 +46,7 @@ module powerbi.extensibility.visual.PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD 
         public update(optionsUpdate: VisualUpdateOptions, optionsInit: VisualConstructorOptions) {
              this.cleanDataModel();                                    //clean dataModel
              var data = optionsUpdate.dataViews;                       //get dataViews
-             this.polarity = this.getData(data);                       //get polarity
+             this.polarity = COMMON.Core.getPolarity(data[0].metadata.columns,<any>data[0].table.rows);                       //get polarity
              this.objects = this.getObjects(optionsUpdate.dataViews);  //get objects properties
              this.config = this.getConfig(data);                       //get config columns
              this.columnConfig = this.getNameConfig(data)              //get column config             
@@ -55,7 +55,7 @@ module powerbi.extensibility.visual.PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD 
              this.drawTable(optionsInit);                              //draw table
              this.updateContainerViewports(optionsUpdate.viewport);    //update viewport
              this.tableStyling();                                      //table style 
-             console.log(JSON.stringify(this.polarity));                                     
+                                                 
         }
         /**
          * get columns config
@@ -87,15 +87,7 @@ module powerbi.extensibility.visual.PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD 
             }
             
         }
-        /**
-         * @param dataViews 
-         */
-        private getData(data: any[]){
-            try{
-                 return COMMON.Core.getPolarity(data[0].metadata.columns,<any>data[0].table.rows);
-                 
-             }catch(Error){return null;}
-        }
+        
        /** 
         * @param dataViews 
         */
@@ -157,8 +149,9 @@ module powerbi.extensibility.visual.PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD 
                     
                     if (config[c].typeColumn.toUpperCase() == "SCORE") {
                         try {
-                            this.dataViewModel.columns[id].icon = this.getIcons(config[c].iconType);
+                            this.dataViewModel.columns[id].icon = ICON.ShapeFactory.getShape(config[c].iconType);
                             this.dataViewModel.columns[id].type = strucData.Type.SCORE;
+
                             switch (config[c].visualValue.toUpperCase()) {
                                 case 'ICON':
                                     this.dataViewModel.columns[id].iconType = strucData.IconType.ICON;
@@ -171,7 +164,7 @@ module powerbi.extensibility.visual.PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD 
                                     break;
                             }
 
-                        } catch (Error) {console.warn("column name no match") ;}
+                        } catch (Error) {throw new Error("type column name no match");}
 
                     } else {
                         this.dataViewModel.columns[id].type = strucData.Type.VARIATION;
@@ -354,17 +347,7 @@ module powerbi.extensibility.visual.PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD 
                 .html(function (d) { return COMMON.Core.formatNumber(<any>d.value); });
 
         }
-        /**
-         * get my colletion of icons
-         */
-        private getIcons(name: string): string[] {
-            try {
-                return ICON.ShapeFactory.getShape(name);
-            } catch (Error) {
-                return ICON.ShapeFactory.getShape("ARROW");
-            }
-            
-        }
+        
         /**
          * update viewport's
          */
