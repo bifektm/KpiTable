@@ -395,6 +395,7 @@ var powerbi;
                      */
                     function Visual(options) {
                         this.removeColumnnId = [];
+                        this.init = true;
                         this.host = options.host;
                         this.selectionManager = options.host.createSelectionManager();
                         this.config = [];
@@ -410,16 +411,22 @@ var powerbi;
                      * @param optionsInit
                      */
                     Visual.prototype.update = function (optionsUpdate, optionsInit) {
-                        this.cleanDataModel(); //clean dataModel                   
-                        this.polarity = COMMON.Core.getPolarity(optionsUpdate.dataViews); //get polarity
-                        this.objects = optionsUpdate.dataViews[0].metadata.objects; //get objects properties
-                        this.config = COMMON.Core.getConfig(optionsUpdate.dataViews); //get config columns
-                        this.columnConfig = COMMON.Core.getNameColumnConfig(optionsUpdate.dataViews); //get column config             
-                        this.setSettings(); //set settings to options
-                        this.parseData(optionsUpdate.dataViews); //set data to my model
-                        this.drawTable(optionsInit); //draw table
-                        this.updateContainerViewports(optionsUpdate.viewport); //update viewport
-                        this.tableStyling(); //table style                                           
+                        if (this.init || (optionsUpdate.viewport.height == this.height && optionsUpdate.viewport.width == this.width)) {
+                            this.cleanDataModel(); //clean dataModel                   
+                            this.polarity = COMMON.Core.getPolarity(optionsUpdate.dataViews); //get polarity
+                            this.objects = optionsUpdate.dataViews[0].metadata.objects; //get objects properties
+                            this.config = COMMON.Core.getConfig(optionsUpdate.dataViews); //get config columns
+                            this.columnConfig = COMMON.Core.getNameColumnConfig(optionsUpdate.dataViews); //get column config             
+                            this.setSettings(); //set settings to options
+                            this.parseData(optionsUpdate.dataViews); //set data to my model
+                            this.drawTable(optionsInit); //draw table
+                            this.tableStyling(); //table style 
+                        }
+                        this.height = optionsUpdate.viewport.height;
+                        this.width = optionsUpdate.viewport.width;
+                        if (this.init) {
+                            this.init = false;
+                        }
                     };
                     /**
                      * styling table
@@ -489,6 +496,7 @@ var powerbi;
                                 else if (config[c].typeColumn.toUpperCase() == "VARIATION") {
                                     this.dataViewModel.columns[id].type = strucData.Type.VARIATION;
                                     this.dataViewModel.columns[id].polarityColumn = config[c].columnPolarity;
+                                    this.dataViewModel.columns[id].polarityPositionId = _.findLastIndex(this.dataViewModel.columns, { name: config[c].columnPolarity });
                                 }
                                 else { }
                             }
@@ -602,6 +610,7 @@ var powerbi;
                      * @param options
                      */
                     Visual.prototype.drawTable = function (options) {
+                        console.log("#################### desenhei");
                         if (this.dataViewModel.columns.length < 1) {
                             return;
                         }
@@ -657,15 +666,6 @@ var powerbi;
                             // This call applys the previously selected selectionId
                             this.selectionManager.applySelectionFilter();
                         }.bind(this));
-                    };
-                    /**
-                     * update viewport's
-                     */
-                    Visual.prototype.updateContainerViewports = function (viewport) {
-                        if (!viewport)
-                            return;
-                        viewport.width - 0.1;
-                        viewport.height - 0.1;
                     };
                     /**
                      * Enumerates through the objects defined in the capabilities and adds the properties to the format pane

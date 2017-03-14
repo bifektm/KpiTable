@@ -21,6 +21,9 @@ module powerbi.extensibility.visual {
         private polarity;
         private columnConfig;//temp
         private removeColumnnId=[];
+        private width;
+        private height;
+        private init:boolean = true;
        
    
         /**
@@ -45,6 +48,7 @@ module powerbi.extensibility.visual {
          */
          @logExceptions()
         public update(optionsUpdate: VisualUpdateOptions, optionsInit: VisualConstructorOptions) {
+             if(this.init || (optionsUpdate.viewport.height == this.height && optionsUpdate.viewport.width == this.width)){
              this.cleanDataModel();                                                           //clean dataModel                   
              this.polarity = COMMON.Core.getPolarity(optionsUpdate.dataViews);                //get polarity
              this.objects = optionsUpdate.dataViews[0].metadata.objects;                      //get objects properties
@@ -53,8 +57,12 @@ module powerbi.extensibility.visual {
              this.setSettings();                                                              //set settings to options
              this.parseData(optionsUpdate.dataViews);                                         //set data to my model
              this.drawTable(optionsInit);                                                     //draw table
-             this.updateContainerViewports(optionsUpdate.viewport);                           //update viewport
-             this.tableStyling();                                                             //table style                                           
+
+             this.tableStyling();                                                             //table style 
+             } 
+             this.height = optionsUpdate.viewport.height;
+             this.width =  optionsUpdate.viewport.width; 
+             if(this.init){this.init=false;}
         }
         
         /**
@@ -264,7 +272,7 @@ module powerbi.extensibility.visual {
          * @param options 
          */
         private drawTable(options: VisualConstructorOptions) {
-
+console.log("#################### desenhei");
             if (this.dataViewModel.columns.length < 1) { return; }
 
             //if exists, remove existing table
@@ -337,15 +345,6 @@ module powerbi.extensibility.visual {
                    
                 }.bind(this));
                 
-        }
-        
-        /**
-         * update viewport's
-         */
-        private updateContainerViewports(viewport: IViewport) {
-            if (!viewport) return;
-             viewport.width - 0.1;
-             viewport.height - 0.1;
         }
 
         /**
