@@ -49,53 +49,7 @@ module COMMON {
                 return num;
             }
         }
-        /**
-         * get polaritys
-         * @param data 
-         * @param rows 
-         */
-        public static getPolarity(data: any[]) {
-            let polarity = [];
-            if(!data){return;}
-            let columns = data[0].metadata.columns;  
-            for (let i = 0; i < columns.length; i++) {
-                if (columns[i].roles["polarity"] == true) {
-                    polarity.push({
-                        columnName: columns[i].displayName,
-                        polarity: this.getValuesPolarity(i, data[0].table.rows)
-                    });
-                }
-            }
-            return polarity;
-        }
-        /**
-         * get values polarity 
-         * @param id 
-         * @param rows 
-         */
-        private static getValuesPolarity(id: number, rows: any[]) {
-            let values = [];
-            for (let i = 0; i < rows.length; i++) {
-                values.push(rows[i][id]);
-            }
-            return values;
-        }
-        /**
-         * get name column config
-         * @param data 
-         * @param rows 
-         */
-        public static getNameColumnConfig(data: any[]){
-            let name = null;
-            if(!data){return;}
-            let columns = data[0].metadata.columns;
-            for (let i = 0; i < columns.length; i++) {
-                if (columns[i].roles["config"] == true) {
-                    return columns[i].displayName;
-                }
-            }
-            return name;
-        }
+        //################# JSON #######################
         /**
          * get config data
          * @param data 
@@ -140,18 +94,7 @@ module COMMON {
                 return values;
             } catch (Error) { throw new Error("json invalid!");}
         }
-         /**
-         * get column id in model by name
-         * @param name 
-         * @param num 
-         */
-        public static getColumnIdByName(name: string,num:number,data:any) {
-
-          for(let i = 0; i < num; i++){
-              if(name.toUpperCase() == data[i].name.toUpperCase()){ return i;}
-          }
-          return -1;
-        } 
+         
     }
 
 }

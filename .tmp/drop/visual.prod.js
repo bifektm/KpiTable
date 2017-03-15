@@ -182,57 +182,7 @@ var COMMON;
                 return num;
             }
         };
-        /**
-         * get polaritys
-         * @param data
-         * @param rows
-         */
-        Core.getPolarity = function (data) {
-            var polarity = [];
-            if (!data) {
-                return;
-            }
-            var columns = data[0].metadata.columns;
-            for (var i = 0; i < columns.length; i++) {
-                if (columns[i].roles["polarity"] == true) {
-                    polarity.push({
-                        columnName: columns[i].displayName,
-                        polarity: this.getValuesPolarity(i, data[0].table.rows)
-                    });
-                }
-            }
-            return polarity;
-        };
-        /**
-         * get values polarity
-         * @param id
-         * @param rows
-         */
-        Core.getValuesPolarity = function (id, rows) {
-            var values = [];
-            for (var i = 0; i < rows.length; i++) {
-                values.push(rows[i][id]);
-            }
-            return values;
-        };
-        /**
-         * get name column config
-         * @param data
-         * @param rows
-         */
-        Core.getNameColumnConfig = function (data) {
-            var name = null;
-            if (!data) {
-                return;
-            }
-            var columns = data[0].metadata.columns;
-            for (var i = 0; i < columns.length; i++) {
-                if (columns[i].roles["config"] == true) {
-                    return columns[i].displayName;
-                }
-            }
-            return name;
-        };
+        //################# JSON #######################
         /**
          * get config data
          * @param data
@@ -278,19 +228,6 @@ var COMMON;
             catch (Error) {
                 throw new Error("json invalid!");
             }
-        };
-        /**
-        * get column id in model by name
-        * @param name
-        * @param num
-        */
-        Core.getColumnIdByName = function (name, num, data) {
-            for (var i = 0; i < num; i++) {
-                if (name.toUpperCase() == data[i].name.toUpperCase()) {
-                    return i;
-                }
-            }
-            return -1;
         };
         return Core;
     }());
@@ -394,7 +331,6 @@ var powerbi;
                      * @param options
                      */
                     function Visual(options) {
-                        this.removeColumnnId = [];
                         this.init = true;
                         this.host = options.host;
                         this.selectionManager = options.host.createSelectionManager();
@@ -413,10 +349,8 @@ var powerbi;
                     Visual.prototype.update = function (optionsUpdate, optionsInit) {
                         if (this.init || (optionsUpdate.viewport.height == this.height && optionsUpdate.viewport.width == this.width)) {
                             this.cleanDataModel(); //clean dataModel                   
-                            this.polarity = COMMON.Core.getPolarity(optionsUpdate.dataViews); //get polarity
                             this.objects = optionsUpdate.dataViews[0].metadata.objects; //get objects properties
                             this.config = COMMON.Core.getConfig(optionsUpdate.dataViews); //get config columns
-                            this.columnConfig = COMMON.Core.getNameColumnConfig(optionsUpdate.dataViews); //get column config             
                             this.setSettings(); //set settings to options
                             this.parseData(optionsUpdate.dataViews); //set data to my model
                             this.drawTable(optionsInit); //draw table
@@ -427,146 +361,6 @@ var powerbi;
                         if (this.init) {
                             this.init = false;
                         } //flag  prevent drawTable ever
-                    };
-                    /**
-                     * styling table
-                     */
-                    Visual.prototype.tableStyling = function () {
-                        STYLE.Customize.setZoom(this.target, this.tableOptions.zoom);
-                        STYLE.Customize.setColor(this.tHead, this.tableOptions.color);
-                    };
-                    /**
-                     * clear data model
-                     */
-                    Visual.prototype.cleanDataModel = function () {
-                        this.dataViewModel = {
-                            columns: [],
-                            values: []
-                        };
-                        this.config = [];
-                        this.columnConfig = [];
-                    };
-                    /**
-                     * set config columns in dataview model
-                     * @param rowsLength
-                     */
-                    Visual.prototype.setConfigColumns = function () {
-                        var config = this.config;
-                        var id;
-                        if (config != null) {
-                            var confLength = this.config.length;
-                            for (var c = 0; c < confLength; c++) {
-                                id = COMMON.Core.getColumnIdByName(config[c].columnName, this.dataViewModel.columns.length, this.dataViewModel.columns);
-                                if (config[c].typeColumn.toUpperCase() == "SCORE") {
-                                    try {
-                                        this.dataViewModel.columns[id].icon = ICON.ShapeFactory.getShape(config[c].iconType);
-                                        this.dataViewModel.columns[id].type = strucData.Type.SCORE;
-                                        switch (config[c].visualValue.toUpperCase()) {
-                                            case 'ICON':
-                                                this.dataViewModel.columns[id].iconType = strucData.IconType.ICON;
-                                                break;
-                                            case 'ICONTEXT':
-                                                this.dataViewModel.columns[id].iconType = strucData.IconType.ICONTEXT;
-                                                break;
-                                            default:
-                                                this.dataViewModel.columns[id].iconType = strucData.IconType.TEXT;
-                                                break;
-                                        }
-                                    }
-                                    catch (Error) {
-                                        throw new Error("type column name no match");
-                                    }
-                                }
-                                else if (config[c].typeColumn.toUpperCase() == "VARIATION") {
-                                    this.dataViewModel.columns[id].type = strucData.Type.VARIATION;
-                                    this.dataViewModel.columns[id].polarityColumn = config[c].columnPolarity;
-                                    this.dataViewModel.columns[id].polarityPositionId = _.findLastIndex(this.dataViewModel.columns, { name: config[c].columnPolarity });
-                                }
-                                else { }
-                            }
-                        }
-                    };
-                    /**
-                     * //set headers of collumns
-                     * @param rows
-                     * @param rowsLength
-                     */
-                    Visual.prototype.setHeadersInDataModel = function (rows, rowsLength) {
-                        for (var j = 0; j < rowsLength; j++) {
-                            if (this.columnConfig == rows[j].displayName) {
-                                this.removeColumnnId.push(j);
-                                continue;
-                            }
-                            this.dataViewModel.columns.push({
-                                name: rows[j].displayName,
-                                iconType: strucData.IconType.TEXT,
-                                type: strucData.Type.NOTHING,
-                                icon: [],
-                                polarityColumn: "",
-                                polarityPositionId: null
-                            });
-                        }
-                    };
-                    /**
-                     * get polarity id by column name
-                     * @param columnName
-                     */
-                    Visual.prototype.getPolarityIDByName = function (columnName) {
-                        for (var i = 0; i < this.polarity.length; i++) {
-                            if (this.polarity[i].columnName == columnName) {
-                                return i;
-                            }
-                        }
-                    };
-                    //set values of rows
-                    Visual.prototype.setValuesInRows = function (values, valuesLenght, rowsLength) {
-                        var score, item, iconType, type, polarityColId;
-                        var row = { row: [], id: 0 };
-                        for (var i = 0; i < valuesLenght; i++) {
-                            row.id = this.host.createSelectionIdBuilder()
-                                .withMeasure(values[i][0])
-                                .createSelectionId();
-                            for (var k = 0; k < rowsLength; k++) {
-                                // if(this.removeColumnnId.indexOf(k) != -1){continue;}
-                                item = values[i][k];
-                                type = this.dataViewModel.columns[k].type; // get type of column (Score/variation)
-                                if (type == strucData.Type.SCORE) {
-                                    iconType = this.dataViewModel.columns[k].iconType;
-                                    score = COMMON.Core.getScore(+item);
-                                    if (iconType == strucData.IconType.ICON) {
-                                        row.row[k] = this.dataViewModel.columns[k].icon[score];
-                                    }
-                                    else if (iconType == strucData.IconType.ICONTEXT) {
-                                        row.row[k] = COMMON.Core.formatNumber(item)
-                                            + " " + this.dataViewModel.columns[k].icon[score];
-                                    }
-                                    else {
-                                        row.row[k] = item;
-                                    }
-                                }
-                                else if (type == strucData.Type.VARIATION) {
-                                    polarityColId = this.getPolarityIDByName(this.getColumnPolarityInConfig(this.dataViewModel.columns[k].name));
-                                    //row.polarity = <any>this.polarity[polarityColId].polarity[i]; //get polarity
-                                    row.row[k] = item;
-                                }
-                                else {
-                                    row.row[k] = item;
-                                }
-                            } //end for    
-                            this.dataViewModel.values.push(row);
-                            row = { row: [], id: 0 };
-                        } //end for 
-                    };
-                    /**
-                     * get column polarity in config by name
-                     * @param columnName
-                     */
-                    Visual.prototype.getColumnPolarityInConfig = function (columnName) {
-                        for (var i = 0; i < this.config.length; i++) {
-                            if (columnName == this.config[i].columnName) {
-                                return this.config[i].columnPolarity;
-                            }
-                        }
                     };
                     /**
                      * parse data to dataviewmodel
@@ -585,10 +379,120 @@ var powerbi;
                         if (rows && values) {
                             var rowsLength = rows.length;
                             var valuesLenght = values.length;
-                            this.setHeadersInDataModel(rows, rowsLength); //set headers of collumns
+                            this.setHeadersInDataModel(rows); //set headers of collumns
                             this.setConfigColumns(); //set config columns in dataview model
                             this.setValuesInRows(values, valuesLenght, rowsLength); //set values of rows
                         }
+                    };
+                    /**
+                     * //set headers of collumns
+                     * @param rows
+                     * @param rowsLength
+                     */
+                    Visual.prototype.setHeadersInDataModel = function (rows) {
+                        var _this = this;
+                        var data = [];
+                        var remove = false;
+                        _.each(rows, function (item) {
+                            if (item.roles["config"] || item.roles["polarity"]) {
+                                remove = true;
+                            }
+                            _this.dataViewModel.columns.push({
+                                name: item.displayName,
+                                iconType: strucData.IconType.TEXT,
+                                type: strucData.Type.NOTHING,
+                                icon: [],
+                                polarityColumn: "",
+                                polarityPositionId: null,
+                                columnRemove: remove
+                            });
+                            !remove;
+                        });
+                    };
+                    /**
+                   * set config columns in dataview model
+                   * @param rowsLength
+                   */
+                    Visual.prototype.setConfigColumns = function () {
+                        var _this = this;
+                        var config = this.config;
+                        var id;
+                        if (config != null) {
+                            _.each(config, function (item) {
+                                id = _.findIndex(_this.dataViewModel.columns, { name: item.columnName });
+                                if (id == -1) {
+                                    return;
+                                }
+                                if (item.typeColumn.toUpperCase() == "SCORE") {
+                                    try {
+                                        _this.dataViewModel.columns[id].icon = ICON.ShapeFactory.getShape(item.iconType);
+                                        _this.dataViewModel.columns[id].type = strucData.Type.SCORE;
+                                        switch (item.visualValue.toUpperCase()) {
+                                            case 'ICON':
+                                                _this.dataViewModel.columns[id].iconType = strucData.IconType.ICON;
+                                                break;
+                                            case 'ICONTEXT':
+                                                _this.dataViewModel.columns[id].iconType = strucData.IconType.ICONTEXT;
+                                                break;
+                                            default:
+                                                _this.dataViewModel.columns[id].iconType = strucData.IconType.TEXT;
+                                                break;
+                                        }
+                                    }
+                                    catch (Error) {
+                                        throw new Error("type column name no match");
+                                    }
+                                }
+                                else if (item.typeColumn.toUpperCase() == "VARIATION") {
+                                    _this.dataViewModel.columns[id].type = strucData.Type.VARIATION;
+                                    _this.dataViewModel.columns[id].polarityColumn = item.columnPolarity;
+                                    _this.dataViewModel.columns[id].polarityPositionId = _.findIndex(_this.dataViewModel.columns, { name: item.columnPolarity });
+                                }
+                                else { }
+                            });
+                        }
+                    };
+                    //set values of rows
+                    Visual.prototype.setValuesInRows = function (values, valuesLenght, rowsLength) {
+                        var score, item, iconType, type, polarityColId;
+                        var row = { row: [], id: 0, polarity: null };
+                        for (var i = 0; i < valuesLenght; i++) {
+                            row.id = this.host.createSelectionIdBuilder()
+                                .withMeasure(values[i][0])
+                                .createSelectionId();
+                            for (var k = 0; k < rowsLength; k++) {
+                                item = values[i][k];
+                                type = this.dataViewModel.columns[k].type; // get type of column (Score/variation)
+                                if (type == strucData.Type.SCORE) {
+                                    iconType = this.dataViewModel.columns[k].iconType;
+                                    score = COMMON.Core.getScore(+item);
+                                    if (iconType == strucData.IconType.ICON) {
+                                        row.row[k] = this.dataViewModel.columns[k].icon[score];
+                                    }
+                                    else if (iconType == strucData.IconType.ICONTEXT) {
+                                        row.row[k] = COMMON.Core.formatNumber(item)
+                                            + " " + this.dataViewModel.columns[k].icon[score];
+                                    }
+                                    else {
+                                        if (!this.dataViewModel.columns[k].columnRemove) {
+                                            row.row[k] = item;
+                                        }
+                                    }
+                                }
+                                else if (type == strucData.Type.VARIATION) {
+                                    polarityColId = this.dataViewModel.columns[k].polarityPositionId;
+                                    row.polarity = values[i][polarityColId];
+                                    row.row[k] = item;
+                                }
+                                else {
+                                    if (!this.dataViewModel.columns[k].columnRemove) {
+                                        row.row[k] = item;
+                                    }
+                                }
+                            } //end for
+                            this.dataViewModel.values.push(row);
+                            row = { row: [], id: 0, polarity: null };
+                        } //end for 
                     };
                     /**
                      * draw table to my target
@@ -601,7 +505,10 @@ var powerbi;
                         //if exists, remove existing table
                         this.target.select('table').remove();
                         // get columns and values
-                        var columns = this.dataViewModel.columns;
+                        var columns = this.dataViewModel.columns.filter(function (col) {
+                            if (!col.columnRemove)
+                                return col;
+                        }).map(function (col) { return col; });
                         var values = this.dataViewModel.values;
                         //init table
                         this.table = this.div.append('table')
@@ -634,7 +541,9 @@ var powerbi;
                                 return COMMON.Core.getVariation(d.value, d.polarity);
                             }
                         })
-                            .html(function (d) { return COMMON.Core.formatNumber(d.value); });
+                            .html(function (d) {
+                            return COMMON.Core.formatNumber(d.value);
+                        });
                         rows.on('click', function (d) {
                             this.selectionManager.clear();
                             rows.attr("bgcolor", "#fff");
@@ -644,7 +553,7 @@ var powerbi;
                             // Find the selectionId and select it
                             this.selectionManager.select(d.id).then(function (ids) {
                                 ids.forEach(function (id) {
-                                    console.log("foo: " + JSON.stringify(id));
+                                    // console.log("foo: "+JSON.stringify(id));
                                 });
                             });
                             // This call applys the previously selected selectionId
@@ -653,7 +562,7 @@ var powerbi;
                     };
                     /**
                      * Enumerates through the objects defined in the capabilities and adds the properties to the format pane
-                     * @param {EnumerateVisualObjectInstancesOptions} options - Map of defined objects
+                     * @param  options - Map of defined objects
                      */
                     Visual.prototype.enumerateObjectInstances = function (options) {
                         var objectName = options.objectName;
@@ -698,6 +607,24 @@ var powerbi;
                             color: PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD.getValue(this.objects, "TableOptions", "color", "#015c55")
                         };
                         // console.log(JSON.stringify(this.tableOptions));  
+                    };
+                    /**
+                    * styling table
+                    */
+                    Visual.prototype.tableStyling = function () {
+                        STYLE.Customize.setZoom(this.target, this.tableOptions.zoom);
+                        STYLE.Customize.setColor(this.tHead, this.tableOptions.color);
+                    };
+                    /**
+                  * clear data model
+                  */
+                    Visual.prototype.cleanDataModel = function () {
+                        this.dataViewModel = {
+                            columns: [],
+                            values: []
+                        };
+                        this.config = [];
+                        this.columnConfig = "";
                     };
                     /**
                      * DESTROY

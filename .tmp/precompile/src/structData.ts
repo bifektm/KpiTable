@@ -10,6 +10,7 @@ module strucData {
     export interface IRows{
         row:string[]
         id:any;
+        polarity:any;
     }
     export interface IColumns{
         name:string;
@@ -18,6 +19,7 @@ module strucData {
         icon :string[];
         polarityColumn:string;
         polarityPositionId:any;
+        columnRemove:boolean;
     }
     
     /**

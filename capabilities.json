@@ -53,10 +53,7 @@
                 "collumns":{
                     "displayName": "columns",
                     "type":{
-                        "enumeration": [
-                            
-                           
-                        ]
+                        "enumeration": []
                     }
                 },
                 "kpi":{
