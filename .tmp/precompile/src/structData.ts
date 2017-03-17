@@ -18,8 +18,7 @@ module strucData {
         type: Type;
         icon :string[];
         polarityColumn:string;
-        polarityPositionId:any;
-        columnRemove:boolean;
+
     }
     
     /**
@@ -43,9 +42,7 @@ module strucData {
      */
     export interface IOptions{
         zoom:any;
-        kpi:any;
         columns:any;
-        icon:any;
         color:any;
     }
     //TEMP parse json

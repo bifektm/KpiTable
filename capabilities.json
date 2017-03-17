@@ -3,12 +3,18 @@
         {
             "displayName": "Rows",
             "name": "rows",
-            "kind": "GroupingOrMeasure"
+            "kind": "Grouping"
+        },
+        {
+            "displayName": "Values",
+            "name": "values",
+            "kind": "Measure"
         },
          {
             "displayName": "Other",
             "name": "polarity",
-            "kind": "GroupingOrMeasure" 
+            "kind": "GroupingOrMeasure"
+
         },
          {
             "displayName": "Config",
@@ -18,27 +24,34 @@
     ],
     "dataViewMappings": [
         {
-            "table": 
-                {
-                "rows": {
-                    "select": [
-                        {
-                            "for": {
-                                "in": "rows"
+            "categorical": {
+                "categories": {
+                    "bind": {
+                        "to": "rows"
+                    }
+                },
+                "values": {
+                    "group": {
+                        "by": "rows",
+                        "select": [
+                            {
+                                "bind": {
+                                    "to": "values"
+                                }
+                            },
+                            {
+                                "bind": {
+                                    "to": "polarity"
+                                }
+                            },
+                            {
+                                "bind": {
+                                    "to": "config"
+                                }
                             }
-                                       
-                        },
-                        {
-                            "for": {
-                                "in": "polarity"
-                            } 
-                        },
-                        {
-                            "for": {
-                                "in": "config"
-                            } 
-                        }
-                    ]
+                        ]
+                    }
+                    
                 }
             }
             
@@ -50,54 +63,15 @@
         "kPIMeasures": {
             "displayName": "KPI Measure",
             "properties": {
-                "collumns":{
-                    "displayName": "columns",
-                    "type":{
-                        "enumeration": []
-                    }
-                },
-                "kpi":{
-                    "displayName": "KPI",
+                "collumns": {
+                    "displayName": "Config",
                     "type": {
-                        "enumeration": [
-                            {
-                                "value": "0",
-                                "displayName": ""
-                                
-                            },
-                            {
-                                "value": "1",
-                                "displayName": "Score"
-                            },
-                            {
-                                "value": "2",
-                                "displayName": "Variation"
-                            }
-                        ]
-                    }
-                },
-                "icon":{
-                    "displayName": "icon","suppressFormatPainterCopy": true,
-                    "type": {
-                        "enumeration": [
-                            {
-                                "value": "text",
-                                "displayName": "Text"
-                            },
-                            {
-                                "value": "bullet",
-                                "displayName": "Bullets"
-                            },
-                            {
-                                "value": "arrow",
-                                "displayName": "Arrow"
-                            }
-                        ] 
+                        "bool": true
                     }
                 }
             }
         },
-        "TableOptions":{
+        "TableOptions": {
             "displayName": "Table Options",
             "properties": {
                 "zoom" :{

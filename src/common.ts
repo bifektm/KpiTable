@@ -30,6 +30,7 @@ module COMMON {
          * @param polarity 
          */
         public static getVariation(variation: number, polarity: number): string {
+            
             if (variation > 0) {
                 if (polarity == 0) { return "red"; }
                 else { return "green"; }
@@ -56,15 +57,15 @@ module COMMON {
          * @param rows 
          */
         public static getConfig(data: any[]){
-           let conf=null;
-            if(!data){return;}
-            let columns = data[0].metadata.columns;
-            for (let i = 0; i < columns.length; i++) {
-                if (columns[i].roles["config"] == true) {
-                    conf = this.getDataConf(i,data[0].table.rows);
+           let conf=[];
+            let array = data[0].categorical.categories;
+            array.forEach(item =>{
+                  if (item.source.roles["config"] == true) {
+                    conf = this.getDataConf(item.values);
                     return conf;
                 }
-            }
+
+            });
             return conf;
 
         }
@@ -73,13 +74,13 @@ module COMMON {
          * @param id 
          * @param rows 
          */
-        private static getDataConf(id: number,rows:any[]){
+        private static getDataConf(rows:any[]){
             let values = [];
             let obj;
             let valid = null;
             
              try {
-                obj = JSON.parse(rows[0][id]);
+                obj = JSON.parse(rows[0]);
                
                  obj.forEach(item => {
                      values.push({
@@ -90,11 +91,11 @@ module COMMON {
                         columnPolarity: item.columnPolarity
                     }); 
                  });    
-                (values.length < 1 ) ? values = null : values;
+                (values.length < 1 ) ? values = [] : values;
                 return values;
             } catch (Error) { throw new Error("json invalid!");}
         }
-         
+
     }
 
 }

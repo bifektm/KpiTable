@@ -189,17 +189,15 @@ var COMMON;
          * @param rows
          */
         Core.getConfig = function (data) {
-            var conf = null;
-            if (!data) {
-                return;
-            }
-            var columns = data[0].metadata.columns;
-            for (var i = 0; i < columns.length; i++) {
-                if (columns[i].roles["config"] == true) {
-                    conf = this.getDataConf(i, data[0].table.rows);
+            var _this = this;
+            var conf = [];
+            var array = data[0].categorical.categories;
+            array.forEach(function (item) {
+                if (item.source.roles["config"] == true) {
+                    conf = _this.getDataConf(item.values);
                     return conf;
                 }
-            }
+            });
             return conf;
         };
         /**
@@ -207,12 +205,12 @@ var COMMON;
          * @param id
          * @param rows
          */
-        Core.getDataConf = function (id, rows) {
+        Core.getDataConf = function (rows) {
             var values = [];
             var obj;
             var valid = null;
             try {
-                obj = JSON.parse(rows[0][id]);
+                obj = JSON.parse(rows[0]);
                 obj.forEach(function (item) {
                     values.push({
                         columnName: item.columnName,
@@ -222,7 +220,7 @@ var COMMON;
                         columnPolarity: item.columnPolarity
                     });
                 });
-                (values.length < 1) ? values = null : values;
+                (values.length < 1) ? values = [] : values;
                 return values;
             }
             catch (Error) {
@@ -334,7 +332,6 @@ var powerbi;
                         this.init = true;
                         this.host = options.host;
                         this.selectionManager = options.host.createSelectionManager();
-                        this.config = [];
                         this.cleanDataModel();
                         this.target = d3.select(options.element);
                         this.div = this.target.append('div') //div to target table
@@ -348,13 +345,15 @@ var powerbi;
                      */
                     Visual.prototype.update = function (optionsUpdate, optionsInit) {
                         if (this.init || (optionsUpdate.viewport.height == this.height && optionsUpdate.viewport.width == this.width)) {
-                            this.cleanDataModel(); //clean dataModel                   
-                            this.objects = optionsUpdate.dataViews[0].metadata.objects; //get objects properties
-                            this.config = COMMON.Core.getConfig(optionsUpdate.dataViews); //get config columns
-                            this.setSettings(); //set settings to options
-                            this.parseData(optionsUpdate.dataViews); //set data to my model
-                            this.drawTable(optionsInit); //draw table
-                            this.tableStyling(); //table style 
+                            if (optionsUpdate.dataViews[0]) {
+                                this.objects = optionsUpdate.dataViews[0].metadata.objects; //get objects properties
+                                this.config = COMMON.Core.getConfig(optionsUpdate.dataViews); //get config columns                 
+                                this.setSettings(); //set settings to options
+                                this.parseData(optionsUpdate.dataViews); //set data to my model
+                                this.drawTable(optionsInit); //draw table
+                                this.tableStyling(); //table style
+                                this.cleanDataModel(); //clean data model      
+                            }
                         }
                         this.height = optionsUpdate.viewport.height; //update height 
                         this.width = optionsUpdate.viewport.width; //update width
@@ -367,47 +366,79 @@ var powerbi;
                      * @param dataViews
                      */
                     Visual.prototype.parseData = function (dataViews) {
-                        //valid? // division 0? // exist?
+                        //valid?  // exist?
                         if (!dataViews
                             || !dataViews[0]
-                            || !dataViews[0].table
-                            || !dataViews[0].table.rows
-                            || !dataViews[0].table.columns)
+                            || !dataViews[0].categorical
+                            || !dataViews[0].categorical.categories
+                            || !dataViews[0].categorical.values)
                             return;
-                        var rows = dataViews[0].table.columns;
-                        var values = dataViews[0].table.rows;
-                        if (rows && values) {
-                            var rowsLength = rows.length;
-                            var valuesLenght = values.length;
-                            this.setHeadersInDataModel(rows); //set headers of collumns
-                            this.setConfigColumns(); //set config columns in dataview model
-                            this.setValuesInRows(values, valuesLenght, rowsLength); //set values of rows
-                        }
+                        this.setHeaders(dataViews); //set headers of collumns
+                        this.setConfigColumns(); //set config columns in dataview model
+                        this.setRows(dataViews); //set values of rows
                     };
                     /**
                      * //set headers of collumns
                      * @param rows
                      * @param rowsLength
                      */
-                    Visual.prototype.setHeadersInDataModel = function (rows) {
+                    Visual.prototype.setHeaders = function (view) {
                         var _this = this;
-                        var data = [];
-                        var remove = false;
-                        _.each(rows, function (item) {
-                            if (item.roles["config"] || item.roles["polarity"]) {
-                                remove = true;
-                            }
-                            _this.dataViewModel.columns.push({
-                                name: item.displayName,
-                                iconType: strucData.IconType.TEXT,
-                                type: strucData.Type.NOTHING,
-                                icon: [],
-                                polarityColumn: "",
-                                polarityPositionId: null,
-                                columnRemove: remove
-                            });
-                            !remove;
+                        var data = view[0].categorical.values;
+                        var row = view[0].categorical.categories[0];
+                        //insert header row
+                        this.dataViewModel.columns.push({
+                            name: row.source.displayName,
+                            iconType: strucData.IconType.TEXT,
+                            type: strucData.Type.NOTHING,
+                            icon: [],
+                            polarityColumn: ""
                         });
+                        //insert header values
+                        data.forEach(function (item) {
+                            if (_.findIndex(_this.dataViewModel.columns, { name: item.source.displayName }) < 0) {
+                                _this.dataViewModel.columns.push({
+                                    name: item.source.displayName,
+                                    iconType: strucData.IconType.TEXT,
+                                    type: strucData.Type.NOTHING,
+                                    icon: [],
+                                    polarityColumn: ""
+                                });
+                            }
+                        });
+                        //console.log(JSON.stringify(this.dataViewModel.columns));   
+                    };
+                    /**
+                     * get values
+                     * @param view
+                     */
+                    Visual.prototype.setRows = function (view) {
+                        var _this = this;
+                        var data = view[0].categorical.values;
+                        var colsLenght = this.dataViewModel.columns.length - 1;
+                        var score, item, iconType, type;
+                        var row = { id: null, polarity: 1, row: [] };
+                        var i = 0;
+                        var values = [];
+                        data.forEach(function (item) {
+                            item.values.forEach(function (val) {
+                                if (val != null) {
+                                    if (i % colsLenght == 0) {
+                                        var row_1 = { id: null, polarity: 1, row: [] };
+                                    }
+                                    row.row.push(val);
+                                    if (i % colsLenght == colsLenght - 1) {
+                                        _this.dataViewModel.values.push(row);
+                                    }
+                                    values.push(val);
+                                }
+                            });
+                        });
+                        /*values.forEach(item=>{
+            
+                            i++;
+                         });*/
+                        console.log(JSON.stringify(this.dataViewModel.values));
                     };
                     /**
                    * set config columns in dataview model
@@ -417,7 +448,7 @@ var powerbi;
                         var _this = this;
                         var config = this.config;
                         var id;
-                        if (config != null) {
+                        if (config.length > 0) {
                             _.each(config, function (item) {
                                 id = _.findIndex(_this.dataViewModel.columns, { name: item.columnName });
                                 if (id == -1) {
@@ -446,7 +477,6 @@ var powerbi;
                                 else if (item.typeColumn.toUpperCase() == "VARIATION") {
                                     _this.dataViewModel.columns[id].type = strucData.Type.VARIATION;
                                     _this.dataViewModel.columns[id].polarityColumn = item.columnPolarity;
-                                    _this.dataViewModel.columns[id].polarityPositionId = _.findIndex(_this.dataViewModel.columns, { name: item.columnPolarity });
                                 }
                                 else { }
                             });
@@ -455,8 +485,8 @@ var powerbi;
                     //set values of rows
                     Visual.prototype.setValuesInRows = function (values, valuesLenght, rowsLength) {
                         var score, item, iconType, type, polarityColId;
-                        var row = { row: [], id: 0, polarity: null };
                         for (var i = 0; i < valuesLenght; i++) {
+                            var row = { id: null, polarity: 1, row: [] };
                             row.id = this.host.createSelectionIdBuilder()
                                 .withMeasure(values[i][0])
                                 .createSelectionId();
@@ -474,24 +504,19 @@ var powerbi;
                                             + " " + this.dataViewModel.columns[k].icon[score];
                                     }
                                     else {
-                                        if (!this.dataViewModel.columns[k].columnRemove) {
-                                            row.row[k] = item;
-                                        }
+                                        row.row[k] = item;
                                     }
                                 }
                                 else if (type == strucData.Type.VARIATION) {
-                                    polarityColId = this.dataViewModel.columns[k].polarityPositionId;
+                                    // polarityColId = this.dataViewModel.columns[k].polarityPositionId;
                                     row.polarity = values[i][polarityColId];
                                     row.row[k] = item;
                                 }
                                 else {
-                                    if (!this.dataViewModel.columns[k].columnRemove) {
-                                        row.row[k] = item;
-                                    }
+                                    row.row[k] = item;
                                 }
                             } //end for
                             this.dataViewModel.values.push(row);
-                            row = { row: [], id: 0, polarity: null };
                         } //end for 
                     };
                     /**
@@ -499,16 +524,14 @@ var powerbi;
                      * @param options
                      */
                     Visual.prototype.drawTable = function (options) {
+                        console.log("table");
                         if (this.dataViewModel.columns.length < 1) {
                             return;
                         }
                         //if exists, remove existing table
                         this.target.select('table').remove();
                         // get columns and values
-                        var columns = this.dataViewModel.columns.filter(function (col) {
-                            if (!col.columnRemove)
-                                return col;
-                        }).map(function (col) { return col; });
+                        var columns = this.dataViewModel.columns;
                         var values = this.dataViewModel.values;
                         //init table
                         this.table = this.div.append('table')
@@ -537,28 +560,35 @@ var powerbi;
                             }
                         })
                             .style('color', function (d) {
-                            if (d.type == strucData.Type.VARIATION) {
+                            if (d.type == strucData.Type.VARIATION && d.polarity != undefined) {
                                 return COMMON.Core.getVariation(d.value, d.polarity);
                             }
                         })
                             .html(function (d) {
                             return COMMON.Core.formatNumber(d.value);
                         });
-                        rows.on('click', function (d) {
-                            this.selectionManager.clear();
-                            rows.attr("bgcolor", "#fff");
-                            //d3.select(this).attr("bgcolor","red");
-                            // console.log(JSON.stringify(d["row"][0]));
-                            //console.log(d.id);
-                            // Find the selectionId and select it
-                            this.selectionManager.select(d.id).then(function (ids) {
-                                ids.forEach(function (id) {
-                                    // console.log("foo: "+JSON.stringify(id));
-                                });
-                            });
-                            // This call applys the previously selected selectionId
-                            this.selectionManager.applySelectionFilter();
-                        }.bind(this));
+                        /*  rows.on('click', function (d) {
+              
+                              this.selectionManager.clear();
+                              rows.attr("bgcolor", "#fff");
+                              //d3.select(this).attr("bgcolor","red");
+              
+                              // console.log(JSON.stringify(d["row"][0]));
+              
+                              //console.log(d.id);
+              
+                              // Find the selectionId and select it
+              
+                              this.selectionManager.select(d.id).then((ids: ISelectionId[]) => {
+                                  ids.forEach(function (id) {
+                                      // console.log("foo: "+JSON.stringify(id));
+                                  });
+                              });
+              
+                              // This call applys the previously selected selectionId
+                              this.selectionManager.applySelectionFilter();
+              
+                          }.bind(this));*/
                     };
                     /**
                      * Enumerates through the objects defined in the capabilities and adds the properties to the format pane
@@ -571,11 +601,9 @@ var powerbi;
                         switch (objectName) {
                             case 'kPIMeasures':
                                 objectEnumeration.push({
-                                    objectName: objectName,
+                                    objectName: "objectName",
                                     properties: {
-                                        collumns: _.columns,
-                                        kpi: _.kpi,
-                                        icon: _.icon
+                                        collumns: _.columns
                                     },
                                     selector: null
                                 });
@@ -601,12 +629,9 @@ var powerbi;
                     Visual.prototype.setSettings = function () {
                         this.tableOptions = {
                             zoom: PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD.getValue(this.objects, "TableOptions", "zoom", 20),
-                            kpi: PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD.getValue(this.objects, "kPIMeasures", "kpi", 0),
-                            columns: PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD.getValue(this.objects, "kPIMeasures", "collumns", "{}"),
-                            icon: PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD.getValue(this.objects, "kPIMeasures", "icon", "text"),
+                            columns: PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD.getValue(this.objects, "kPIMeasures", "collumns", false),
                             color: PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD.getValue(this.objects, "TableOptions", "color", "#015c55")
                         };
-                        // console.log(JSON.stringify(this.tableOptions));  
                     };
                     /**
                     * styling table
@@ -624,7 +649,6 @@ var powerbi;
                             values: []
                         };
                         this.config = [];
-                        this.columnConfig = "";
                     };
                     /**
                      * DESTROY
