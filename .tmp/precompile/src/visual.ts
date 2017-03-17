@@ -121,32 +121,65 @@ module powerbi.extensibility.visual.PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD 
          */
         private setRows(view: any[]) {
             let data = view[0].categorical.values;
-            let colsLenght = this.dataViewModel.columns.length-1;
-            let score, item, iconType, type;
+            let indicator = view[0].categorical.categories[0];
+            let colsLenght = this.dataViewModel.columns.length-1;//4
+            let type;
             let row = { id: null, polarity: 1, row: [] };
-            let i = 0;
-            let values = [];
+            let i = 0,j = 0;
             
+            let rowsLength = data.length / colsLenght;//8
             data.forEach(item => {
-                item.values.forEach(val => {
-                    if(val != null){
-                        if(i % colsLenght == 0){
-                          let row = { id: null, polarity: 1, row: [] }; 
-                        }
-                        row.row.push(val);
-                        if(i % colsLenght == colsLenght-1){
-                         this.dataViewModel.values.push(row);
-                        }
-                        
-                        values.push(val);
-                    }
-                }); 
-            });
-            /*values.forEach(item=>{
 
-                i++; 
-             });*/
+                if (i % colsLenght == 0) {
+                     row = { id: null, polarity: 1, row: [] };
+                     type = this.dataViewModel.columns[j].type;
+                     
+                     row.row.push(
+                        this.setConfigRows(type,item.values[j],i % colsLenght)
+                     );
+                     row.id = j;/*this.host.createSelectionIdBuilder()
+                        .withCategory(view[0].categorical.categories[0].values,j)
+                        .createSelectionId();*/
+                }
+                 row.row.push(item.values[j]);
+
+                if (i % colsLenght == colsLenght - 1) {
+                    this.dataViewModel.values.push(row);
+                    j++;
+                }
+                i++;  
+
+            });
             console.log(JSON.stringify(this.dataViewModel.values));
+        }
+        private setConfigRows(type:any,value:any,k:number){
+           let score, iconType;
+          
+                 if (type == strucData.Type.SCORE) { //SCORE
+                        iconType = this.dataViewModel.columns[k].iconType;
+                        score = COMMON.Core.getScore(+value);
+
+                        if (iconType == strucData.IconType.ICON) {
+
+                            value = this.dataViewModel.columns[k].icon[score];
+
+                        } else if (iconType == strucData.IconType.ICONTEXT) {
+
+                            value = COMMON.Core.formatNumber(<any>value)
+                                + " " + this.dataViewModel.columns[k].icon[score];
+                        } else {
+                                return value;
+                        }
+                    } else if (type == strucData.Type.VARIATION) { //type variation
+
+                    // polarityColId = this.dataViewModel.columns[k].polarityPositionId;
+                        //row.polarity = values[i][polarityColId];
+                        return value;
+
+                    } else {
+                            return value;     
+                    }
+               return value;     
         }
         /**
        * set config columns in dataview model
@@ -228,9 +261,7 @@ module powerbi.extensibility.visual.PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD 
                         row.row[k] = <any>item;
 
                     } else {
-                        
                             row.row[k] = <any>item;
-                       
                     }
                     
                 

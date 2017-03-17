@@ -415,30 +415,55 @@ var powerbi;
                     Visual.prototype.setRows = function (view) {
                         var _this = this;
                         var data = view[0].categorical.values;
-                        var colsLenght = this.dataViewModel.columns.length - 1;
-                        var score, item, iconType, type;
+                        var indicator = view[0].categorical.categories[0];
+                        var colsLenght = this.dataViewModel.columns.length - 1; //4
+                        var type;
                         var row = { id: null, polarity: 1, row: [] };
-                        var i = 0;
-                        var values = [];
+                        var i = 0, j = 0;
+                        var rowsLength = data.length / colsLenght; //8
                         data.forEach(function (item) {
-                            item.values.forEach(function (val) {
-                                if (val != null) {
-                                    if (i % colsLenght == 0) {
-                                        var row_1 = { id: null, polarity: 1, row: [] };
-                                    }
-                                    row.row.push(val);
-                                    if (i % colsLenght == colsLenght - 1) {
-                                        _this.dataViewModel.values.push(row);
-                                    }
-                                    values.push(val);
-                                }
-                            });
-                        });
-                        /*values.forEach(item=>{
-            
+                            if (i % colsLenght == 0) {
+                                row = { id: null, polarity: 1, row: [] };
+                                type = _this.dataViewModel.columns[j].type;
+                                row.row.push(_this.setConfigRows(type, item.values[j], i % colsLenght));
+                                row.id = j; /*this.host.createSelectionIdBuilder()
+                                   .withCategory(view[0].categorical.categories[0].values,j)
+                                   .createSelectionId();*/
+                            }
+                            row.row.push(item.values[j]);
+                            if (i % colsLenght == colsLenght - 1) {
+                                _this.dataViewModel.values.push(row);
+                                j++;
+                            }
                             i++;
-                         });*/
+                        });
                         console.log(JSON.stringify(this.dataViewModel.values));
+                    };
+                    Visual.prototype.setConfigRows = function (type, value, k) {
+                        var score, iconType;
+                        if (type == strucData.Type.SCORE) {
+                            iconType = this.dataViewModel.columns[k].iconType;
+                            score = COMMON.Core.getScore(+value);
+                            if (iconType == strucData.IconType.ICON) {
+                                value = this.dataViewModel.columns[k].icon[score];
+                            }
+                            else if (iconType == strucData.IconType.ICONTEXT) {
+                                value = COMMON.Core.formatNumber(value)
+                                    + " " + this.dataViewModel.columns[k].icon[score];
+                            }
+                            else {
+                                return value;
+                            }
+                        }
+                        else if (type == strucData.Type.VARIATION) {
+                            // polarityColId = this.dataViewModel.columns[k].polarityPositionId;
+                            //row.polarity = values[i][polarityColId];
+                            return value;
+                        }
+                        else {
+                            return value;
+                        }
+                        return value;
                     };
                     /**
                    * set config columns in dataview model
