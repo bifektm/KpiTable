@@ -344,6 +344,7 @@ var powerbi;
                      * @param optionsInit
                      */
                     Visual.prototype.update = function (optionsUpdate, optionsInit) {
+                        this.cleanDataModel();
                         if (this.init || (optionsUpdate.viewport.height == this.height && optionsUpdate.viewport.width == this.width)) {
                             if (optionsUpdate.dataViews[0]) {
                                 this.objects = optionsUpdate.dataViews[0].metadata.objects; //get objects properties
@@ -406,7 +407,6 @@ var powerbi;
                                 });
                             }
                         });
-                        //console.log(JSON.stringify(this.dataViewModel.columns));   
                     };
                     /**
                      * get values
@@ -424,23 +424,23 @@ var powerbi;
                         data.forEach(function (item) {
                             if (i % colsLenght == 0) {
                                 row = { id: null, polarity: 1, row: [] };
-                                type = _this.dataViewModel.columns[j].type;
-                                row.row.push(_this.setConfigRows(type, item.values[j], i % colsLenght));
-                                row.id = j; /*this.host.createSelectionIdBuilder()
-                                   .withCategory(view[0].categorical.categories[0].values,j)
-                                   .createSelectionId();*/
+                                row.row.push(indicator.values[j]);
+                                row.id = j;
                             }
-                            row.row.push(item.values[j]);
+                            type = _this.dataViewModel.columns[(i % colsLenght) + 1].type;
+                            row.row.push(_this.setConfigRows(type, item.values[j], (i % colsLenght) + 1));
                             if (i % colsLenght == colsLenght - 1) {
                                 _this.dataViewModel.values.push(row);
                                 j++;
                             }
                             i++;
                         });
-                        console.log(JSON.stringify(this.dataViewModel.values));
+                        // console.log(JSON.stringify(this.dataViewModel.values));
+                        // console.log(JSON.stringify(this.dataViewModel.columns));  
                     };
                     Visual.prototype.setConfigRows = function (type, value, k) {
                         var score, iconType;
+                        // console.log(type +" "+ strucData.Type.SCORE);
                         if (type == strucData.Type.SCORE) {
                             iconType = this.dataViewModel.columns[k].iconType;
                             score = COMMON.Core.getScore(+value);
@@ -506,43 +506,6 @@ var powerbi;
                                 else { }
                             });
                         }
-                    };
-                    //set values of rows
-                    Visual.prototype.setValuesInRows = function (values, valuesLenght, rowsLength) {
-                        var score, item, iconType, type, polarityColId;
-                        for (var i = 0; i < valuesLenght; i++) {
-                            var row = { id: null, polarity: 1, row: [] };
-                            row.id = this.host.createSelectionIdBuilder()
-                                .withMeasure(values[i][0])
-                                .createSelectionId();
-                            for (var k = 0; k < rowsLength; k++) {
-                                item = values[i][k];
-                                type = this.dataViewModel.columns[k].type; // get type of column (Score/variation)
-                                if (type == strucData.Type.SCORE) {
-                                    iconType = this.dataViewModel.columns[k].iconType;
-                                    score = COMMON.Core.getScore(+item);
-                                    if (iconType == strucData.IconType.ICON) {
-                                        row.row[k] = this.dataViewModel.columns[k].icon[score];
-                                    }
-                                    else if (iconType == strucData.IconType.ICONTEXT) {
-                                        row.row[k] = COMMON.Core.formatNumber(item)
-                                            + " " + this.dataViewModel.columns[k].icon[score];
-                                    }
-                                    else {
-                                        row.row[k] = item;
-                                    }
-                                }
-                                else if (type == strucData.Type.VARIATION) {
-                                    // polarityColId = this.dataViewModel.columns[k].polarityPositionId;
-                                    row.polarity = values[i][polarityColId];
-                                    row.row[k] = item;
-                                }
-                                else {
-                                    row.row[k] = item;
-                                }
-                            } //end for
-                            this.dataViewModel.values.push(row);
-                        } //end for 
                     };
                     /**
                      * draw table to my target

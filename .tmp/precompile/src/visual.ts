@@ -46,7 +46,7 @@ module powerbi.extensibility.visual.PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD 
          */
         @logExceptions()
         public update(optionsUpdate: VisualUpdateOptions, optionsInit: VisualConstructorOptions) {
-
+            this.cleanDataModel();
             if (this.init || (optionsUpdate.viewport.height == this.height && optionsUpdate.viewport.width == this.width)) {
                 if(optionsUpdate.dataViews[0]){
                     this.objects = optionsUpdate.dataViews[0].metadata.objects;                      //get objects properties
@@ -77,7 +77,7 @@ module powerbi.extensibility.visual.PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD 
                 || !dataViews[0].categorical.values)
                 return;
 
-            this.setHeaders(dataViews);                       //set headers of collumns
+            this.setHeaders(dataViews);                                  //set headers of collumns
             this.setConfigColumns();                                     //set config columns in dataview model
             this.setRows(dataViews);                                     //set values of rows
         }
@@ -113,7 +113,7 @@ module powerbi.extensibility.visual.PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD 
                      });
                  } 
              });  
-             //console.log(JSON.stringify(this.dataViewModel.columns));   
+              
         }
         /**
          * get values
@@ -122,39 +122,37 @@ module powerbi.extensibility.visual.PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD 
         private setRows(view: any[]) {
             let data = view[0].categorical.values;
             let indicator = view[0].categorical.categories[0];
-            let colsLenght = this.dataViewModel.columns.length-1;//4
+            let colsLenght = this.dataViewModel.columns.length - 1;//4
             let type;
             let row = { id: null, polarity: 1, row: [] };
-            let i = 0,j = 0;
-            
+            let i = 0, j = 0;
+
             let rowsLength = data.length / colsLenght;//8
             data.forEach(item => {
 
                 if (i % colsLenght == 0) {
-                     row = { id: null, polarity: 1, row: [] };
-                     type = this.dataViewModel.columns[j].type;
-                     
-                     row.row.push(
-                        this.setConfigRows(type,item.values[j],i % colsLenght)
-                     );
-                     row.id = j;/*this.host.createSelectionIdBuilder()
-                        .withCategory(view[0].categorical.categories[0].values,j)
-                        .createSelectionId();*/
+                    row = { id: null, polarity: 1, row: [] };
+                    row.row.push(indicator.values[j]);
+                    row.id = j;
                 }
-                 row.row.push(item.values[j]);
-
+                type = this.dataViewModel.columns[(i % colsLenght)+1].type;
+                row.row.push(
+                    this.setConfigRows(type, item.values[j], (i % colsLenght)+1)
+                );
                 if (i % colsLenght == colsLenght - 1) {
+                  
                     this.dataViewModel.values.push(row);
                     j++;
                 }
-                i++;  
-
+                i++;
             });
-            console.log(JSON.stringify(this.dataViewModel.values));
+           // console.log(JSON.stringify(this.dataViewModel.values));
+           // console.log(JSON.stringify(this.dataViewModel.columns));  
         }
         private setConfigRows(type:any,value:any,k:number){
            let score, iconType;
-          
+          // console.log(type +" "+ strucData.Type.SCORE);
+                 
                  if (type == strucData.Type.SCORE) { //SCORE
                         iconType = this.dataViewModel.columns[k].iconType;
                         score = COMMON.Core.getScore(+value);
@@ -188,9 +186,11 @@ module powerbi.extensibility.visual.PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD 
         private setConfigColumns() {
             let config = this.config;
             var id;
+              
             if (config.length > 0) {
 
                 _.each(config, item => {
+                  
                     id = _.findIndex(this.dataViewModel.columns, { name: item.columnName });
                     if (id == -1) { return; }
                     if (item.typeColumn.toUpperCase() == "SCORE") {
@@ -222,57 +222,7 @@ module powerbi.extensibility.visual.PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD 
             }
         }
 
-        //set values of rows
-        private setValuesInRows(values: any[], valuesLenght: number, rowsLength: number) {
-            let score, item, iconType, type, polarityColId;
-         
-            for (let i = 0; i < valuesLenght; i++) { //rows
-                let row = {id:null,polarity:1,row:[]};
-                row.id = this.host.createSelectionIdBuilder()
-                        .withMeasure(values[i][0])
-                        .createSelectionId();
-                
-                for (var k = 0; k < rowsLength; k++) { //columns
-                    
-                    
-                    item = values[i][k];
-
-                    type = this.dataViewModel.columns[k].type; // get type of column (Score/variation)
-
-                    if (type == strucData.Type.SCORE) { //SCORE
-                        iconType = this.dataViewModel.columns[k].iconType;
-                        score = COMMON.Core.getScore(+item);
-
-                        if (iconType == strucData.IconType.ICON) {
-
-                            row.row[k] = this.dataViewModel.columns[k].icon[score];
-
-                        } else if (iconType == strucData.IconType.ICONTEXT) {
-
-                            row.row[k] = COMMON.Core.formatNumber(<any>item)
-                                + " " + this.dataViewModel.columns[k].icon[score];
-                        } else {
-                                row.row[k] = <any>item;
-                        }
-                    } else if (type == strucData.Type.VARIATION) { //type variation
-
-                    // polarityColId = this.dataViewModel.columns[k].polarityPositionId;
-                        row.polarity = values[i][polarityColId];
-                        row.row[k] = <any>item;
-
-                    } else {
-                            row.row[k] = <any>item;
-                    }
-                    
-                
-                 
-                }//end for
-                this.dataViewModel.values.push(row);
-               
-
-            }//end for 
-    
-        }
+       
 
         /**
          * draw table to my target

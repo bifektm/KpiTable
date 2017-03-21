@@ -1,6 +1,5 @@
 {
-    "dataRoles": [
-        {
+    "dataRoles": [{
             "displayName": "Rows",
             "name": "rows",
             "kind": "Grouping"
@@ -10,20 +9,19 @@
             "name": "values",
             "kind": "Measure"
         },
-         {
+        {
             "displayName": "Other",
             "name": "polarity",
             "kind": "GroupingOrMeasure"
 
         },
-         {
+        {
             "displayName": "Config",
             "name": "config",
-            "kind": "GroupingOrMeasure" 
-        }       
+            "kind": "GroupingOrMeasure"
+        }
     ],
-    "dataViewMappings": [
-        {
+    "dataViewMappings": [{
             "categorical": {
                 "categories": {
                     "bind": {
@@ -33,8 +31,7 @@
                 "values": {
                     "group": {
                         "by": "rows",
-                        "select": [
-                            {
+                        "select": [{
                                 "bind": {
                                     "to": "values"
                                 }
@@ -51,13 +48,13 @@
                             }
                         ]
                     }
-                    
+
                 }
             }
-            
-            
+
+
         }
-        
+
     ],
     "objects": {
         "kPIMeasures": {
@@ -74,7 +71,7 @@
         "TableOptions": {
             "displayName": "Table Options",
             "properties": {
-                "zoom" :{
+                "zoom": {
                     "displayName": "Zoom",
                     "type": {
                         "formatting": {
@@ -82,12 +79,12 @@
                         }
                     }
                 },
-                "color":{
+                "color": {
                     "displayName": "Color Columns",
                     "type": {
                         "fill": {
                             "solid": {
-                                "color":true
+                                "color": true
                             }
                         }
                     }
