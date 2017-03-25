@@ -42,7 +42,7 @@ module strucData {
      */
     export interface IOptions{
         zoom:any;
-        columns:any;
+        config:any;
         color:any;
     }
     //TEMP parse json

@@ -12,6 +12,9 @@ module powerbi.extensibility.visual.PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD 
         private tHead: d3.Selection<HTMLElement>;
         private tBody: d3.Selection<HTMLElement>;
         private div: d3.Selection<HTMLElement>;
+        private modal :d3.Selection<HTMLElement>;
+        private modalContent :d3.Selection<HTMLElement>;
+        private configBody:d3.Selection<HTMLElement>;
         public dataViewModel: strucData.ITableViewModel;
         private selectionManager: ISelectionManager;
         private host: IVisualHost;
@@ -22,7 +25,8 @@ module powerbi.extensibility.visual.PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD 
         private height:number;
         private init: boolean = true;
        
-
+        
+        
 
         /**
          * CONSTRUCTOR OF VISUAL
@@ -33,12 +37,40 @@ module powerbi.extensibility.visual.PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD 
             this.selectionManager = options.host.createSelectionManager();
             this.cleanDataModel();
             this.target = d3.select(options.element);
-            this.div = this.target.append('div')       //div to target table
+            this.div = this.target.append('div')       
                 .classed('wrapper', true);
             this.setSettings();
-           
+            this.modal = this.div.append('div').classed('modal',true); 
+            this.modalContent = this.modal.append("div").classed("modal-content",true);
+            //*this.close = this.modalContent.append("span").classed('close',true).html('&times;');
+            this.modalContent.append("div").classed('bar',true).text("Config Columns");
+            this.configBody = this.modalContent.append("div").attr("id","config").html('<br>');
+            this.InitconfigHTML();
         }
-
+        private InitconfigHTML(){
+            this.modalContent.append("span").html("<br>SCORE<br><br>");
+        }
+        /**
+         * populate columns
+         */
+        private configHTML(){
+            this.modalContent.select("div[id='config']").remove();
+            let html =`
+            <label>Columns</label>
+            <select name="cols" style="width:300px">
+             ${this.dataViewModel.columns.map(item =>`<option value="${item.name}">${item.name}</option>`).join('')}
+             </select>`;
+             html+=`
+              &nbsp;&nbsp;&nbsp;&nbsp;<label>Icons</label>
+               <select name="icons" style="width:300px">
+               <option value="arrow">Arrow</option>
+               <option value="bullet">Bullet</option>
+               </select><br><br><hr><br>
+             `;
+             
+            this.modalContent.append("div").attr("id","config").style("font-size","17px").html(html); 
+            
+        }
         /**
          * UPDATE OF VISUAL
          * @param optionsUpdate 
@@ -46,18 +78,20 @@ module powerbi.extensibility.visual.PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD 
          */
         @logExceptions()
         public update(optionsUpdate: VisualUpdateOptions, optionsInit: VisualConstructorOptions) {
-            this.cleanDataModel();
+         
             if (this.init || (optionsUpdate.viewport.height == this.height && optionsUpdate.viewport.width == this.width)) {
                 if(optionsUpdate.dataViews[0]){
                     this.objects = optionsUpdate.dataViews[0].metadata.objects;                      //get objects properties
-                    this.config = COMMON.Core.getConfig(optionsUpdate.dataViews);                    //get config columns                 
-                    this.setSettings();                                                              //set settings to options
+                    this.config = COMMON.Core.getConfig(optionsUpdate.dataViews);                    //get config columns                                                                          
                     this.parseData(optionsUpdate.dataViews);                                         //set data to my model
                     this.drawTable(optionsInit);                                                     //draw table
                     this.tableStyling();                                                             //table style
+                    this.configHTML();
                     this.cleanDataModel();                                                           //clean data model      
                 }                                                                                                                
             }
+            this.setSettings();                                                                       //set settings to options
+            this.openConfig();                                                                        //open config options   
             this.height = optionsUpdate.viewport.height;                                              //update height 
             this.width = optionsUpdate.viewport.width;                                                //update width
             if (this.init) { this.init = false; }                                                     //flag  prevent drawTable ever
@@ -74,7 +108,7 @@ module powerbi.extensibility.visual.PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD 
                 || !dataViews[0]
                 || !dataViews[0].categorical
                 || !dataViews[0].categorical.categories
-                || !dataViews[0].categorical.values)
+                )
                 return;
 
             this.setHeaders(dataViews);                                  //set headers of collumns
@@ -99,7 +133,7 @@ module powerbi.extensibility.visual.PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD 
                             icon: [],
                             polarityColumn: ""
                         });
-             
+             if(!data){return;}
             //insert header values
              data.forEach(item => {
                  if (_.findIndex(this.dataViewModel.columns, { name: item.source.displayName }) < 0) {
@@ -121,18 +155,27 @@ module powerbi.extensibility.visual.PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD 
          */
         private setRows(view: any[]) {
             let data = view[0].categorical.values;
-            let indicator = view[0].categorical.categories[0];
+            let indicator = COMMON.Core.getIndicator(view[0].categorical.categories);
+            let polarity = COMMON.Core.getPolarity(view[0].categorical.categories);
             let colsLenght = this.dataViewModel.columns.length - 1;//4
             let type;
             let row = { id: null, polarity: 1, row: [] };
             let i = 0, j = 0;
-
+            
+            if(!data){ 
+                indicator.forEach(item =>{
+                row = { id: null, polarity: 1, row: [] };
+                row.row.push(item);
+                this.dataViewModel.values.push(row);
+            });
+             return;
+            }
             let rowsLength = data.length / colsLenght;//8
             data.forEach(item => {
 
                 if (i % colsLenght == 0) {
-                    row = { id: null, polarity: 1, row: [] };
-                    row.row.push(indicator.values[j]);
+                    row = { id: null, polarity: polarity[j], row: [] };
+                    row.row.push(indicator[j]);
                     row.id = j;
                 }
                 type = this.dataViewModel.columns[(i % colsLenght)+1].type;
@@ -146,12 +189,10 @@ module powerbi.extensibility.visual.PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD 
                 }
                 i++;
             });
-           // console.log(JSON.stringify(this.dataViewModel.values));
-           // console.log(JSON.stringify(this.dataViewModel.columns));  
         }
         private setConfigRows(type:any,value:any,k:number){
            let score, iconType;
-          // console.log(type +" "+ strucData.Type.SCORE);
+         
                  
                  if (type == strucData.Type.SCORE) { //SCORE
                         iconType = this.dataViewModel.columns[k].iconType;
@@ -221,9 +262,6 @@ module powerbi.extensibility.visual.PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD 
                 });
             }
         }
-
-       
-
         /**
          * draw table to my target
          * @param options 
@@ -314,33 +352,35 @@ module powerbi.extensibility.visual.PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD 
          */
         public enumerateObjectInstances(options: EnumerateVisualObjectInstancesOptions): VisualObjectInstanceEnumeration {
 
-            let objectName = options.objectName;
-            let objectEnumeration: VisualObjectInstance[] = [];
-            var _ = this.tableOptions;
+             let objectName = options.objectName;
+             let objectEnumeration: VisualObjectInstance[] = [];
 
+            var _ = this.tableOptions;
+          
             switch (objectName) {
                 case 'kPIMeasures':
                     objectEnumeration.push({
-                        objectName: "objectName",
+                        objectName: objectName,
                         properties: {
-                            collumns:_.columns
+                            config:_.config
                         },
                         selector: null
                     });
+                    
                     break;
                 case 'TableOptions':
                     objectEnumeration.push({
                         objectName: objectName,
                         properties: {
                             zoom: _.zoom,
-                            color: _.color
+                            color:  _.color 
                         },
                         selector: null
                     });
                     break;
 
             };
-
+            
             return objectEnumeration;
         }
 
@@ -349,14 +389,29 @@ module powerbi.extensibility.visual.PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD 
          */
         //_.color.solid.color
         private setSettings() {
-
+        
             this.tableOptions = {
                 zoom: getValue(this.objects, "TableOptions", "zoom", 20),
-                columns: getValue(this.objects, "kPIMeasures", "collumns", false),
+                config: getValue(this.objects, "kPIMeasures", "config", false),
                 color: getValue(this.objects, "TableOptions", "color", "#015c55")
             };
+             
+            d3.select('span').on('click', function (){
+               this.modal.style("display","none");
+            }.bind(this));
+           
+        
+        }
+        /**
+         * open modal config
+         */
+        private openConfig(){
+            if(this.tableOptions.config){
+               this.modal.style("display","block");
+            }else{
+                this.modal.style("display","none");
+            }
             
-
         }
         /**
         * styling table

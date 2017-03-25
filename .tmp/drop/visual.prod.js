@@ -182,6 +182,34 @@ var COMMON;
                 return num;
             }
         };
+        /**
+         * get indicator values
+         * @param data
+         */
+        Core.getIndicator = function (data) {
+            var indicator = [];
+            data.forEach(function (item) {
+                if (item.source.roles["rows"] == true) {
+                    indicator = item.values;
+                    return indicator;
+                }
+            });
+            return indicator;
+        };
+        /**
+         * get polarity values
+         * @param data
+         */
+        Core.getPolarity = function (data) {
+            var polarity = [];
+            data.forEach(function (item) {
+                if (item.source.roles["polarity"] == true) {
+                    polarity = item.values;
+                    return polarity;
+                }
+            });
+            return polarity;
+        };
         //################# JSON #######################
         /**
          * get config data
@@ -253,7 +281,14 @@ var STYLE;
          * set color headings
          */
         Customize.setColor = function (tHead, color) {
-            tHead.selectAll('th').style("background-color", color.solid.color);
+            if (tHead) {
+                if (color == undefined || color == null) {
+                    tHead.selectAll('th').style("background-color", "#015c55");
+                }
+                else {
+                    tHead.selectAll('th').style("background-color", color);
+                }
+            }
         };
         return Customize;
     }());
@@ -334,28 +369,47 @@ var powerbi;
                         this.selectionManager = options.host.createSelectionManager();
                         this.cleanDataModel();
                         this.target = d3.select(options.element);
-                        this.div = this.target.append('div') //div to target table
+                        this.div = this.target.append('div')
                             .classed('wrapper', true);
                         this.setSettings();
+                        this.modal = this.div.append('div').classed('modal', true);
+                        this.modalContent = this.modal.append("div").classed("modal-content", true);
+                        //*this.close = this.modalContent.append("span").classed('close',true).html('&times;');
+                        this.modalContent.append("div").classed('bar', true).text("Config Columns");
+                        this.configBody = this.modalContent.append("div").attr("id", "config").html('<br>');
+                        this.InitconfigHTML();
                     }
+                    Visual.prototype.InitconfigHTML = function () {
+                        this.modalContent.append("span").html("<br>SCORE<br><br>");
+                    };
+                    /**
+                     * populate columns
+                     */
+                    Visual.prototype.configHTML = function () {
+                        this.modalContent.select("div[id='config']").remove();
+                        var html = "\n            <label>Columns</label>\n            <select name=\"cols\" style=\"width:300px\">\n             " + this.dataViewModel.columns.map(function (item) { return "<option value=\"" + item.name + "\">" + item.name + "</option>"; }).join('') + "\n             </select>";
+                        html += "\n              &nbsp;&nbsp;&nbsp;&nbsp;<label>Icons</label>\n               <select name=\"icons\" style=\"width:300px\">\n               <option value=\"arrow\">Arrow</option>\n               <option value=\"bullet\">Bullet</option>\n               </select><br><br><hr><br>\n             ";
+                        this.modalContent.append("div").attr("id", "config").style("font-size", "17px").html(html);
+                    };
                     /**
                      * UPDATE OF VISUAL
                      * @param optionsUpdate
                      * @param optionsInit
                      */
                     Visual.prototype.update = function (optionsUpdate, optionsInit) {
-                        this.cleanDataModel();
                         if (this.init || (optionsUpdate.viewport.height == this.height && optionsUpdate.viewport.width == this.width)) {
                             if (optionsUpdate.dataViews[0]) {
                                 this.objects = optionsUpdate.dataViews[0].metadata.objects; //get objects properties
-                                this.config = COMMON.Core.getConfig(optionsUpdate.dataViews); //get config columns                 
-                                this.setSettings(); //set settings to options
+                                this.config = COMMON.Core.getConfig(optionsUpdate.dataViews); //get config columns                                                                          
                                 this.parseData(optionsUpdate.dataViews); //set data to my model
                                 this.drawTable(optionsInit); //draw table
                                 this.tableStyling(); //table style
+                                this.configHTML();
                                 this.cleanDataModel(); //clean data model      
                             }
                         }
+                        this.setSettings(); //set settings to options
+                        this.openConfig(); //open config options   
                         this.height = optionsUpdate.viewport.height; //update height 
                         this.width = optionsUpdate.viewport.width; //update width
                         if (this.init) {
@@ -371,8 +425,7 @@ var powerbi;
                         if (!dataViews
                             || !dataViews[0]
                             || !dataViews[0].categorical
-                            || !dataViews[0].categorical.categories
-                            || !dataViews[0].categorical.values)
+                            || !dataViews[0].categorical.categories)
                             return;
                         this.setHeaders(dataViews); //set headers of collumns
                         this.setConfigColumns(); //set config columns in dataview model
@@ -395,6 +448,9 @@ var powerbi;
                             icon: [],
                             polarityColumn: ""
                         });
+                        if (!data) {
+                            return;
+                        }
                         //insert header values
                         data.forEach(function (item) {
                             if (_.findIndex(_this.dataViewModel.columns, { name: item.source.displayName }) < 0) {
@@ -415,16 +471,25 @@ var powerbi;
                     Visual.prototype.setRows = function (view) {
                         var _this = this;
                         var data = view[0].categorical.values;
-                        var indicator = view[0].categorical.categories[0];
+                        var indicator = COMMON.Core.getIndicator(view[0].categorical.categories);
+                        var polarity = COMMON.Core.getPolarity(view[0].categorical.categories);
                         var colsLenght = this.dataViewModel.columns.length - 1; //4
                         var type;
                         var row = { id: null, polarity: 1, row: [] };
                         var i = 0, j = 0;
+                        if (!data) {
+                            indicator.forEach(function (item) {
+                                row = { id: null, polarity: 1, row: [] };
+                                row.row.push(item);
+                                _this.dataViewModel.values.push(row);
+                            });
+                            return;
+                        }
                         var rowsLength = data.length / colsLenght; //8
                         data.forEach(function (item) {
                             if (i % colsLenght == 0) {
-                                row = { id: null, polarity: 1, row: [] };
-                                row.row.push(indicator.values[j]);
+                                row = { id: null, polarity: polarity[j], row: [] };
+                                row.row.push(indicator[j]);
                                 row.id = j;
                             }
                             type = _this.dataViewModel.columns[(i % colsLenght) + 1].type;
@@ -435,12 +500,9 @@ var powerbi;
                             }
                             i++;
                         });
-                        // console.log(JSON.stringify(this.dataViewModel.values));
-                        // console.log(JSON.stringify(this.dataViewModel.columns));  
                     };
                     Visual.prototype.setConfigRows = function (type, value, k) {
                         var score, iconType;
-                        // console.log(type +" "+ strucData.Type.SCORE);
                         if (type == strucData.Type.SCORE) {
                             iconType = this.dataViewModel.columns[k].iconType;
                             score = COMMON.Core.getScore(+value);
@@ -589,9 +651,9 @@ var powerbi;
                         switch (objectName) {
                             case 'kPIMeasures':
                                 objectEnumeration.push({
-                                    objectName: "objectName",
+                                    objectName: objectName,
                                     properties: {
-                                        collumns: _.columns
+                                        config: _.config
                                     },
                                     selector: null
                                 });
@@ -617,9 +679,23 @@ var powerbi;
                     Visual.prototype.setSettings = function () {
                         this.tableOptions = {
                             zoom: PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD.getValue(this.objects, "TableOptions", "zoom", 20),
-                            columns: PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD.getValue(this.objects, "kPIMeasures", "collumns", false),
+                            config: PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD.getValue(this.objects, "kPIMeasures", "config", false),
                             color: PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD.getValue(this.objects, "TableOptions", "color", "#015c55")
                         };
+                        d3.select('span').on('click', function () {
+                            this.modal.style("display", "none");
+                        }.bind(this));
+                    };
+                    /**
+                     * open modal config
+                     */
+                    Visual.prototype.openConfig = function () {
+                        if (this.tableOptions.config) {
+                            this.modal.style("display", "block");
+                        }
+                        else {
+                            this.modal.style("display", "none");
+                        }
                     };
                     /**
                     * styling table

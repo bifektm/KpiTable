@@ -13,14 +13,22 @@ module STYLE {
        /**
         * zoom of visual
         */
-        static setZoom(target:d3.Selection<HTMLElement>,num:any){
-            target.select('div').style("font-Size",num+"px");
-        }
-        /**
-         * set color headings
-         */
-        static setColor(tHead:d3.Selection<HTMLElement>,color:any){
-            tHead.selectAll('th').style("background-color",color.solid.color);
-        }
+       static setZoom(target: d3.Selection<HTMLElement>, num: any) {
+           target.select('div').style("font-Size", num + "px");
+       }
+       /**
+        * set color headings
+        */
+       static setColor(tHead: d3.Selection<HTMLElement>, color: any) {
+           if (tHead) {
+               if (color == undefined || color == null) {
+                    tHead.selectAll('th').style("background-color","#015c55");
+               } else {
+                    tHead.selectAll('th').style("background-color",color);
+               }
+           }
+
+
+       }
     }
 }

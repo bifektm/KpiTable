@@ -12,17 +12,18 @@
         {
             "displayName": "Other",
             "name": "polarity",
-            "kind": "GroupingOrMeasure"
+            "kind": "Grouping"
 
         },
         {
             "displayName": "Config",
             "name": "config",
-            "kind": "GroupingOrMeasure"
+            "kind": "Grouping"
         }
     ],
     "dataViewMappings": [{
             "categorical": {
+
                 "categories": {
                     "bind": {
                         "to": "rows"
@@ -35,17 +36,8 @@
                                 "bind": {
                                     "to": "values"
                                 }
-                            },
-                            {
-                                "bind": {
-                                    "to": "polarity"
-                                }
-                            },
-                            {
-                                "bind": {
-                                    "to": "config"
-                                }
                             }
+
                         ]
                     }
 
@@ -53,6 +45,37 @@
             }
 
 
+        },
+        {
+            "categorical": {
+                "categories": {
+
+                    "bind": {
+                        "to": "polarity"
+                    }
+                },
+                "values": {
+                    "bind": {
+                        "to": "polarity"
+                    }
+                }
+            }
+        },
+
+        {
+            "categorical": {
+                "categories": {
+
+                    "bind": {
+                        "to": "config"
+                    }
+                },
+                "values": {
+                    "bind": {
+                        "to": "config"
+                    }
+                }
+            }
         }
 
     ],
@@ -60,10 +83,18 @@
         "kPIMeasures": {
             "displayName": "KPI Measure",
             "properties": {
-                "collumns": {
+                "config": {
                     "displayName": "Config",
                     "type": {
                         "bool": true
+                    }
+                },
+                "bar": {
+                    "displayName": "bar",
+                    "type": {
+                        "enumeration": [
+
+                        ]
                     }
                 }
             }
@@ -72,7 +103,7 @@
             "displayName": "Table Options",
             "properties": {
                 "zoom": {
-                    "displayName": "Zoom",
+                    "displayName": "Font-size",
                     "type": {
                         "formatting": {
                             "fontSize": true
@@ -82,6 +113,7 @@
                 "color": {
                     "displayName": "Color Columns",
                     "type": {
+
                         "fill": {
                             "solid": {
                                 "color": true

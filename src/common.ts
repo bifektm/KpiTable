@@ -50,6 +50,36 @@ module COMMON {
                 return num;
             }
         }
+        /**
+         * get indicator values
+         * @param data 
+         */
+        public static getIndicator(data: any[]) {
+            let indicator = [];
+            data.forEach(item => {
+                if (item.source.roles["rows"] == true) {
+                    indicator = item.values;
+                    return indicator;
+                }
+
+            });
+            return indicator;
+        }
+        /**
+         * get polarity values
+         * @param data 
+         */
+        public static getPolarity(data: any[]) {
+            let polarity = [];
+            data.forEach(item => {
+                if (item.source.roles["polarity"] == true) {
+                    polarity = item.values;
+                    return polarity;
+                }
+
+            });
+            return polarity;
+        }
         //################# JSON #######################
         /**
          * get config data
