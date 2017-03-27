@@ -73,8 +73,10 @@ module COMMON {
             let polarity = [];
             data.forEach(item => {
                 if (item.source.roles["polarity"] == true) {
-                    polarity = item.values;
-                    return polarity;
+                    polarity.push({
+                        name : item.source.displayName,
+                        values:item.values
+                    });
                 }
 
             });

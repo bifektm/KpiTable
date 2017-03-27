@@ -204,8 +204,10 @@ var COMMON;
             var polarity = [];
             data.forEach(function (item) {
                 if (item.source.roles["polarity"] == true) {
-                    polarity = item.values;
-                    return polarity;
+                    polarity.push({
+                        name: item.source.displayName,
+                        values: item.values
+                    });
                 }
             });
             return polarity;
@@ -378,17 +380,20 @@ var powerbi;
                         this.modalContent.append("div").classed('bar', true).text("Config Columns");
                         this.configBody = this.modalContent.append("div").attr("id", "config").html('<br>');
                         this.InitconfigHTML();
+                        Visual.config = [];
                     }
                     Visual.prototype.InitconfigHTML = function () {
-                        this.modalContent.append("span").html("<br>SCORE<br><br>");
+                        this.modalContent.append("div").html("SCORE").style("float", "left").style("width", "50%");
+                        this.modalContent.append("div").html("VARIATION");
                     };
                     /**
                      * populate columns
                      */
                     Visual.prototype.configHTML = function () {
                         this.modalContent.select("div[id='config']").remove();
-                        var html = "\n            <label>Columns</label>\n            <select name=\"cols\" style=\"width:300px\">\n             " + this.dataViewModel.columns.map(function (item) { return "<option value=\"" + item.name + "\">" + item.name + "</option>"; }).join('') + "\n             </select>";
-                        html += "\n              &nbsp;&nbsp;&nbsp;&nbsp;<label>Icons</label>\n               <select name=\"icons\" style=\"width:300px\">\n               <option value=\"arrow\">Arrow</option>\n               <option value=\"bullet\">Bullet</option>\n               </select><br><br><hr><br>\n             ";
+                        var bullets = ICON.ShapeFactory.getShape("BULLET");
+                        var arrow = ICON.ShapeFactory.getShape("ARROW");
+                        var html = "\n            <table class=\"config\" border=\"0\">\n            <tr>\n                <td>\n                    <label>Columns :</label>\n                </td>\n                <td> \n                    <select name=\"cols\" style=\"width:200px\">\n                    " + this.dataViewModel.columns.map(function (item) { return "<option value=\"" + item.name + "\">" + item.name + "</option>"; }).join('') + "\n                    </select>\n                </td>\n                <td rowspan=\"5\" >&nbsp;&nbsp;</td>\n                <td>\n                    <label>Columns :</label>\n                </td>\n                \n                <td> \n                    <select name=\"colsV\" style=\"width:200px\">\n                    " + this.dataViewModel.columns.map(function (item) { return "<option value=\"" + item.name + "\">" + item.name + "</option>"; }).join('') + "\n                    </select>\n                </td>\n             </tr>\n               <tr>\n                <td >\n                    <label>Type Icon :</label>\n                </td>\n                <td> \n                    <select name=\"typeIcon\" style=\"width:200px\">\n                    <option value=\"icon\">Icon</option>\n                    <option value=\"icontext\">Icon-Text</option>\n                    <option value=\"text\">Text</option>\n                    </select>\n                </td>\n                <td></td>\n                <td> \n                   \n                </td>\n             </tr>\n            <tr>\n                <td>       \n                  <label>Arrow :</label>\n                </td>\n                <td>\n                <input type=\"radio\" name=\"icon\" value=\"arrow\" checked> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;" + arrow.map(function (item) { return "" + item; }).join('&nbsp;&nbsp; | &nbsp;&nbsp;') + "\n                </td>\n                <td>Other</td>\n                <td> \n                    <select name=\"pol\" style=\"width:200px\">\n                    " + this.dataViewModel.polarity.map(function (item) { return "<option value=\"" + item.name + "\">" + item.name + "</option>"; }).join('') + "\n                    </select>\n                </td>\n            </tr>\n             <tr>\n                <td>       \n                  <label>Bullet :</label>\n                </td>\n          \n                <td>\n                 <input type=\"radio\" name=\"icon\" value=\"bullet\">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; " + bullets.map(function (item) { return "" + item; }).join('&nbsp;&nbsp; | &nbsp;&nbsp;') + "\n                </td>\n                <td></td>\n                <td></td>\n            </tr>\n            <tr>\n                 <td colspan=\"2\" style=\"text-align:center\"><button style=\"color:white\" id=\"scoreButton\">Save</button>  </td>\n            <td colspan=\"2\" style=\"text-align:center\"><button style=\"color:white\" id=\"variationButton\">Save</button>  </td>\n            </tr>\n            </table>\n            <br><hr><br>\n           ";
                         this.modalContent.append("div").attr("id", "config").style("font-size", "17px").html(html);
                     };
                     /**
@@ -397,17 +402,18 @@ var powerbi;
                      * @param optionsInit
                      */
                     Visual.prototype.update = function (optionsUpdate, optionsInit) {
+                        //clean data model 
                         if (this.init || (optionsUpdate.viewport.height == this.height && optionsUpdate.viewport.width == this.width)) {
                             if (optionsUpdate.dataViews[0]) {
                                 this.objects = optionsUpdate.dataViews[0].metadata.objects; //get objects properties
-                                this.config = COMMON.Core.getConfig(optionsUpdate.dataViews); //get config columns                                                                          
-                                this.parseData(optionsUpdate.dataViews); //set data to my model
+                                //Visual.config = COMMON.Core.getConfig(optionsUpdate.dataViews);                  //get config columns 
+                                this.parseData(optionsUpdate.dataViews); //set data to my model                   
                                 this.drawTable(optionsInit); //draw table
                                 this.tableStyling(); //table style
                                 this.configHTML();
-                                this.cleanDataModel(); //clean data model      
                             }
                         }
+                        this.configPopup();
                         this.setSettings(); //set settings to options
                         this.openConfig(); //open config options   
                         this.height = optionsUpdate.viewport.height; //update height 
@@ -415,6 +421,64 @@ var powerbi;
                         if (this.init) {
                             this.init = false;
                         } //flag  prevent drawTable ever
+                        this.cleanDataModel();
+                    };
+                    /**
+                     * popup configs
+                     */
+                    Visual.prototype.configPopup = function () {
+                        var colOther, iconType, colName;
+                        d3.select("button[id='scoreButton']").on('click', function () {
+                            var icon = d3.select("input[name='icon']:checked").property("value");
+                            d3.select("select[name='typeIcon']").selectAll("option")
+                                .filter(function (d, i) {
+                                if (this.selected) {
+                                    iconType = this.value;
+                                    return this.value;
+                                }
+                            });
+                            d3.select("select[name='cols'] ")
+                                .selectAll("option")
+                                .filter(function (d, i) {
+                                if (this.selected) {
+                                    colName = this.value;
+                                    return this.value;
+                                }
+                            });
+                            Visual.config.push({
+                                columnName: colName,
+                                typeColumn: "SCORE",
+                                iconType: icon,
+                                visualValue: iconType,
+                                columnPolarity: ""
+                            });
+                            console.log("click");
+                        }.bind(this));
+                        d3.select("button[id='variationButton']").on('click', function () {
+                            d3.select("select[name='colsV']").selectAll("option")
+                                .filter(function (d, i) {
+                                if (this.selected) {
+                                    colOther = this.value;
+                                    return this.value;
+                                }
+                            });
+                            d3.select("select[name='pol'] ")
+                                .selectAll("option")
+                                .filter(function (d, i) {
+                                if (this.selected) {
+                                    colName = this.value;
+                                    return this.value;
+                                }
+                            });
+                            Visual.config.push({
+                                columnName: colOther,
+                                typeColumn: "VARIATION",
+                                iconType: "",
+                                visualValue: "",
+                                columnPolarity: colName
+                            });
+                        });
+                        //console.log(JSON.stringify(Visual.config));
                     };
                     /**
                      * parse data to dataviewmodel
@@ -473,6 +537,7 @@ var powerbi;
                         var data = view[0].categorical.values;
                         var indicator = COMMON.Core.getIndicator(view[0].categorical.categories);
                         var polarity = COMMON.Core.getPolarity(view[0].categorical.categories);
+                        this.dataViewModel.polarity = polarity;
                         var colsLenght = this.dataViewModel.columns.length - 1; //4
                         var type;
                         var row = { id: null, polarity: 1, row: [] };
@@ -488,7 +553,10 @@ var powerbi;
                         var rowsLength = data.length / colsLenght; //8
                         data.forEach(function (item) {
                             if (i % colsLenght == 0) {
-                                row = { id: null, polarity: polarity[j], row: [] };
+                                if (polarity.length < 1) {
+                                    polarity = [{ name: "", values: [] }];
+                                }
+                                row = { id: null, polarity: polarity[0].values[j], row: [] };
                                 row.row.push(indicator[j]);
                                 row.id = j;
                             }
@@ -518,8 +586,6 @@ var powerbi;
                             }
                         }
                         else if (type == strucData.Type.VARIATION) {
-                            // polarityColId = this.dataViewModel.columns[k].polarityPositionId;
-                            //row.polarity = values[i][polarityColId];
                             return value;
                         }
                         else {
@@ -533,8 +599,10 @@ var powerbi;
                    */
                     Visual.prototype.setConfigColumns = function () {
                         var _this = this;
-                        var config = this.config;
+                        var config = Visual.config;
                         var id;
+                        console.log("config");
+                        console.log(JSON.stringify(Visual.config));
                         if (config.length > 0) {
                             _.each(config, function (item) {
                                 id = _.findIndex(_this.dataViewModel.columns, { name: item.columnName });
@@ -579,7 +647,7 @@ var powerbi;
                             return;
                         }
                         //if exists, remove existing table
-                        this.target.select('table').remove();
+                        this.target.select("table[class='fixed_headers']").remove();
                         // get columns and values
                         var columns = this.dataViewModel.columns;
                         var values = this.dataViewModel.values;
@@ -710,9 +778,10 @@ var powerbi;
                     Visual.prototype.cleanDataModel = function () {
                         this.dataViewModel = {
                             columns: [],
-                            values: []
+                            values: [],
+                            polarity: []
                         };
-                        this.config = [];
+                        //this.config = [];
                     };
                     /**
                      * DESTROY

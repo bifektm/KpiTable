@@ -6,7 +6,9 @@ module strucData {
     export interface ITableViewModel {
         columns: IColumns[]
         values: IRows[];
+        polarity:IPolarity[];
     }
+    
     export interface IRows{
         row:string[]
         id:any;
@@ -19,6 +21,10 @@ module strucData {
         icon :string[];
         polarityColumn:string;
 
+    }
+    export interface IPolarity{
+        name:string;
+        values:any[];
     }
     
     /**
@@ -45,7 +51,7 @@ module strucData {
         config:any;
         color:any;
     }
-    //TEMP parse json
+    //configs
     export interface IConfig{
         columnName:string;
         typeColumn:string;

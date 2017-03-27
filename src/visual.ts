@@ -20,13 +20,10 @@ module powerbi.extensibility.visual {
         private host: IVisualHost;
         private tableOptions: strucData.IOptions;
         private objects: any;
-        private config: strucData.IConfig[];
+        private static config: strucData.IConfig[];
         private width:number;
         private height:number;
         private init: boolean = true;
-       
-        
-        
 
         /**
          * CONSTRUCTOR OF VISUAL
@@ -46,28 +43,90 @@ module powerbi.extensibility.visual {
             this.modalContent.append("div").classed('bar',true).text("Config Columns");
             this.configBody = this.modalContent.append("div").attr("id","config").html('<br>');
             this.InitconfigHTML();
+            Visual.config = [];
         }
         private InitconfigHTML(){
-            this.modalContent.append("span").html("<br>SCORE<br><br>");
+            this.modalContent.append("div").html("SCORE").style("float","left").style("width","50%");
+            this.modalContent.append("div").html("VARIATION");
         }
         /**
          * populate columns
          */
         private configHTML(){
             this.modalContent.select("div[id='config']").remove();
+            let bullets = ICON.ShapeFactory.getShape("BULLET");
+            let arrow = ICON.ShapeFactory.getShape("ARROW");
             let html =`
-            <label>Columns</label>
-            <select name="cols" style="width:300px">
-             ${this.dataViewModel.columns.map(item =>`<option value="${item.name}">${item.name}</option>`).join('')}
-             </select>`;
-             html+=`
-              &nbsp;&nbsp;&nbsp;&nbsp;<label>Icons</label>
-               <select name="icons" style="width:300px">
-               <option value="arrow">Arrow</option>
-               <option value="bullet">Bullet</option>
-               </select><br><br><hr><br>
-             `;
-             
+            <table class="config" border="0">
+            <tr>
+                <td>
+                    <label>Columns :</label>
+                </td>
+                <td> 
+                    <select name="cols" style="width:200px">
+                    ${this.dataViewModel.columns.map(item =>`<option value="${item.name}">${item.name}</option>`).join('')}
+                    </select>
+                </td>
+                <td rowspan="5" >&nbsp;&nbsp;</td>
+                <td>
+                    <label>Columns :</label>
+                </td>
+                
+                <td> 
+                    <select name="colsV" style="width:200px">
+                    ${this.dataViewModel.columns.map(item =>`<option value="${item.name}">${item.name}</option>`).join('')}
+                    </select>
+                </td>
+             </tr>
+               <tr>
+                <td >
+                    <label>Type Icon :</label>
+                </td>
+                <td> 
+                    <select name="typeIcon" style="width:200px">
+                    <option value="icon">Icon</option>
+                    <option value="icontext">Icon-Text</option>
+                    <option value="text">Text</option>
+                    </select>
+                </td>
+                <td></td>
+                <td> 
+                   
+                </td>
+             </tr>
+            <tr>
+                <td>       
+                  <label>Arrow :</label>
+                </td>
+                <td>
+                <input type="radio" name="icon" value="arrow" checked> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;${arrow.map(item => ``+item).join('&nbsp;&nbsp; | &nbsp;&nbsp;')}
+                </td>
+                <td>Other</td>
+                <td> 
+                    <select name="pol" style="width:200px">
+                    ${this.dataViewModel.polarity.map(item =>`<option value="${item.name}">${item.name}</option>`).join('')}
+                    </select>
+                </td>
+            </tr>
+             <tr>
+                <td>       
+                  <label>Bullet :</label>
+                </td>
+          
+                <td>
+                 <input type="radio" name="icon" value="bullet">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ${bullets.map(item => ``+item).join('&nbsp;&nbsp; | &nbsp;&nbsp;')}
+                </td>
+                <td></td>
+                <td></td>
+            </tr>
+            <tr>
+                 <td colspan="2" style="text-align:center"><button style="color:white" id="scoreButton">Save</button>  </td>
+            <td colspan="2" style="text-align:center"><button style="color:white" id="variationButton">Save</button>  </td>
+            </tr>
+            </table>
+            <br><hr><br>
+           `;
+  
             this.modalContent.append("div").attr("id","config").style("font-size","17px").html(html); 
             
         }
@@ -78,25 +137,91 @@ module powerbi.extensibility.visual {
          */
         @logExceptions()
         public update(optionsUpdate: VisualUpdateOptions, optionsInit: VisualConstructorOptions) {
-         
+                                                                               //clean data model 
             if (this.init || (optionsUpdate.viewport.height == this.height && optionsUpdate.viewport.width == this.width)) {
                 if(optionsUpdate.dataViews[0]){
                     this.objects = optionsUpdate.dataViews[0].metadata.objects;                      //get objects properties
-                    this.config = COMMON.Core.getConfig(optionsUpdate.dataViews);                    //get config columns                                                                          
-                    this.parseData(optionsUpdate.dataViews);                                         //set data to my model
-                    this.drawTable(optionsInit);                                                     //draw table
-                    this.tableStyling();                                                             //table style
-                    this.configHTML();
-                    this.cleanDataModel();                                                           //clean data model      
+                    //Visual.config = COMMON.Core.getConfig(optionsUpdate.dataViews);                  //get config columns 
+
+                        this.parseData(optionsUpdate.dataViews);                                        //set data to my model                   
+                        this.drawTable(optionsInit);                                                     //draw table
+                        this.tableStyling();                                                             //table style
+                        this.configHTML();
+            
                 }                                                                                                                
             }
+            this.configPopup(); 
             this.setSettings();                                                                       //set settings to options
             this.openConfig();                                                                        //open config options   
             this.height = optionsUpdate.viewport.height;                                              //update height 
             this.width = optionsUpdate.viewport.width;                                                //update width
             if (this.init) { this.init = false; }                                                     //flag  prevent drawTable ever
+            this.cleanDataModel();
         }
+        /**
+         * popup configs
+         */
+        private configPopup() {
+            let colOther, iconType, colName;
+            
 
+            d3.select("button[id='scoreButton']").on('click', function () {
+                
+                let icon = d3.select("input[name='icon']:checked").property("value");
+                d3.select("select[name='typeIcon']").selectAll("option")
+                    .filter(function (d, i) {
+                        if (this.selected) {
+                            iconType = this.value;
+                            return this.value;
+                        }
+                    });
+                d3.select("select[name='cols'] ")
+                    .selectAll("option")
+                    .filter(function (d, i) {
+                        if (this.selected) {
+                            colName = this.value;
+                            return this.value;
+                        }
+                    });
+
+                Visual.config.push({
+                    columnName: colName,
+                    typeColumn: "SCORE",
+                    iconType: icon,
+                    visualValue: iconType,
+                    columnPolarity: ""
+                });
+
+                console.log("click");
+            }.bind(this));
+            d3.select("button[id='variationButton']").on('click', function () {
+                d3.select("select[name='colsV']").selectAll("option")
+                    .filter(function (d, i) {
+                        if (this.selected) {
+                            colOther = this.value;
+                            return this.value;
+                        }
+                    });
+                d3.select("select[name='pol'] ")
+                    .selectAll("option")
+                    .filter(function (d, i) {
+                        if (this.selected) {
+                            colName = this.value;
+                            return this.value;
+                        }
+                    });
+                Visual.config.push({
+                    columnName: colOther,
+                    typeColumn: "VARIATION",
+                    iconType: "",
+                    visualValue: "",
+                    columnPolarity: colName
+                });
+            });
+            
+
+                //console.log(JSON.stringify(Visual.config));
+        }
         /**
          * parse data to dataviewmodel
          * @param dataViews 
@@ -157,6 +282,7 @@ module powerbi.extensibility.visual {
             let data = view[0].categorical.values;
             let indicator = COMMON.Core.getIndicator(view[0].categorical.categories);
             let polarity = COMMON.Core.getPolarity(view[0].categorical.categories);
+            this.dataViewModel.polarity = polarity;
             let colsLenght = this.dataViewModel.columns.length - 1;//4
             let type;
             let row = { id: null, polarity: 1, row: [] };
@@ -174,7 +300,10 @@ module powerbi.extensibility.visual {
             data.forEach(item => {
 
                 if (i % colsLenght == 0) {
-                    row = { id: null, polarity: polarity[j], row: [] };
+                    if(polarity.length < 1){ //TODO
+                        polarity=[{name:"",values:[]}];
+                    }
+                    row = { id: null, polarity: polarity[0].values[j], row: [] };
                     row.row.push(indicator[j]);
                     row.id = j;
                 }
@@ -191,9 +320,8 @@ module powerbi.extensibility.visual {
             });
         }
         private setConfigRows(type:any,value:any,k:number){
-           let score, iconType;
-         
-                 
+            
+           let score, iconType;   
                  if (type == strucData.Type.SCORE) { //SCORE
                         iconType = this.dataViewModel.columns[k].iconType;
                         score = COMMON.Core.getScore(+value);
@@ -210,11 +338,7 @@ module powerbi.extensibility.visual {
                                 return value;
                         }
                     } else if (type == strucData.Type.VARIATION) { //type variation
-
-                    // polarityColId = this.dataViewModel.columns[k].polarityPositionId;
-                        //row.polarity = values[i][polarityColId];
                         return value;
-
                     } else {
                             return value;     
                     }
@@ -225,9 +349,10 @@ module powerbi.extensibility.visual {
        * @param rowsLength 
        */
         private setConfigColumns() {
-            let config = this.config;
+            let config = Visual.config;
             var id;
-              
+              console.log("config");
+              console.log(JSON.stringify(Visual.config));
             if (config.length > 0) {
 
                 _.each(config, item => {
@@ -256,11 +381,13 @@ module powerbi.extensibility.visual {
                     } else if (item.typeColumn.toUpperCase() == "VARIATION") {
                         this.dataViewModel.columns[id].type = strucData.Type.VARIATION;
                         this.dataViewModel.columns[id].polarityColumn = item.columnPolarity;
-                       // this.dataViewModel.columns[id].polarityPositionId = _.findIndex(this.dataViewModel.columns, { name: item.columnPolarity });
+                       
 
                     } else { }
                 });
             }
+               
+            
         }
         /**
          * draw table to my target
@@ -271,7 +398,7 @@ module powerbi.extensibility.visual {
             if (this.dataViewModel.columns.length < 1) { return; }
 
             //if exists, remove existing table
-            this.target.select('table').remove();
+            this.target.select("table[class='fixed_headers']").remove();
             
             // get columns and values
             var columns = this.dataViewModel.columns;
@@ -389,7 +516,7 @@ module powerbi.extensibility.visual {
          */
         //_.color.solid.color
         private setSettings() {
-        
+             
             this.tableOptions = {
                 zoom: getValue(this.objects, "TableOptions", "zoom", 20),
                 config: getValue(this.objects, "kPIMeasures", "config", false),
@@ -399,8 +526,7 @@ module powerbi.extensibility.visual {
             d3.select('span').on('click', function (){
                this.modal.style("display","none");
             }.bind(this));
-           
-        
+            
         }
         /**
          * open modal config
@@ -426,9 +552,10 @@ module powerbi.extensibility.visual {
         private cleanDataModel() {
             this.dataViewModel = {
                 columns: [],
-                values: []
+                values: [],
+                polarity:[]
             };
-            this.config = [];
+            //this.config = [];
         }
         /**
          * DESTROY 
