@@ -24,6 +24,7 @@ module powerbi.extensibility.visual.PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD 
         private width:number;
         private height:number;
         private init: boolean = true;
+        private dataview : DataView;
 
         /**
          * CONSTRUCTOR OF VISUAL
@@ -137,9 +138,10 @@ module powerbi.extensibility.visual.PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD 
          */
         @logExceptions()
         public update(optionsUpdate: VisualUpdateOptions, optionsInit: VisualConstructorOptions) {
-                                                                               //clean data model 
+                                                                               
             if (this.init || (optionsUpdate.viewport.height == this.height && optionsUpdate.viewport.width == this.width)) {
                 if(optionsUpdate.dataViews[0]){
+                    this.dataview = optionsUpdate.dataViews[0];
                     this.objects = optionsUpdate.dataViews[0].metadata.objects;                      //get objects properties
                     //Visual.config = COMMON.Core.getConfig(optionsUpdate.dataViews);                  //get config columns 
 
@@ -481,28 +483,35 @@ module powerbi.extensibility.visual.PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD 
 
              let objectName = options.objectName;
              let objectEnumeration: VisualObjectInstance[] = [];
-
-            var _ = this.tableOptions;
-          
+             var metadataColumns: DataViewMetadataColumn[] = this.dataview.metadata.columns;
+             var _ = this.tableOptions;
+             var foo :DataViewPropertyValue = {
+value:"i",displayName:"currentColumn.displayName"
+             }
             switch (objectName) {
                 case 'kPIMeasures':
+                 for (var i = 0; i < metadataColumns.length; i++) {
+                     var currentColumn: DataViewMetadataColumn = metadataColumns[i];
                     objectEnumeration.push({
                         objectName: objectName,
+                        displayName: currentColumn.displayName,
                         properties: {
-                            config:_.config
+                           /* config:_.config*/
+                           bar:["1","2","2"]
                         },
-                        selector: null
+                        selector: { metadata: currentColumn.queryName }
                     });
-                    
+                 };
                     break;
                 case 'TableOptions':
                     objectEnumeration.push({
                         objectName: objectName,
+                        displayName: "Indicador",
                         properties: {
                             zoom: _.zoom,
                             color:  _.color 
                         },
-                        selector: null
+                        selector: { metadata: "Indicadores.Indicador" }
                     });
                     break;
 
