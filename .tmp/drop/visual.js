@@ -717,9 +717,6 @@ var powerbi;
                         var objectEnumeration = [];
                         var metadataColumns = this.dataview.metadata.columns;
                         var _ = this.tableOptions;
-                        var foo = {
-                            value: "i", displayName: "currentColumn.displayName"
-                        };
                         switch (objectName) {
                             case 'kPIMeasures':
                                 for (var i = 0; i < metadataColumns.length; i++) {

@@ -485,9 +485,7 @@ module powerbi.extensibility.visual {
              let objectEnumeration: VisualObjectInstance[] = [];
              var metadataColumns: DataViewMetadataColumn[] = this.dataview.metadata.columns;
              var _ = this.tableOptions;
-             var foo :DataViewPropertyValue = {
-value:"i",displayName:"currentColumn.displayName"
-             }
+             
             switch (objectName) {
                 case 'kPIMeasures':
                  for (var i = 0; i < metadataColumns.length; i++) {
