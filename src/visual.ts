@@ -25,26 +25,40 @@ module powerbi.extensibility.visual {
         private height:number;
         private init: boolean = true;
         private dataview : DataView;
-
+        private colorPalette: IColorPalette;
+        private selectionIds: any = {};
+        private select : boolean=false;
+        private rowSelected :number;
+        private root :HTMLElement;
         /**
          * CONSTRUCTOR OF VISUAL
          * @param options 
          */
         constructor(options: VisualConstructorOptions) {
             this.host = options.host;
+            this.colorPalette = options.host.colorPalette;
+            this.root = options.element;
             this.selectionManager = options.host.createSelectionManager();
             this.cleanDataModel();
             this.target = d3.select(options.element);
             this.div = this.target.append('div')       
                 .classed('wrapper', true);
             this.setSettings();
+            this.div.append('div').classed('edit',true); 
             this.modal = this.div.append('div').classed('modal',true); 
             this.modalContent = this.modal.append("div").classed("modal-content",true);
-            //*this.close = this.modalContent.append("span").classed('close',true).html('&times;');
-            this.modalContent.append("div").classed('bar',true).text("Config Columns");
+            this.modalContent.append("div").classed('bar',true).text("Config Columns")
+            .append("span").classed('close',true).html('&times;');
             this.configBody = this.modalContent.append("div").attr("id","config").html('<br>');
             this.InitconfigHTML();
             Visual.config = [];
+            this.div.on("mouseover",function(){
+               d3.select('.edit').style("display","block");
+            });
+            this.div.on("mouseout",function(){
+               d3.select('.edit').style("display","none");
+            });
+           
         }
         private InitconfigHTML(){
             this.modalContent.append("div").html("SCORE").style("float","left").style("width","50%");
@@ -137,8 +151,8 @@ module powerbi.extensibility.visual {
          * @param optionsInit 
          */
         @logExceptions()
-        public update(optionsUpdate: VisualUpdateOptions, optionsInit: VisualConstructorOptions) {
-                                                                               
+        public update(optionsUpdate: VisualUpdateOptions) {
+                                                                          
             if (this.init || (optionsUpdate.viewport.height == this.height && optionsUpdate.viewport.width == this.width)) {
                 if(optionsUpdate.dataViews[0]){
                     this.dataview = optionsUpdate.dataViews[0];
@@ -146,7 +160,7 @@ module powerbi.extensibility.visual {
                     //Visual.config = COMMON.Core.getConfig(optionsUpdate.dataViews);                  //get config columns 
 
                         this.parseData(optionsUpdate.dataViews);                                        //set data to my model                   
-                        this.drawTable(optionsInit);                                                     //draw table
+                        this.drawTable();                                                     //draw table
                         this.tableStyling();                                                             //table style
                         this.configHTML();
             
@@ -159,6 +173,10 @@ module powerbi.extensibility.visual {
             this.width = optionsUpdate.viewport.width;                                                //update width
             if (this.init) { this.init = false; }                                                     //flag  prevent drawTable ever
             this.cleanDataModel();
+            if(this.select){
+                d3.selectAll("tr").classed("select-table",true);
+                d3.select(".select-table"+(this.rowSelected)).style("background-color","white");
+            }
         }
         /**
          * popup configs
@@ -194,7 +212,7 @@ module powerbi.extensibility.visual {
                     columnPolarity: ""
                 });
 
-                console.log("click");
+                
             }.bind(this));
             d3.select("button[id='variationButton']").on('click', function () {
                 d3.select("select[name='colsV']").selectAll("option")
@@ -221,8 +239,6 @@ module powerbi.extensibility.visual {
                 });
             });
             
-
-                //console.log(JSON.stringify(Visual.config));
         }
         /**
          * parse data to dataviewmodel
@@ -294,10 +310,16 @@ module powerbi.extensibility.visual {
                 indicator.forEach(item =>{
                 row = { id: null, polarity: 1, row: [] };
                 row.row.push(item);
+                row.id = j;
+                this.selectionIds[item] =this.host.createSelectionIdBuilder()
+                .withCategory(this.dataview.categorical.categories[0], j)
+                .createSelectionId();
                 this.dataViewModel.values.push(row);
+                j++;
             });
              return;
             }
+            j=0;
             let rowsLength = data.length / colsLenght;//8
             data.forEach(item => {
 
@@ -308,7 +330,12 @@ module powerbi.extensibility.visual {
                     row = { id: null, polarity: polarity[0].values[j], row: [] };
                     row.row.push(indicator[j]);
                     row.id = j;
+                    this.selectionIds[indicator[j]] =this.host.createSelectionIdBuilder()
+                    .withCategory(this.dataview.categorical.categories[0], j)
+                    .createSelectionId();
+                    
                 }
+                
                 type = this.dataViewModel.columns[(i % colsLenght)+1].type;
                 row.row.push(
                     this.setConfigRows(type, item.values[j], (i % colsLenght)+1)
@@ -354,7 +381,7 @@ module powerbi.extensibility.visual {
             let config = Visual.config;
             var id;
               console.log("config");
-              console.log(JSON.stringify(Visual.config));
+            
             if (config.length > 0) {
 
                 _.each(config, item => {
@@ -392,10 +419,9 @@ module powerbi.extensibility.visual {
             
         }
         /**
-         * draw table to my target
-         * @param options 
+         * draw table to my target 
          */
-        private drawTable(options: VisualConstructorOptions) {
+        private drawTable() {
              console.log("table");
             if (this.dataViewModel.columns.length < 1) { return; }
 
@@ -424,13 +450,17 @@ module powerbi.extensibility.visual {
                 .data(values)
                 .enter()
                 .append("tr")
+                .attr("class",function(d,i){
+                        return "select-table" +i;
+                });
+                
 
 
             var cells = rows.selectAll('td')
                 .data(function (row) {
                     return columns.map(
                         function (column, i) {
-                            return { column: column, value: row.row[i], type: column.type, polarity: row.polarity };
+                            return { column: column, value: row.row[i], type: column.type, polarity: row.polarity,id:row.id };
                         });
                 })
                 .enter()
@@ -450,28 +480,20 @@ module powerbi.extensibility.visual {
                     return COMMON.Core.formatNumber(<any>d.value); 
                 });
 
-          /*  rows.on('click', function (d) {
-
-                this.selectionManager.clear();
-                rows.attr("bgcolor", "#fff");
-                //d3.select(this).attr("bgcolor","red");
-
-                // console.log(JSON.stringify(d["row"][0]));
-
-                //console.log(d.id);
-
-                // Find the selectionId and select it
-
-                this.selectionManager.select(d.id).then((ids: ISelectionId[]) => {
-                    ids.forEach(function (id) {
-                        // console.log("foo: "+JSON.stringify(id));
-                    });
+            rows.on('click', function (d) {
+                this.selectionManager.select(this.selectionIds[d.row[0]]).then((ids: ISelectionId[]) => {
+                    if(ids.length > 0){
+                        this.select=true;
+                        this.rowSelected = d.id;
+                    }else{
+                        this.rowSelected = -1;
+                        this.select=false;
+                    }
                 });
 
-                // This call applys the previously selected selectionId
                 this.selectionManager.applySelectionFilter();
-
-            }.bind(this));*/
+                
+            }.bind(this));
 
         }
 
@@ -483,33 +505,29 @@ module powerbi.extensibility.visual {
 
              let objectName = options.objectName;
              let objectEnumeration: VisualObjectInstance[] = [];
-             var metadataColumns: DataViewMetadataColumn[] = this.dataview.metadata.columns;
+            // var metadataColumns: DataViewMetadataColumn[] = this.dataview.metadata.columns;
              var _ = this.tableOptions;
              
             switch (objectName) {
-                case 'kPIMeasures':
-                 for (var i = 0; i < metadataColumns.length; i++) {
-                     var currentColumn: DataViewMetadataColumn = metadataColumns[i];
+                /*case 'kPIMeasures':
+
                     objectEnumeration.push({
                         objectName: objectName,
-                        displayName: currentColumn.displayName,
                         properties: {
-                           /* config:_.config*/
-                           bar:["1","2","2"]
+                            config:_.config
                         },
-                        selector: { metadata: currentColumn.queryName }
+                        selector:null
                     });
-                 };
-                    break;
+             
+                    break;*/
                 case 'TableOptions':
                     objectEnumeration.push({
                         objectName: objectName,
-                        displayName: "Indicador",
                         properties: {
                             zoom: _.zoom,
-                            color:  _.color 
+                            color:  _.color
                         },
-                        selector: { metadata: "Indicadores.Indicador" }
+                        selector: null
                     });
                     break;
 
@@ -532,6 +550,9 @@ module powerbi.extensibility.visual {
              
             d3.select('span').on('click', function (){
                this.modal.style("display","none");
+            }.bind(this));
+            d3.select(".edit").on('click', function (){
+               this.modal.style("display","block");
             }.bind(this));
             
         }

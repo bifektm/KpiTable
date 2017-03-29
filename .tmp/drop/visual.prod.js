@@ -367,20 +367,31 @@ var powerbi;
                      */
                     function Visual(options) {
                         this.init = true;
+                        this.selectionIds = {};
+                        this.select = false;
                         this.host = options.host;
+                        this.colorPalette = options.host.colorPalette;
+                        this.root = options.element;
                         this.selectionManager = options.host.createSelectionManager();
                         this.cleanDataModel();
                         this.target = d3.select(options.element);
                         this.div = this.target.append('div')
                             .classed('wrapper', true);
                         this.setSettings();
+                        this.div.append('div').classed('edit', true);
                         this.modal = this.div.append('div').classed('modal', true);
                         this.modalContent = this.modal.append("div").classed("modal-content", true);
-                        //*this.close = this.modalContent.append("span").classed('close',true).html('&times;');
-                        this.modalContent.append("div").classed('bar', true).text("Config Columns");
+                        this.modalContent.append("div").classed('bar', true).text("Config Columns")
+                            .append("span").classed('close', true).html('&times;');
                         this.configBody = this.modalContent.append("div").attr("id", "config").html('<br>');
                         this.InitconfigHTML();
                         Visual.config = [];
+                        this.div.on("mouseover", function () {
+                            d3.select('.edit').style("display", "block");
+                        });
+                        this.div.on("mouseout", function () {
+                            d3.select('.edit').style("display", "none");
+                        });
                     }
                     Visual.prototype.InitconfigHTML = function () {
                         this.modalContent.append("div").html("SCORE").style("float", "left").style("width", "50%");
@@ -401,14 +412,14 @@ var powerbi;
                      * @param optionsUpdate
                      * @param optionsInit
                      */
-                    Visual.prototype.update = function (optionsUpdate, optionsInit) {
+                    Visual.prototype.update = function (optionsUpdate) {
                         if (this.init || (optionsUpdate.viewport.height == this.height && optionsUpdate.viewport.width == this.width)) {
                             if (optionsUpdate.dataViews[0]) {
                                 this.dataview = optionsUpdate.dataViews[0];
                                 this.objects = optionsUpdate.dataViews[0].metadata.objects; //get objects properties
                                 //Visual.config = COMMON.Core.getConfig(optionsUpdate.dataViews);                  //get config columns 
                                 this.parseData(optionsUpdate.dataViews); //set data to my model                   
-                                this.drawTable(optionsInit); //draw table
+                                this.drawTable(); //draw table
                                 this.tableStyling(); //table style
                                 this.configHTML();
                             }
@@ -422,6 +433,10 @@ var powerbi;
                             this.init = false;
                         } //flag  prevent drawTable ever
                         this.cleanDataModel();
+                        if (this.select) {
+                            d3.selectAll("tr").classed("select-table", true);
+                            d3.select(".select-table" + (this.rowSelected)).style("background-color", "white");
+                        }
                     };
                     /**
                      * popup configs
@@ -452,7 +467,6 @@ var powerbi;
                                 visualValue: iconType,
                                 columnPolarity: ""
                             });
-                            console.log("click");
                         }.bind(this));
                         d3.select("button[id='variationButton']").on('click', function () {
                             d3.select("select[name='colsV']").selectAll("option")
@@ -478,7 +492,6 @@ var powerbi;
                                 columnPolarity: colName
                             });
                         });
-                        //console.log(JSON.stringify(Visual.config));
                     };
                     /**
                      * parse data to dataviewmodel
@@ -546,10 +559,16 @@ var powerbi;
                             indicator.forEach(function (item) {
                                 row = { id: null, polarity: 1, row: [] };
                                 row.row.push(item);
+                                row.id = j;
+                                _this.selectionIds[item] = _this.host.createSelectionIdBuilder()
+                                    .withCategory(_this.dataview.categorical.categories[0], j)
+                                    .createSelectionId();
                                 _this.dataViewModel.values.push(row);
+                                j++;
                             });
                             return;
                         }
+                        j = 0;
                         var rowsLength = data.length / colsLenght; //8
                         data.forEach(function (item) {
                             if (i % colsLenght == 0) {
@@ -559,6 +578,9 @@ var powerbi;
                                 row = { id: null, polarity: polarity[0].values[j], row: [] };
                                 row.row.push(indicator[j]);
                                 row.id = j;
+                                _this.selectionIds[indicator[j]] = _this.host.createSelectionIdBuilder()
+                                    .withCategory(_this.dataview.categorical.categories[0], j)
+                                    .createSelectionId();
                             }
                             type = _this.dataViewModel.columns[(i % colsLenght) + 1].type;
                             row.row.push(_this.setConfigRows(type, item.values[j], (i % colsLenght) + 1));
@@ -602,7 +624,6 @@ var powerbi;
                         var config = Visual.config;
                         var id;
                         console.log("config");
-                        console.log(JSON.stringify(Visual.config));
                         if (config.length > 0) {
                             _.each(config, function (item) {
                                 id = _.findIndex(_this.dataViewModel.columns, { name: item.columnName });
@@ -639,9 +660,8 @@ var powerbi;
                     };
                     /**
                      * draw table to my target
-                     * @param options
                      */
-                    Visual.prototype.drawTable = function (options) {
+                    Visual.prototype.drawTable = function () {
                         console.log("table");
                         if (this.dataViewModel.columns.length < 1) {
                             return;
@@ -663,11 +683,14 @@ var powerbi;
                         var rows = this.tBody.selectAll("tr")
                             .data(values)
                             .enter()
-                            .append("tr");
+                            .append("tr")
+                            .attr("class", function (d, i) {
+                            return "select-table" + i;
+                        });
                         var cells = rows.selectAll('td')
                             .data(function (row) {
                             return columns.map(function (column, i) {
-                                return { column: column, value: row.row[i], type: column.type, polarity: row.polarity };
+                                return { column: column, value: row.row[i], type: column.type, polarity: row.polarity, id: row.id };
                             });
                         })
                             .enter()
@@ -685,28 +708,20 @@ var powerbi;
                             .html(function (d) {
                             return COMMON.Core.formatNumber(d.value);
                         });
-                        /*  rows.on('click', function (d) {
-              
-                              this.selectionManager.clear();
-                              rows.attr("bgcolor", "#fff");
-                              //d3.select(this).attr("bgcolor","red");
-              
-                              // console.log(JSON.stringify(d["row"][0]));
-              
-                              //console.log(d.id);
-              
-                              // Find the selectionId and select it
-              
-                              this.selectionManager.select(d.id).then((ids: ISelectionId[]) => {
-                                  ids.forEach(function (id) {
-                                      // console.log("foo: "+JSON.stringify(id));
-                                  });
-                              });
-              
-                              // This call applys the previously selected selectionId
-                              this.selectionManager.applySelectionFilter();
-              
-                          }.bind(this));*/
+                        rows.on('click', function (d) {
+                            var _this = this;
+                            this.selectionManager.select(this.selectionIds[d.row[0]]).then(function (ids) {
+                                if (ids.length > 0) {
+                                    _this.select = true;
+                                    _this.rowSelected = d.id;
+                                }
+                                else {
+                                    _this.rowSelected = -1;
+                                    _this.select = false;
+                                }
+                            });
+                            this.selectionManager.applySelectionFilter();
+                        }.bind(this));
                     };
                     /**
                      * Enumerates through the objects defined in the capabilities and adds the properties to the format pane
@@ -715,33 +730,28 @@ var powerbi;
                     Visual.prototype.enumerateObjectInstances = function (options) {
                         var objectName = options.objectName;
                         var objectEnumeration = [];
-                        var metadataColumns = this.dataview.metadata.columns;
+                        // var metadataColumns: DataViewMetadataColumn[] = this.dataview.metadata.columns;
                         var _ = this.tableOptions;
                         switch (objectName) {
-                            case 'kPIMeasures':
-                                for (var i = 0; i < metadataColumns.length; i++) {
-                                    var currentColumn = metadataColumns[i];
-                                    objectEnumeration.push({
-                                        objectName: objectName,
-                                        displayName: currentColumn.displayName,
-                                        properties: {
-                                            /* config:_.config*/
-                                            bar: ["1", "2", "2"]
-                                        },
-                                        selector: { metadata: currentColumn.queryName }
-                                    });
-                                }
-                                ;
-                                break;
+                            /*case 'kPIMeasures':
+            
+                                objectEnumeration.push({
+                                    objectName: objectName,
+                                    properties: {
+                                        config:_.config
+                                    },
+                                    selector:null
+                                });
+                         
+                                break;*/
                             case 'TableOptions':
                                 objectEnumeration.push({
                                     objectName: objectName,
-                                    displayName: "Indicador",
                                     properties: {
                                         zoom: _.zoom,
                                         color: _.color
                                     },
-                                    selector: { metadata: "Indicadores.Indicador" }
+                                    selector: null
                                 });
                                 break;
                         }
@@ -760,6 +770,9 @@ var powerbi;
                         };
                         d3.select('span').on('click', function () {
                             this.modal.style("display", "none");
+                        }.bind(this));
+                        d3.select(".edit").on('click', function () {
+                            this.modal.style("display", "block");
                         }.bind(this));
                     };
                     /**
@@ -800,7 +813,7 @@ var powerbi;
                 __decorate([
                     PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD.logExceptions(),
                     __metadata("design:type", Function),
-                    __metadata("design:paramtypes", [Object, Object]),
+                    __metadata("design:paramtypes", [Object]),
                     __metadata("design:returntype", void 0)
                 ], Visual.prototype, "update", null);
                 PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD.Visual = Visual;
