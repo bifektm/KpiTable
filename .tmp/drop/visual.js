@@ -425,8 +425,7 @@ var powerbi;
                             }
                         }
                         this.configPopup();
-                        this.setSettings(); //set settings to options
-                        this.openConfig(); //open config options   
+                        this.setSettings(); //set settings to options                                                             
                         this.height = optionsUpdate.viewport.height; //update height 
                         this.width = optionsUpdate.viewport.width; //update width
                         if (this.init) {
@@ -623,7 +622,6 @@ var powerbi;
                         var _this = this;
                         var config = Visual.config;
                         var id;
-                        console.log("config");
                         if (config.length > 0) {
                             _.each(config, function (item) {
                                 id = _.findIndex(_this.dataViewModel.columns, { name: item.columnName });
@@ -774,17 +772,6 @@ var powerbi;
                         d3.select(".edit").on('click', function () {
                             this.modal.style("display", "block");
                         }.bind(this));
-                    };
-                    /**
-                     * open modal config
-                     */
-                    Visual.prototype.openConfig = function () {
-                        if (this.tableOptions.config) {
-                            this.modal.style("display", "block");
-                        }
-                        else {
-                            this.modal.style("display", "none");
-                        }
                     };
                     /**
                     * styling table

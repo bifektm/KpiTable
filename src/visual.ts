@@ -163,12 +163,10 @@ module powerbi.extensibility.visual {
                         this.drawTable();                                                     //draw table
                         this.tableStyling();                                                             //table style
                         this.configHTML();
-            
                 }                                                                                                                
             }
             this.configPopup(); 
-            this.setSettings();                                                                       //set settings to options
-            this.openConfig();                                                                        //open config options   
+            this.setSettings();                                                                       //set settings to options                                                             
             this.height = optionsUpdate.viewport.height;                                              //update height 
             this.width = optionsUpdate.viewport.width;                                                //update width
             if (this.init) { this.init = false; }                                                     //flag  prevent drawTable ever
@@ -380,8 +378,7 @@ module powerbi.extensibility.visual {
         private setConfigColumns() {
             let config = Visual.config;
             var id;
-              console.log("config");
-            
+
             if (config.length > 0) {
 
                 _.each(config, item => {
@@ -454,8 +451,6 @@ module powerbi.extensibility.visual {
                         return "select-table" +i;
                 });
                 
-
-
             var cells = rows.selectAll('td')
                 .data(function (row) {
                     return columns.map(
@@ -556,17 +551,7 @@ module powerbi.extensibility.visual {
             }.bind(this));
             
         }
-        /**
-         * open modal config
-         */
-        private openConfig(){
-            if(this.tableOptions.config){
-               this.modal.style("display","block");
-            }else{
-                this.modal.style("display","none");
-            }
-            
-        }
+       
         /**
         * styling table
         */
