@@ -92,9 +92,7 @@
                 "bar": {
                     "displayName": "bar",
                     "type": {
-                        "enumeration": [
-
-                        ]
+                        "text": true
                     }
                 }
             }
@@ -102,7 +100,7 @@
         "TableOptions": {
             "displayName": "Table Options",
             "properties": {
-                "zoom": {
+                "fontSize": {
                     "displayName": "Font-size",
                     "type": {
                         "formatting": {

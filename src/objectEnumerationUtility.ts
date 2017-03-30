@@ -23,6 +23,16 @@ module powerbi.extensibility.visual {
         }
         return defaultValue;
     }
+     export function setValue<T>(objects: DataViewObjects, objectName: string, propertyName: string, defaultValue: T ) {
+        if(objects) {
+            let object = objects[objectName];
+            if(object) {
+                 object[propertyName] = <T>defaultValue;
+                
+            }
+        }
+        console.log("feito");
+    }
  
 
     /**

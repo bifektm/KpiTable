@@ -48,6 +48,16 @@ var powerbi;
                     return defaultValue;
                 }
                 PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD.getValue = getValue;
+                function setValue(objects, objectName, propertyName, defaultValue) {
+                    if (objects) {
+                        var object = objects[objectName];
+                        if (object) {
+                            object[propertyName] = defaultValue;
+                        }
+                    }
+                    console.log("feito");
+                }
+                PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD.setValue = setValue;
                 /**
                  * Gets property value for a particular object in a category.
                  *
@@ -292,6 +302,24 @@ var STYLE;
                 }
             }
         };
+        Customize.setHTML = function (container, dataViewModel) {
+            var bullets = ICON.ShapeFactory.getShape("BULLET");
+            var arrow = ICON.ShapeFactory.getShape("ARROW");
+            var html;
+            container.select(".container").remove();
+            html = "\n              <fieldset>\n                  <p>\n                  <label>Columns:</label>\n                  <select name=\"cols\" size=\"1\" style=\"width:100%;font-size:10px;center\">\n                    " + dataViewModel.columns.map(function (item) { return "<option value=\"" + item.name + "\">" + item.name + "</option>"; }).join('') + "\n              </select>\n                  </p>\n                  <p>\n                  <label>Type:</label>\n                  <select name=\"cols\" size=\"1\" style=\"width:100%;font-size:10px;center\">\n                    <option value=\"score\">None</option>\n                    <option value=\"score\">Score</option>\n                    <option value=\"variation\">Variation</option>\n              </select>\n                  </p>\n                  <p class=\"score\">\n                  <label>Type Icon :</label>\n                   <select name=\"typeIcon\" size=\"1\" style=\"width:100%;font-size:10px;center\">\n                    <option value=\"icon\">Icon</option>\n                    <option value=\"icontext\">Icon-Text</option>\n                    <option value=\"text\">Text</option>\n                    </select>\n                  </p>\n                   <p class=\"polarity\">\n                  <label>Other :</label>\n                   <select name=\"polarity\" size=\"1\" style=\"width:100%;font-size:10px;center\">\n                    " + dataViewModel.polarity.map(function (item) { return "<option value=\"" + item.name + "\">" + item.name + "</option>"; }).join('') + "\n                    </select>\n                  </p>\n                  <p class=\"score\">\n                  <label><input type=\"radio\" name=\"icon\" value=\"bullet\" checked></label>\n                   " + bullets.map(function (item) { return "" + item; }).join('&nbsp;&nbsp;  &nbsp;&nbsp;') + "\n                  </p>\n                  <p class=\"score\">\n                  <label><input type=\"radio\" name=\"icon\" value=\"arrow\" ></label>\n                   " + arrow.map(function (item) { return "" + item; }).join('&nbsp;&nbsp;  &nbsp;&nbsp;') + "\n                  </p>\n                  <label></label>\n                  <p class=\"score\">\n                  <br><br>\n                     <button id=\"scoreButton\">Apply</button>\n                  </p>\n              </fieldset>\n             ";
+            container.append('div').classed("container", true).html(html);
+        };
+        /**
+        * options
+        */
+        Customize.configHTML = function (modalContent, dataViewModel) {
+            modalContent.select("div[id='config']").remove();
+            var bullets = ICON.ShapeFactory.getShape("BULLET");
+            var arrow = ICON.ShapeFactory.getShape("ARROW");
+            var html = "\n            <table class=\"config\" border=\"0\">\n            <tr>\n                <td>\n                    <label>Columns :</label>\n                </td>\n                <td> \n                    <select name=\"cols\" style=\"width:200px\">\n                    " + dataViewModel.columns.map(function (item) { return "<option value=\"" + item.name + "\">" + item.name + "</option>"; }).join('') + "\n                    </select>\n                </td>\n                <td rowspan=\"5\" >&nbsp;&nbsp;</td>\n                <td>\n                    <label>Columns :</label>\n                </td>\n                \n                <td> \n                    <select name=\"colsV\" style=\"width:200px\">\n                    " + dataViewModel.columns.map(function (item) { return "<option value=\"" + item.name + "\">" + item.name + "</option>"; }).join('') + "\n                    </select>\n                </td>\n             </tr>\n               <tr>\n                <td >\n                    <label>Type Icon :</label>\n                </td>\n                <td> \n                    <select name=\"typeIcon\" style=\"width:200px\">\n                    <option value=\"icon\">Icon</option>\n                    <option value=\"icontext\">Icon-Text</option>\n                    <option value=\"text\">Text</option>\n                    </select>\n                </td>\n                <td></td>\n                <td> \n                   \n                </td>\n             </tr>\n            <tr>\n                <td>       \n                  <label>Arrow :</label>\n                </td>\n                <td>\n                <input type=\"radio\" name=\"icon\" value=\"arrow\" checked> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;" + arrow.map(function (item) { return "" + item; }).join('&nbsp;&nbsp; | &nbsp;&nbsp;') + "\n                </td>\n                <td>Other</td>\n                <td> \n                    <select name=\"pol\" style=\"width:200px\">\n                    " + dataViewModel.polarity.map(function (item) { return "<option value=\"" + item.name + "\">" + item.name + "</option>"; }).join('') + "\n                    </select>\n                </td>\n            </tr>\n             <tr>\n                <td>       \n                  <label>Bullet :</label>\n                </td>\n          \n                <td>\n                 <input type=\"radio\" name=\"icon\" value=\"bullet\">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; " + bullets.map(function (item) { return "" + item; }).join('&nbsp;&nbsp; | &nbsp;&nbsp;') + "\n                </td>\n                <td></td>\n                <td></td>\n            </tr>\n            <tr>\n                 <td colspan=\"2\" style=\"text-align:center\"><button style=\"color:white\" id=\"scoreButton\">Save</button>  </td>\n            <td colspan=\"2\" style=\"text-align:center\"><button style=\"color:white\" id=\"variationButton\">Save</button>  </td>\n            </tr>\n            </table>\n            <br><hr><br>\n           ";
+            modalContent.append("div").attr("id", "config").style("font-size", "17px").html(html);
+        };
         return Customize;
     }());
     STYLE.Customize = Customize;
@@ -363,86 +391,97 @@ var powerbi;
                 var Visual = (function () {
                     /**
                      * CONSTRUCTOR OF VISUAL
-                     * @param options
                      */
                     function Visual(options) {
                         this.init = true;
                         this.selectionIds = {};
                         this.select = false;
                         this.host = options.host;
-                        this.colorPalette = options.host.colorPalette;
-                        this.root = options.element;
+                        this.target = d3.select(options.element);
                         this.selectionManager = options.host.createSelectionManager();
                         this.cleanDataModel();
-                        this.target = d3.select(options.element);
+                        this.InitconfigHTML();
+                        console.log("cons");
+                    }
+                    /**
+                     * init html and events
+                     */
+                    Visual.prototype.InitconfigHTML = function () {
                         this.div = this.target.append('div')
                             .classed('wrapper', true);
-                        this.setSettings();
                         this.div.append('div').classed('edit', true);
+                        //
+                        this.Option = this.div.append('div').classed('option', true);
+                        this.containerOption = this.Option.append('div').classed("header", true).text("Config Columns")
+                            .append("span").classed('close1', true).html('&times;');
+                        this.Option.append("div").classed("container", true);
+                        //
                         this.modal = this.div.append('div').classed('modal', true);
                         this.modalContent = this.modal.append("div").classed("modal-content", true);
                         this.modalContent.append("div").classed('bar', true).text("Config Columns")
                             .append("span").classed('close', true).html('&times;');
-                        this.configBody = this.modalContent.append("div").attr("id", "config").html('<br>');
-                        this.InitconfigHTML();
-                        Visual.config = [];
-                        this.div.on("mouseover", function () {
-                            d3.select('.edit').style("display", "block");
-                        });
-                        this.div.on("mouseout", function () {
-                            d3.select('.edit').style("display", "none");
-                        });
-                    }
-                    Visual.prototype.InitconfigHTML = function () {
+                        this.modalContent.append("div").attr("id", "config").html('<br>');
                         this.modalContent.append("div").html("SCORE").style("float", "left").style("width", "50%");
                         this.modalContent.append("div").html("VARIATION");
-                    };
-                    /**
-                     * populate columns
-                     */
-                    Visual.prototype.configHTML = function () {
-                        this.modalContent.select("div[id='config']").remove();
-                        var bullets = ICON.ShapeFactory.getShape("BULLET");
-                        var arrow = ICON.ShapeFactory.getShape("ARROW");
-                        var html = "\n            <table class=\"config\" border=\"0\">\n            <tr>\n                <td>\n                    <label>Columns :</label>\n                </td>\n                <td> \n                    <select name=\"cols\" style=\"width:200px\">\n                    " + this.dataViewModel.columns.map(function (item) { return "<option value=\"" + item.name + "\">" + item.name + "</option>"; }).join('') + "\n                    </select>\n                </td>\n                <td rowspan=\"5\" >&nbsp;&nbsp;</td>\n                <td>\n                    <label>Columns :</label>\n                </td>\n                \n                <td> \n                    <select name=\"colsV\" style=\"width:200px\">\n                    " + this.dataViewModel.columns.map(function (item) { return "<option value=\"" + item.name + "\">" + item.name + "</option>"; }).join('') + "\n                    </select>\n                </td>\n             </tr>\n               <tr>\n                <td >\n                    <label>Type Icon :</label>\n                </td>\n                <td> \n                    <select name=\"typeIcon\" style=\"width:200px\">\n                    <option value=\"icon\">Icon</option>\n                    <option value=\"icontext\">Icon-Text</option>\n                    <option value=\"text\">Text</option>\n                    </select>\n                </td>\n                <td></td>\n                <td> \n                   \n                </td>\n             </tr>\n            <tr>\n                <td>       \n                  <label>Arrow :</label>\n                </td>\n                <td>\n                <input type=\"radio\" name=\"icon\" value=\"arrow\" checked> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;" + arrow.map(function (item) { return "" + item; }).join('&nbsp;&nbsp; | &nbsp;&nbsp;') + "\n                </td>\n                <td>Other</td>\n                <td> \n                    <select name=\"pol\" style=\"width:200px\">\n                    " + this.dataViewModel.polarity.map(function (item) { return "<option value=\"" + item.name + "\">" + item.name + "</option>"; }).join('') + "\n                    </select>\n                </td>\n            </tr>\n             <tr>\n                <td>       \n                  <label>Bullet :</label>\n                </td>\n          \n                <td>\n                 <input type=\"radio\" name=\"icon\" value=\"bullet\">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; " + bullets.map(function (item) { return "" + item; }).join('&nbsp;&nbsp; | &nbsp;&nbsp;') + "\n                </td>\n                <td></td>\n                <td></td>\n            </tr>\n            <tr>\n                 <td colspan=\"2\" style=\"text-align:center\"><button style=\"color:white\" id=\"scoreButton\">Save</button>  </td>\n            <td colspan=\"2\" style=\"text-align:center\"><button style=\"color:white\" id=\"variationButton\">Save</button>  </td>\n            </tr>\n            </table>\n            <br><hr><br>\n           ";
-                        this.modalContent.append("div").attr("id", "config").style("font-size", "17px").html(html);
+                        Visual.config = [];
                     };
                     /**
                      * UPDATE OF VISUAL
-                     * @param optionsUpdate
-                     * @param optionsInit
                      */
                     Visual.prototype.update = function (optionsUpdate) {
+                        console.log("update");
+                        this.events(optionsUpdate.viewMode);
                         if (this.init || (optionsUpdate.viewport.height == this.height && optionsUpdate.viewport.width == this.width)) {
                             if (optionsUpdate.dataViews[0]) {
                                 this.dataview = optionsUpdate.dataViews[0];
-                                this.objects = optionsUpdate.dataViews[0].metadata.objects; //get objects properties
-                                //Visual.config = COMMON.Core.getConfig(optionsUpdate.dataViews);                  //get config columns 
-                                this.parseData(optionsUpdate.dataViews); //set data to my model                   
-                                this.drawTable(); //draw table
+                                // Visual.config = COMMON.Core.getConfig(optionsUpdate.dataViews);                //get config columns 
+                                this.parseData(); //set data to my model                   
                                 this.tableStyling(); //table style
-                                this.configHTML();
+                                STYLE.Customize.setHTML(this.Option, this.dataViewModel);
+                                this.configPopup(optionsUpdate);
                             }
                         }
-                        this.configPopup();
-                        this.setSettings(); //set settings to options                                                             
                         this.height = optionsUpdate.viewport.height; //update height 
                         this.width = optionsUpdate.viewport.width; //update width
                         if (this.init) {
                             this.init = false;
-                        } //flag  prevent drawTable ever
+                        }
+                        //flag  prevent drawTable ever
                         this.cleanDataModel();
                         if (this.select) {
-                            d3.selectAll("tr").classed("select-table", true);
+                            d3.selectAll(".fixed_headers tr").classed("select-table", true);
                             d3.select(".select-table" + (this.rowSelected)).style("background-color", "white");
                         }
+                    };
+                    Visual.prototype.events = function (mode) {
+                        if (mode == 0) {
+                            this.Option.style("display", "none");
+                            d3.select('.edit').style("display", "none");
+                            this.div.on("mouseout", null);
+                            this.div.on("mouseover", null);
+                        }
+                        else {
+                            this.div.on("mouseover", function () {
+                                d3.select('.edit').style("display", "block");
+                            });
+                            this.div.on("mouseout", function () {
+                                d3.select('.edit').style("display", "none");
+                            });
+                        }
+                        d3.select('.close1').on('click', function () {
+                            this.Option.style("display", "none");
+                        }.bind(this));
+                        d3.select(".edit").on('click', function () {
+                            this.Option.style("display", "block");
+                        }.bind(this));
                     };
                     /**
                      * popup configs
                      */
-                    Visual.prototype.configPopup = function () {
+                    Visual.prototype.configPopup = function (optionsUpdate) {
                         var colOther, iconType, colName;
                         d3.select("button[id='scoreButton']").on('click', function () {
+                            console.log("click");
                             var icon = d3.select("input[name='icon']:checked").property("value");
                             d3.select("select[name='typeIcon']").selectAll("option")
                                 .filter(function (d, i) {
@@ -466,6 +505,7 @@ var powerbi;
                                 visualValue: iconType,
                                 columnPolarity: ""
                             });
+                            this.update(optionsUpdate);
                         }.bind(this));
                         d3.select("button[id='variationButton']").on('click', function () {
                             d3.select("select[name='colsV']").selectAll("option")
@@ -494,28 +534,25 @@ var powerbi;
                     };
                     /**
                      * parse data to dataviewmodel
-                     * @param dataViews
                      */
-                    Visual.prototype.parseData = function (dataViews) {
+                    Visual.prototype.parseData = function () {
                         //valid?  // exist?
-                        if (!dataViews
-                            || !dataViews[0]
-                            || !dataViews[0].categorical
-                            || !dataViews[0].categorical.categories)
+                        if (!this.dataview
+                            || !this.dataview.categorical
+                            || !this.dataview.categorical.categories)
                             return;
-                        this.setHeaders(dataViews); //set headers of collumns
+                        this.setHeaders(); //set headers of collumns
                         this.setConfigColumns(); //set config columns in dataview model
-                        this.setRows(dataViews); //set values of rows
+                        this.setRows(); //set values of rows
+                        this.drawTable(); //draw table
                     };
                     /**
-                     * //set headers of collumns
-                     * @param rows
-                     * @param rowsLength
+                     * set headers of collumns
                      */
-                    Visual.prototype.setHeaders = function (view) {
+                    Visual.prototype.setHeaders = function () {
                         var _this = this;
-                        var data = view[0].categorical.values;
-                        var row = view[0].categorical.categories[0];
+                        var data = this.dataview.categorical.values;
+                        var row = this.dataview.categorical.categories[0];
                         //insert header row
                         this.dataViewModel.columns.push({
                             name: row.source.displayName,
@@ -542,13 +579,12 @@ var powerbi;
                     };
                     /**
                      * get values
-                     * @param view
                      */
-                    Visual.prototype.setRows = function (view) {
+                    Visual.prototype.setRows = function () {
                         var _this = this;
-                        var data = view[0].categorical.values;
-                        var indicator = COMMON.Core.getIndicator(view[0].categorical.categories);
-                        var polarity = COMMON.Core.getPolarity(view[0].categorical.categories);
+                        var data = this.dataview.categorical.values;
+                        var indicator = COMMON.Core.getIndicator(this.dataview.categorical.categories);
+                        var polarity = COMMON.Core.getPolarity(this.dataview.categorical.categories);
                         this.dataViewModel.polarity = polarity;
                         var colsLenght = this.dataViewModel.columns.length - 1; //4
                         var type;
@@ -616,7 +652,6 @@ var powerbi;
                     };
                     /**
                    * set config columns in dataview model
-                   * @param rowsLength
                    */
                     Visual.prototype.setConfigColumns = function () {
                         var _this = this;
@@ -723,7 +758,6 @@ var powerbi;
                     };
                     /**
                      * Enumerates through the objects defined in the capabilities and adds the properties to the format pane
-                     * @param  options - Map of defined objects
                      */
                     Visual.prototype.enumerateObjectInstances = function (options) {
                         var objectName = options.objectName;
@@ -746,7 +780,7 @@ var powerbi;
                                 objectEnumeration.push({
                                     objectName: objectName,
                                     properties: {
-                                        zoom: _.zoom,
+                                        fontSize: _.fontSize,
                                         color: _.color
                                     },
                                     selector: null
@@ -757,28 +791,17 @@ var powerbi;
                         return objectEnumeration;
                     };
                     /**
-                     * set settings in options
-                     */
-                    //_.color.solid.color
-                    Visual.prototype.setSettings = function () {
-                        this.tableOptions = {
-                            zoom: PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD.getValue(this.objects, "TableOptions", "zoom", 20),
-                            config: PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD.getValue(this.objects, "kPIMeasures", "config", false),
-                            color: PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD.getValue(this.objects, "TableOptions", "color", "#015c55")
-                        };
-                        d3.select('span').on('click', function () {
-                            this.modal.style("display", "none");
-                        }.bind(this));
-                        d3.select(".edit").on('click', function () {
-                            this.modal.style("display", "block");
-                        }.bind(this));
-                    };
-                    /**
                     * styling table
                     */
                     Visual.prototype.tableStyling = function () {
-                        STYLE.Customize.setZoom(this.target, this.tableOptions.zoom);
-                        STYLE.Customize.setColor(this.tHead, this.tableOptions.color);
+                        var colorDefault = { solid: { color: "#015c55" } };
+                        this.tableOptions = {
+                            fontSize: PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD.getValue(this.dataview.metadata.objects, "TableOptions", "zoom", 20),
+                            config: "",
+                            color: PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD.getValue(this.dataview.metadata.objects, "TableOptions", "color", colorDefault)
+                        };
+                        STYLE.Customize.setZoom(this.target, this.tableOptions.fontSize);
+                        STYLE.Customize.setColor(this.tHead, this.tableOptions.color.solid.color);
                     };
                     /**
                   * clear data model
@@ -789,12 +812,11 @@ var powerbi;
                             values: [],
                             polarity: []
                         };
-                        //this.config = [];
                     };
                     /**
                      * DESTROY
                      */
-                    Visual.prototype.destroy = function () { };
+                    Visual.prototype.destroy = function () { console.log("destroy"); };
                     return Visual;
                 }());
                 __decorate([

@@ -1,6 +1,7 @@
 .visual-PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD_DEBUG {
   
   
+  
 }
 .visual-PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD_DEBUG .wrapper {
   width: 100%;
@@ -64,8 +65,71 @@
   background-size: 34px 34px;
   background-repeat: no-repeat;
 }
+.visual-PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD_DEBUG .apply {
+  text-align: center;
+}
+.visual-PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD_DEBUG .score1 {
+  display: block;
+}
+.visual-PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD_DEBUG .polarity1 {
+  display: none;
+}
 .visual-PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD_DEBUG .option {
-  background-color: red;
+  display: block;
+  position: fixed;
+  background-color: #f8f8f8;
+  z-index: 1;
+  right: 0;
+  bottom: 0;
+  top: 40%;
+  width: 230px;
+  height: auto;
+  overflow: auto;
+  border: 1px solid #c8c8c8;
+}
+.visual-PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD_DEBUG .header {
+  display: block;
+  position: relative;
+  background-color: grey;
+  top: 0;
+  width: 225px;
+  height: 30px;
+  color: white;
+  font-size: 18px;
+  padding-left: 5px;
+  padding-top: 2px;
+}
+.visual-PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD_DEBUG .close1 {
+  position: absolute;
+  color: white;
+  right: 10px;
+  font-size: 25px;
+  font-weight: bold;
+  top: 0;
+  padding-right: 10px;
+}
+.visual-PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD_DEBUG .container {
+  top: 10px;
+  position: relative;
+  width: 80%;
+  text-align: center;
+}
+.visual-PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD_DEBUG fieldset {
+  display: table;
+  border: 0;
+  font-size: 10px;
+}
+.visual-PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD_DEBUG fieldset p {
+  display: table-row;
+}
+.visual-PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD_DEBUG fieldset input,
+.visual-PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD_DEBUG fieldset select,
+.visual-PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD_DEBUG fieldset label {
+  display: table-cell;
+  margin: 5px;
+}
+.visual-PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD_DEBUG fieldset label {
+  text-align: right;
 }
 .visual-PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD_DEBUG .modal {
   display: none;
@@ -118,10 +182,4 @@
   font-size: 22px;
   font-weight: bold;
   top: 0;
-}
-.visual-PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD_DEBUG .close:hover,
-.visual-PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD_DEBUG .close:focus {
-  color: #000;
-  text-decoration: none;
-  cursor: pointer;
 }

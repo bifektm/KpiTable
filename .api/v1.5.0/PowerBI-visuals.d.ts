@@ -1,4 +1,5 @@
 declare namespace powerbi {
+    
     enum VisualDataRoleKind {
         /** Indicates that the role should be bound to something that evaluates to a grouping of values. */
         Grouping = 0,
@@ -29,6 +30,7 @@ declare namespace powerbi {
         View = 0,
         Edit = 1,
         InFocusEdit = 2,
+      
     }
     const enum ResizeMode {
         Resizing = 1,
@@ -274,6 +276,7 @@ declare module powerbi {
         table?: DataViewTable;
         matrix?: DataViewMatrix;
         scriptResult?: DataViewScriptResultData;
+        
     }
 
     export interface DataViewMetadata {
@@ -1196,10 +1199,12 @@ declare module powerbi.extensibility.visual {
         dataViews: DataView[];
         type: VisualUpdateType;
         viewMode?: ViewMode;
+        
     }
 
     export interface VisualConstructorOptions extends extensibility.VisualConstructorOptions {
         element: HTMLElement;
         host: IVisualHost;
+        
     }
 }

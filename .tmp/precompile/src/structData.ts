@@ -47,7 +47,7 @@ module strucData {
      * prop
      */
     export interface IOptions{
-        zoom:any;
+        fontSize:any;
         config:any;
         color:any;
     }
