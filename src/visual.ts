@@ -56,7 +56,7 @@ module powerbi.extensibility.visual {
                d3.select('.edit').style("display","block");
             });
             this.div.on("mouseout",function(){
-               d3.select('.edit').style("display","none");
+               d3.select('.edit').style("display","none"); 
             });
            
         }

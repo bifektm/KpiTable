@@ -56,7 +56,7 @@ module powerbi.extensibility.visual.PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD 
                d3.select('.edit').style("display","block");
             });
             this.div.on("mouseout",function(){
-               d3.select('.edit').style("display","none");
+               d3.select('.edit').style("display","none"); 
             });
            
         }
