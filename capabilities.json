@@ -108,7 +108,7 @@
                         }
                     }
                 },
-                "color": {
+                "fill": {
                     "displayName": "Color Columns",
                     "type": {
 

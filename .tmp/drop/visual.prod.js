@@ -781,27 +781,30 @@ var powerbi;
                                     objectName: objectName,
                                     properties: {
                                         fontSize: _.fontSize,
-                                        color: _.color
+                                        fill: _.color
                                     },
                                     selector: null
                                 });
                                 break;
                         }
                         ;
+                        var propertToChange = {
+                            replace: objectEnumeration
+                        };
+                        this.host.persistProperties(propertToChange);
                         return objectEnumeration;
                     };
                     /**
                     * styling table
                     */
                     Visual.prototype.tableStyling = function () {
-                        var colorDefault = { solid: { color: "#015c55" } };
                         this.tableOptions = {
-                            fontSize: PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD.getValue(this.dataview.metadata.objects, "TableOptions", "zoom", 20),
+                            fontSize: PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD.getValue(this.dataview.metadata.objects, "TableOptions", "fontSize", 20),
                             config: "",
-                            color: PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD.getValue(this.dataview.metadata.objects, "TableOptions", "color", colorDefault)
+                            color: PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD.getValue(this.dataview.metadata.objects, "TableOptions", "fill", { solid: { color: "#178BCA" } }).solid.color
                         };
                         STYLE.Customize.setZoom(this.target, this.tableOptions.fontSize);
-                        STYLE.Customize.setColor(this.tHead, this.tableOptions.color.solid.color);
+                        STYLE.Customize.setColor(this.tHead, this.tableOptions.color);
                     };
                     /**
                   * clear data model

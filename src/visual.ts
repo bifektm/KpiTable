@@ -28,7 +28,7 @@ module powerbi.extensibility.visual {
         private rowSelected :number;
         private containerOption :d3.Selection<HTMLElement>;
         private Option :d3.Selection<HTMLElement>;
-        private cor1:any;
+        
 
         /**
          * CONSTRUCTOR OF VISUAL 
@@ -469,14 +469,18 @@ module powerbi.extensibility.visual {
                         objectName: objectName,
                         properties: {
                             fontSize: _.fontSize,
-                            color: _.color
+                            fill: _.color
                         },
                         selector: null
                     });
                     break;
 
             };
-            
+            let propertToChange: VisualObjectInstancesToPersist = {
+                    replace: objectEnumeration
+                }
+
+           this.host.persistProperties(propertToChange);
             return objectEnumeration;
         }
       
@@ -484,14 +488,14 @@ module powerbi.extensibility.visual {
         * styling table
         */
         private tableStyling() {
-            let colorDefault : Fill = {solid:{color:"#015c55"}};
+           
             this.tableOptions = {
-                fontSize: getValue(this.dataview.metadata.objects, "TableOptions", "zoom", 20),
+                fontSize: getValue(this.dataview.metadata.objects, "TableOptions", "fontSize", 20),
                 config: "",//getValue(this.dataview.metadata.objects, "kPIMeasures", "config", false),
-                color: getValue(this.dataview.metadata.objects, "TableOptions", "color", colorDefault)
+                color: getValue<Fill>(this.dataview.metadata.objects, "TableOptions", "fill", { solid: { color: "#178BCA" } }).solid.color
             };
             STYLE.Customize.setZoom(this.target, this.tableOptions.fontSize);
-            STYLE.Customize.setColor(this.tHead, this.tableOptions.color.solid.color);
+            STYLE.Customize.setColor(this.tHead, this.tableOptions.color);
         }
         /**
       * clear data model
