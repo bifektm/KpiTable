@@ -86,13 +86,7 @@
                 "config": {
                     "displayName": "Config",
                     "type": {
-                        "bool": true
-                    }
-                },
-                "bar": {
-                    "displayName": "bar",
-                    "type": {
-                        "text": true
+                        "text": false
                     }
                 }
             }
@@ -108,7 +102,7 @@
                         }
                     }
                 },
-                "fill": {
+                "color": {
                     "displayName": "Color Columns",
                     "type": {
 

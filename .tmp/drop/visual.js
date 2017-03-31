@@ -402,6 +402,7 @@ var powerbi;
                         this.cleanDataModel();
                         this.InitconfigHTML();
                         console.log("cons");
+                        Visual.config = [];
                     }
                     /**
                      * init html and events
@@ -434,9 +435,13 @@ var powerbi;
                         if (this.init || (optionsUpdate.viewport.height == this.height && optionsUpdate.viewport.width == this.width)) {
                             if (optionsUpdate.dataViews[0]) {
                                 this.dataview = optionsUpdate.dataViews[0];
-                                // Visual.config = COMMON.Core.getConfig(optionsUpdate.dataViews);                //get config columns 
-                                this.parseData(); //set data to my model                   
-                                this.tableStyling(); //table style
+                                console.log(Visual.config.length);
+                                if (Visual.config.length == 0) {
+                                    Visual.config = JSON.parse(PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD.getValue(this.dataview.metadata.objects, "kPIMeasures", "config", "[]"));
+                                }
+                                // Visual.config = COMMON.Core.getConfig(optionsUpdate.dataViews);                
+                                this.parseData();
+                                this.tableStyling();
                                 STYLE.Customize.setHTML(this.Option, this.dataViewModel);
                                 this.configPopup(optionsUpdate);
                             }
@@ -505,32 +510,35 @@ var powerbi;
                                 visualValue: iconType,
                                 columnPolarity: ""
                             });
-                            this.update(optionsUpdate);
+                            console.log(JSON.stringify(Visual.config));
+                            this.parseData();
+                            this.tableStyling();
                         }.bind(this));
-                        d3.select("button[id='variationButton']").on('click', function () {
-                            d3.select("select[name='colsV']").selectAll("option")
-                                .filter(function (d, i) {
-                                if (this.selected) {
-                                    colOther = this.value;
-                                    return this.value;
-                                }
-                            });
-                            d3.select("select[name='pol'] ")
-                                .selectAll("option")
-                                .filter(function (d, i) {
-                                if (this.selected) {
-                                    colName = this.value;
-                                    return this.value;
-                                }
-                            });
-                            Visual.config.push({
-                                columnName: colOther,
-                                typeColumn: "VARIATION",
-                                iconType: "",
-                                visualValue: "",
-                                columnPolarity: colName
-                            });
-                        });
+                        /*   d3.select("button[id='variationButton']").on('click', function () {
+               
+                               d3.select("select[name='colsV']").selectAll("option")
+                                   .filter(function (d, i) {
+                                       if (this.selected) {
+                                           colOther = this.value;
+                                           return this.value;
+                                       }
+                                   });
+                               d3.select("select[name='pol'] ")
+                                   .selectAll("option")
+                                   .filter(function (d, i) {
+                                       if (this.selected) {
+                                           colName = this.value;
+                                           return this.value;
+                                       }
+                                   });
+                               Visual.config.push({
+                                   columnName: colOther,
+                                   typeColumn: "VARIATION",
+                                   iconType: "",
+                                   visualValue: "",
+                                   columnPolarity: colName
+                               });
+                           });*/
                     };
                     /**
                      * parse data to dataviewmodel
@@ -762,36 +770,38 @@ var powerbi;
                     Visual.prototype.enumerateObjectInstances = function (options) {
                         var objectName = options.objectName;
                         var objectEnumeration = [];
+                        var objectEnumeration1 = [];
                         // var metadataColumns: DataViewMetadataColumn[] = this.dataview.metadata.columns;
                         var _ = this.tableOptions;
                         switch (objectName) {
-                            /*case 'kPIMeasures':
-            
+                            case 'kPIMeasures':
                                 objectEnumeration.push({
                                     objectName: objectName,
                                     properties: {
-                                        config:_.config
-                                    },
-                                    selector:null
-                                });
-                         
-                                break;*/
-                            case 'TableOptions':
-                                objectEnumeration.push({
-                                    objectName: objectName,
-                                    properties: {
-                                        fontSize: _.fontSize,
-                                        fill: _.color
+                                        config: JSON.stringify(Visual.config)
                                     },
                                     selector: null
                                 });
                                 break;
                         }
                         ;
-                        var propertToChange = {
-                            replace: objectEnumeration
-                        };
-                        this.host.persistProperties(propertToChange);
+                        /*let foo: VisualObjectInstance = {
+            
+                            objectName: "kPIMeasures",
+                            properties: {
+                                config: JSON.stringify(Visual.config)
+                            },
+                            selector: null
+                        }
+            
+                        objectEnumeration1.push(foo);
+            
+                        let propertToChange: VisualObjectInstancesToPersist = {
+                            merge: objectEnumeration1
+                        }
+                        this.host.persistProperties(objectEnumeration1);*/
+                        console.log("now" + JSON.stringify(objectEnumeration));
+                        //console.log(objectEnumeration[0].objectName['kPIMeasures1'].properties['config1']);
                         return objectEnumeration;
                     };
                     /**
@@ -800,11 +810,12 @@ var powerbi;
                     Visual.prototype.tableStyling = function () {
                         this.tableOptions = {
                             fontSize: PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD.getValue(this.dataview.metadata.objects, "TableOptions", "fontSize", 20),
-                            config: "",
-                            color: PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD.getValue(this.dataview.metadata.objects, "TableOptions", "fill", { solid: { color: "#178BCA" } }).solid.color
+                            config: "[]",
+                            color: PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD.getValue(this.dataview.metadata.objects, "TableOptions", "color", { solid: { color: "#178BCA" } }).solid.color
                         };
                         STYLE.Customize.setZoom(this.target, this.tableOptions.fontSize);
                         STYLE.Customize.setColor(this.tHead, this.tableOptions.color);
+                        //console.log("vvv"+this.tableOptions.config);
                     };
                     /**
                   * clear data model
