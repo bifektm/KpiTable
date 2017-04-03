@@ -30,7 +30,11 @@ module STYLE {
 
 
        }
-       
+       /**
+        * options
+        * @param container 
+        * @param dataViewModel 
+        */
         static setHTML(container:d3.Selection<HTMLElement>,dataViewModel: strucData.ITableViewModel){
              let bullets = ICON.ShapeFactory.getShape("BULLET");
              let arrow = ICON.ShapeFactory.getShape("ARROW");
@@ -46,11 +50,11 @@ module STYLE {
                   </p>
                   <p>
                   <label>Type:</label>
-                  <select name="cols" size="1" style="width:100%;font-size:10px;center">
-                    <option value="score">None</option>
+                  <select name="typeCol" size="1" style="width:100%;font-size:10px;center">
+                    <option value="none">None</option>
                     <option value="score">Score</option>
                     <option value="variation">Variation</option>
-              </select>
+                  </select>
                   </p>
                   <p class="score">
                   <label>Type Icon :</label>
@@ -73,97 +77,11 @@ module STYLE {
                   <p class="score">
                   <label><input type="radio" name="icon" value="arrow" ></label>
                    ${arrow.map(item => ``+item).join('&nbsp;&nbsp;  &nbsp;&nbsp;')}
-                  </p>
-                  <label></label>
-                  <p class="score">
-                  <br><br>
-                     <button id="scoreButton">Apply</button>
-                  </p>
+                  </p> 
               </fieldset>
+              <button id="configButton" class="button">Apply</button>
              `
              container.append('div').classed("container",true).html(html);
-        }
-
-         /**
-         * options
-         */
-        static configHTML(modalContent: d3.Selection<HTMLElement>,dataViewModel: strucData.ITableViewModel){
-            modalContent.select("div[id='config']").remove();
-            let bullets = ICON.ShapeFactory.getShape("BULLET");
-            let arrow = ICON.ShapeFactory.getShape("ARROW");
-            let html =`
-            <table class="config" border="0">
-            <tr>
-                <td>
-                    <label>Columns :</label>
-                </td>
-                <td> 
-                    <select name="cols" style="width:200px">
-                    ${dataViewModel.columns.map(item =>`<option value="${item.name}">${item.name}</option>`).join('')}
-                    </select>
-                </td>
-                <td rowspan="5" >&nbsp;&nbsp;</td>
-                <td>
-                    <label>Columns :</label>
-                </td>
-                
-                <td> 
-                    <select name="colsV" style="width:200px">
-                    ${dataViewModel.columns.map(item =>`<option value="${item.name}">${item.name}</option>`).join('')}
-                    </select>
-                </td>
-             </tr>
-               <tr>
-                <td >
-                    <label>Type Icon :</label>
-                </td>
-                <td> 
-                    <select name="typeIcon" style="width:200px">
-                    <option value="icon">Icon</option>
-                    <option value="icontext">Icon-Text</option>
-                    <option value="text">Text</option>
-                    </select>
-                </td>
-                <td></td>
-                <td> 
-                   
-                </td>
-             </tr>
-            <tr>
-                <td>       
-                  <label>Arrow :</label>
-                </td>
-                <td>
-                <input type="radio" name="icon" value="arrow" checked> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;${arrow.map(item => ``+item).join('&nbsp;&nbsp; | &nbsp;&nbsp;')}
-                </td>
-                <td>Other</td>
-                <td> 
-                    <select name="pol" style="width:200px">
-                    ${dataViewModel.polarity.map(item =>`<option value="${item.name}">${item.name}</option>`).join('')}
-                    </select>
-                </td>
-            </tr>
-             <tr>
-                <td>       
-                  <label>Bullet :</label>
-                </td>
-          
-                <td>
-                 <input type="radio" name="icon" value="bullet">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ${bullets.map(item => ``+item).join('&nbsp;&nbsp; | &nbsp;&nbsp;')}
-                </td>
-                <td></td>
-                <td></td>
-            </tr>
-            <tr>
-                 <td colspan="2" style="text-align:center"><button style="color:white" id="scoreButton">Save</button>  </td>
-            <td colspan="2" style="text-align:center"><button style="color:white" id="variationButton">Save</button>  </td>
-            </tr>
-            </table>
-            <br><hr><br>
-           `;
-  
-            modalContent.append("div").attr("id","config").style("font-size","17px").html(html); 
-            
         }
     }
 }

@@ -48,7 +48,6 @@ module strucData {
      */
     export interface IOptions{
         fontSize:any;
-        config:any;
         color:any;
     }
     //configs

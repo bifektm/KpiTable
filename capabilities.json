@@ -80,17 +80,7 @@
 
     ],
     "objects": {
-        "kPIMeasures": {
-            "displayName": "KPI Measure",
-            "properties": {
-                "config": {
-                    "displayName": "Config",
-                    "type": {
-                        "text": false
-                    }
-                }
-            }
-        },
+
         "TableOptions": {
             "displayName": "Table Options",
             "properties": {
@@ -112,8 +102,17 @@
                             }
                         }
                     }
+                },
+                "config": {
+                    "displayName": "Config",
+                    "type": {
+                        "text": false
+                    }
                 }
             }
         }
+    },
+    "sorting": {
+        "default": {}
     }
 }
