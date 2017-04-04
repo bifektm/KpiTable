@@ -52,9 +52,9 @@ module ICON {
      * class Arrow
      */
     class Arrow implements IShape{
-        private ICON_TREND_UP = '<svg width="16" height="16" viewBox="0 0 9 9" xmlns="http://www.w3.org/2000/svg"><path d="M7.6.75H4.39V0h4.5v4.5h-.75V1.266L.526 8.888 0 8.36 7.6.75z" fill="#3CB371" fill-rule="evenodd"/></svg>';
+        private ICON_TREND_UP = '<svg width="16" height="16" viewBox="0 0 9 9" xmlns="http://www.w3.org/2000/svg"><path d="M7.6.75H4.39V0h4.5v4.5h-.75V1.266L.526 8.888 0 8.36 7.6.75z" fill="#000" fill-rule="evenodd"/></svg>';
         private ICON_TREND_STEADY = '<svg width="16" height="16" viewBox="0 0 9 9" xmlns="http://www.w3.org/2000/svg"><path d="M7.756 3.8l-2.27-2.27.53-.53 3.182 3.182-3.182 3.182-.53-.53 2.286-2.287L0 4.555V3.81l6.756-.01z" fill="#000" fill-rule="evenodd"/></svg>';
-        private ICON_TREND_DOWN = '<svg width="16" height="16" viewBox="0 0 9 9" xmlns="http://www.w3.org/2000/svg"><path d="M8.89 4.388v4.5h-4.5v-.75h3.215L0 .528.527 0 8.14 7.605V4.388h.75" fill="#B22222" fill-rule="evenodd"/></svg>';
+        private ICON_TREND_DOWN = '<svg width="16" height="16" viewBox="0 0 9 9" xmlns="http://www.w3.org/2000/svg"><path d="M8.89 4.388v4.5h-4.5v-.75h3.215L0 .528.527 0 8.14 7.605V4.388h.75" fill="#000" fill-rule="evenodd"/></svg>';
         public getIcon():string[]{
           return [this.ICON_TREND_DOWN,this.ICON_TREND_STEADY,this.ICON_TREND_UP];
         }

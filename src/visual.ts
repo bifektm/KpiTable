@@ -96,7 +96,7 @@ module powerbi.extensibility.visual {
                 d3.select(".select-table" + (this.rowSelected)).style("font-weight", "bold").classed("select-table", false);
             }
             d3.select("select[name='typeCol']").on("change", this.changeType);
-            d3.select("select[name='cols']").on("change", this.setConfigEvents);
+           // d3.select("select[name='cols']").on("change", this.setConfigEvents);
 
         }
         private events(mode: number) {
@@ -127,6 +127,7 @@ module powerbi.extensibility.visual {
         }
         private changeType() {
             let typeCol;
+            let bullets;
             d3.select("select[name='typeCol']")
                 .selectAll("option")
                 .filter(function (d, i) {
@@ -135,40 +136,53 @@ module powerbi.extensibility.visual {
                         return this.value;
                     }
                 });
-
+             d3.select(".custtom").empty();   
             if (typeCol == "score") {
-                d3.select("select[name='polarity']").property("disabled", true);
-                d3.select("select[name='typeIcon']").property("disabled", false);
-                d3.select("input[id='bullet']").property("disabled", false);
-                d3.select("input[id='arrow']").property("disabled", false);
-            } else if (typeCol == "variation") {
-                d3.select("select[name='polarity']").property("disabled", false);
-                d3.select("select[name='typeIcon']").property("disabled", true);
-                d3.selectAll("input[id='bullet']").property("disabled", true);
-                d3.select("input[id='arrow']").property("disabled", true);
-            } else {
-                d3.select("select[name='polarity']").property("disabled", true);
-                d3.select("select[name='typeIcon']").property("disabled", true);
-                d3.selectAll("input[id='bullet']").property("disabled", true);
-                d3.select("input[id='arrow']").property("disabled", true);
+                bullets = ICON.ShapeFactory.getShape("BULLET");
+               d3.select(".custtom").append("label").text("Type Icon :");
+               d3.select(".custtom").append("select").property("name","typeIcon")
+               .style("width","100%").style("font-size","10px")
+               .append('option').property("value","Icon").text("icon");
+               d3.select(".custtom select").append('option').property("value","Icon-Text")
+               .text("icon-text");
+              d3.select(".preview").select("label").text("Preview :").
+              html(bullets.map(item => ``+item).join('&nbsp;&nbsp;  &nbsp;&nbsp;'));
+              
+            }else if (typeCol == "variation") {
+                
+
+            }else {
+                
+               
             }
         }
         private setConfigEvents() {
             let col, setting;
-            d3.select("select[name='cols']")
-                .selectAll("option")
-                .filter(function (d, i) {
-                    if (this.selected) {
-                        col = this.value;
-                        return this.value;
-                    }
-                });
+            col = this.getColName();
             setting = _.findWhere(Visual.config, { columnName: col });
+            //preview config
             if (setting != undefined) {
                 d3.select("select[name='typeCol']").property("value", setting.typeColumn.toLowerCase());
             }
 
         }
+        /**
+         * get col name of combo
+         */
+        private getColName() {
+            let colName;
+            d3.select("select[name='cols'] ")
+                .selectAll("option")
+                .filter(function (d, i) {
+                    if (this.selected) {
+                        colName = this.value;
+                        return this.value;
+                    }
+                });
+             return colName;   
+        }
+       
+        
         /**
          * popup configs
          */
@@ -177,24 +191,9 @@ module powerbi.extensibility.visual {
 
             d3.select("button[id='configButton']").on('click', function () {
 
-                d3.select("select[name='cols'] ")
-                    .selectAll("option")
-                    .filter(function (d, i) {
-                        if (this.selected) {
-                            colName = this.value;
-                            return this.value;
-                        }
-                    });
-
-                d3.select("select[name='typeCol']")
-                    .selectAll("option")
-                    .filter(function (d, i) {
-                        if (this.selected) {
-                            typeCol = this.value;
-                            return this.value;
-                        }
-                    });
-
+                
+                let colName = this.getColName();
+                let typeCol = this.getTypeCol();
                 let icon = d3.select("input[name='icon']:checked").property("value");
                 let id = _.findIndex(Visual.config, { columnName: colName });
 
@@ -285,8 +284,8 @@ module powerbi.extensibility.visual {
             if (!data) { return; }
             //insert header values
             data.forEach(item => {
+                var i = 0, type;
                 if (_.findIndex(this.dataViewModel.columns, { name: item.source.displayName }) < 0) {
-
                     this.dataViewModel.columns.push({
                         name: item.source.displayName,
                         iconType: strucData.IconType.TEXT,
@@ -294,7 +293,10 @@ module powerbi.extensibility.visual {
                         icon: [],
                         polarityColumn: ""
                     });
+
+                    i++;
                 }
+
             });
 
         }
@@ -520,7 +522,6 @@ module powerbi.extensibility.visual {
             var _ = this.tableOptions;
 
             switch (objectName) {
-
                 case 'TableOptions':
                     objectEnumeration.push({
                         objectName: objectName,
@@ -539,8 +540,8 @@ module powerbi.extensibility.visual {
                         properties: {
                             sizeFont: _.rowsFont,
                             fontFamily: _.rowsFamily,
-                            rowcolor:_.rowsColor,
-                            rowBackground:_.rowsBackground
+                            rowcolor: _.rowsColor,
+                            rowBackground: _.rowsBackground
                         },
                         selector: null
                     });
@@ -579,7 +580,7 @@ module powerbi.extensibility.visual {
                 rowsFont: getValue(this.dataview.metadata.objects, "RowsFormatting", "sizeFont", 19),
                 rowsFamily: getValue(this.dataview.metadata.objects, "RowsFormatting", "fontFamily", "Segoe UI Light"),
                 rowsColor: getValue<Fill>(this.dataview.metadata.objects, "RowsFormatting", "rowcolor", { solid: { color: "black" } }).solid.color,
-                rowsBackground :getValue<Fill>(this.dataview.metadata.objects, "RowsFormatting", "rowBackground", { solid: { color: "white" } }).solid.color
+                rowsBackground: getValue<Fill>(this.dataview.metadata.objects, "RowsFormatting", "rowBackground", { solid: { color: "white" } }).solid.color
             };
             STYLE.Customize.setFontsize(this.tHead, this.tableOptions.fontSize);
             STYLE.Customize.setColor(this.tHead, this.tableOptions.color);

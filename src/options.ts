@@ -56,7 +56,6 @@ module STYLE {
         * set size font rows
         */
         static setFamily(tBody: d3.Selection<HTMLElement>, font: any) {
-            console.log(font);
            if (tBody) {
                if (font == undefined || font == null) {
                     tBody.selectAll('td').style("font-family", font);
@@ -109,34 +108,20 @@ module STYLE {
                   </p>
                   <p>
                   <label>Type:</label>
-                  <select   name="typeCol" size="1" style="width:100%;font-size:10px;center">
+                  <select name="typeCol" size="1" style="width:100%;font-size:10px;center">
                     <option value="none">None</option>
                     <option value="score">Score</option>
                     <option value="variation">Variation</option>
                   </select>
                   </p>
-                  <p class="score">
-                  <label>Type Icon :</label>
-                   <select disabled  name="typeIcon" size="1" style="width:100%;font-size:10px;center">
-                    <option value="icon">Icon</option>
-                    <option value="icontext">Icon-Text</option>
-                    <option value="text">Text</option>
-                    </select>
-                  </p>
-                   <p class="polarity">
-                  <label>Other :</label>
-                   <select disabled name="polarity" size="1" style="width:100%;font-size:10px;center">
-                    ${dataViewModel.polarity.map(item =>`<option value="${item.name}">${item.name}</option>`).join('')}
-                    </select>
-                  </p>
-                  <p class="score">
-                  <label><input disabled id="bullet" type="radio" name="icon" value="bullet" checked></label>
-                   ${bullets.map(item => ``+item).join('&nbsp;&nbsp;  &nbsp;&nbsp;')}
-                  </p>
-                  <p class="score">
-                  <label><input disabled id="arrow" type="radio" name="icon" value="arrow" ></label>
-                   ${arrow.map(item => ``+item).join('&nbsp;&nbsp;  &nbsp;&nbsp;')}
-                  </p> 
+                  <p class="custtom">
+                 
+                 </p>
+                   
+                 <p class="preview">
+                 <label>Preview</label>
+                 
+                 </p>
               </fieldset>
               <button  id="configButton" class="button">Apply</button>
              `

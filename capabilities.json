@@ -82,7 +82,6 @@
 
     ],
     "objects": {
-
         "TableOptions": {
             "displayName": "Column headers",
             "properties": {

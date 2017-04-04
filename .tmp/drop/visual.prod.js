@@ -332,7 +332,6 @@ var STYLE;
         * set size font rows
         */
         Customize.setFamily = function (tBody, font) {
-            console.log(font);
             if (tBody) {
                 if (font == undefined || font == null) {
                     tBody.selectAll('td').style("font-family", font);
@@ -378,7 +377,7 @@ var STYLE;
             var arrow = ICON.ShapeFactory.getShape("ARROW");
             var html;
             container.select(".container").remove();
-            html = "\n              <fieldset>\n                  <p>\n                  <label>Columns:</label>\n                  <select name=\"cols\" size=\"1\" style=\"width:100%;font-size:10px;center\">\n                    " + dataViewModel.columns.map(function (item) { return "<option value=\"" + item.name + "\">" + item.name + "</option>"; }).join('') + "\n              </select>\n                  </p>\n                  <p>\n                  <label>Type:</label>\n                  <select   name=\"typeCol\" size=\"1\" style=\"width:100%;font-size:10px;center\">\n                    <option value=\"none\">None</option>\n                    <option value=\"score\">Score</option>\n                    <option value=\"variation\">Variation</option>\n                  </select>\n                  </p>\n                  <p class=\"score\">\n                  <label>Type Icon :</label>\n                   <select disabled  name=\"typeIcon\" size=\"1\" style=\"width:100%;font-size:10px;center\">\n                    <option value=\"icon\">Icon</option>\n                    <option value=\"icontext\">Icon-Text</option>\n                    <option value=\"text\">Text</option>\n                    </select>\n                  </p>\n                   <p class=\"polarity\">\n                  <label>Other :</label>\n                   <select disabled name=\"polarity\" size=\"1\" style=\"width:100%;font-size:10px;center\">\n                    " + dataViewModel.polarity.map(function (item) { return "<option value=\"" + item.name + "\">" + item.name + "</option>"; }).join('') + "\n                    </select>\n                  </p>\n                  <p class=\"score\">\n                  <label><input disabled id=\"bullet\" type=\"radio\" name=\"icon\" value=\"bullet\" checked></label>\n                   " + bullets.map(function (item) { return "" + item; }).join('&nbsp;&nbsp;  &nbsp;&nbsp;') + "\n                  </p>\n                  <p class=\"score\">\n                  <label><input disabled id=\"arrow\" type=\"radio\" name=\"icon\" value=\"arrow\" ></label>\n                   " + arrow.map(function (item) { return "" + item; }).join('&nbsp;&nbsp;  &nbsp;&nbsp;') + "\n                  </p> \n              </fieldset>\n              <button  id=\"configButton\" class=\"button\">Apply</button>\n             ";
+            html = "\n              <fieldset>\n                  <p>\n                  <label>Columns:</label>\n                  <select name=\"cols\" size=\"1\" style=\"width:100%;font-size:10px;center\">\n                    " + dataViewModel.columns.map(function (item) { return "<option value=\"" + item.name + "\">" + item.name + "</option>"; }).join('') + "\n              </select>\n                  </p>\n                  <p>\n                  <label>Type:</label>\n                  <select name=\"typeCol\" size=\"1\" style=\"width:100%;font-size:10px;center\">\n                    <option value=\"none\">None</option>\n                    <option value=\"score\">Score</option>\n                    <option value=\"variation\">Variation</option>\n                  </select>\n                  </p>\n                  <p class=\"custtom\">\n                 \n                 </p>\n                   \n                 <p class=\"preview\">\n                 <label>Preview</label>\n                 \n                 </p>\n              </fieldset>\n              <button  id=\"configButton\" class=\"button\">Apply</button>\n             ";
             container.append('div').classed("container", true).html(html);
         };
         return Customize;
@@ -431,9 +430,9 @@ var ICON;
      */
     var Arrow = (function () {
         function Arrow() {
-            this.ICON_TREND_UP = '<svg width="16" height="16" viewBox="0 0 9 9" xmlns="http://www.w3.org/2000/svg"><path d="M7.6.75H4.39V0h4.5v4.5h-.75V1.266L.526 8.888 0 8.36 7.6.75z" fill="#3CB371" fill-rule="evenodd"/></svg>';
+            this.ICON_TREND_UP = '<svg width="16" height="16" viewBox="0 0 9 9" xmlns="http://www.w3.org/2000/svg"><path d="M7.6.75H4.39V0h4.5v4.5h-.75V1.266L.526 8.888 0 8.36 7.6.75z" fill="#000" fill-rule="evenodd"/></svg>';
             this.ICON_TREND_STEADY = '<svg width="16" height="16" viewBox="0 0 9 9" xmlns="http://www.w3.org/2000/svg"><path d="M7.756 3.8l-2.27-2.27.53-.53 3.182 3.182-3.182 3.182-.53-.53 2.286-2.287L0 4.555V3.81l6.756-.01z" fill="#000" fill-rule="evenodd"/></svg>';
-            this.ICON_TREND_DOWN = '<svg width="16" height="16" viewBox="0 0 9 9" xmlns="http://www.w3.org/2000/svg"><path d="M8.89 4.388v4.5h-4.5v-.75h3.215L0 .528.527 0 8.14 7.605V4.388h.75" fill="#B22222" fill-rule="evenodd"/></svg>';
+            this.ICON_TREND_DOWN = '<svg width="16" height="16" viewBox="0 0 9 9" xmlns="http://www.w3.org/2000/svg"><path d="M8.89 4.388v4.5h-4.5v-.75h3.215L0 .528.527 0 8.14 7.605V4.388h.75" fill="#000" fill-rule="evenodd"/></svg>';
         }
         Arrow.prototype.getIcon = function () {
             return [this.ICON_TREND_DOWN, this.ICON_TREND_STEADY, this.ICON_TREND_UP];
@@ -518,7 +517,7 @@ var powerbi;
                             d3.select(".select-table" + (this.rowSelected)).style("font-weight", "bold").classed("select-table", false);
                         }
                         d3.select("select[name='typeCol']").on("change", this.changeType);
-                        d3.select("select[name='cols']").on("change", this.setConfigEvents);
+                        // d3.select("select[name='cols']").on("change", this.setConfigEvents);
                     };
                     Visual.prototype.events = function (mode) {
                         if (mode == 0) {
@@ -545,6 +544,7 @@ var powerbi;
                     };
                     Visual.prototype.changeType = function () {
                         var typeCol;
+                        var bullets;
                         d3.select("select[name='typeCol']")
                             .selectAll("option")
                             .filter(function (d, i) {
@@ -553,39 +553,46 @@ var powerbi;
                                 return this.value;
                             }
                         });
+                        d3.select(".custtom").empty();
                         if (typeCol == "score") {
-                            d3.select("select[name='polarity']").property("disabled", true);
-                            d3.select("select[name='typeIcon']").property("disabled", false);
-                            d3.select("input[id='bullet']").property("disabled", false);
-                            d3.select("input[id='arrow']").property("disabled", false);
+                            bullets = ICON.ShapeFactory.getShape("BULLET");
+                            d3.select(".custtom").append("label").text("Type Icon :");
+                            d3.select(".custtom").append("select").property("name", "typeIcon")
+                                .style("width", "100%").style("font-size", "10px")
+                                .append('option').property("value", "Icon").text("icon");
+                            d3.select(".custtom select").append('option').property("value", "Icon-Text")
+                                .text("icon-text");
+                            d3.select(".preview").select("label").text("Preview :").
+                                html(bullets.map(function (item) { return "" + item; }).join('&nbsp;&nbsp;  &nbsp;&nbsp;'));
                         }
                         else if (typeCol == "variation") {
-                            d3.select("select[name='polarity']").property("disabled", false);
-                            d3.select("select[name='typeIcon']").property("disabled", true);
-                            d3.selectAll("input[id='bullet']").property("disabled", true);
-                            d3.select("input[id='arrow']").property("disabled", true);
                         }
                         else {
-                            d3.select("select[name='polarity']").property("disabled", true);
-                            d3.select("select[name='typeIcon']").property("disabled", true);
-                            d3.selectAll("input[id='bullet']").property("disabled", true);
-                            d3.select("input[id='arrow']").property("disabled", true);
                         }
                     };
                     Visual.prototype.setConfigEvents = function () {
                         var col, setting;
-                        d3.select("select[name='cols']")
-                            .selectAll("option")
-                            .filter(function (d, i) {
-                            if (this.selected) {
-                                col = this.value;
-                                return this.value;
-                            }
-                        });
+                        col = this.getColName();
                         setting = _.findWhere(Visual.config, { columnName: col });
+                        //preview config
                         if (setting != undefined) {
                             d3.select("select[name='typeCol']").property("value", setting.typeColumn.toLowerCase());
                         }
+                    };
+                    /**
+                     * get col name of combo
+                     */
+                    Visual.prototype.getColName = function () {
+                        var colName;
+                        d3.select("select[name='cols'] ")
+                            .selectAll("option")
+                            .filter(function (d, i) {
+                            if (this.selected) {
+                                colName = this.value;
+                                return this.value;
+                            }
+                        });
+                        return colName;
                     };
                     /**
                      * popup configs
@@ -593,22 +600,8 @@ var powerbi;
                     Visual.prototype.configPopup = function (optionsUpdate) {
                         var colOther, iconType, colName, typeCol;
                         d3.select("button[id='configButton']").on('click', function () {
-                            d3.select("select[name='cols'] ")
-                                .selectAll("option")
-                                .filter(function (d, i) {
-                                if (this.selected) {
-                                    colName = this.value;
-                                    return this.value;
-                                }
-                            });
-                            d3.select("select[name='typeCol']")
-                                .selectAll("option")
-                                .filter(function (d, i) {
-                                if (this.selected) {
-                                    typeCol = this.value;
-                                    return this.value;
-                                }
-                            });
+                            var colName = this.getColName();
+                            var typeCol = this.getTypeCol();
                             var icon = d3.select("input[name='icon']:checked").property("value");
                             var id = _.findIndex(Visual.config, { columnName: colName });
                             if (typeCol == "variation") {
@@ -699,6 +692,7 @@ var powerbi;
                         }
                         //insert header values
                         data.forEach(function (item) {
+                            var i = 0, type;
                             if (_.findIndex(_this.dataViewModel.columns, { name: item.source.displayName }) < 0) {
                                 _this.dataViewModel.columns.push({
                                     name: item.source.displayName,
@@ -707,6 +701,7 @@ var powerbi;
                                     icon: [],
                                     polarityColumn: ""
                                 });
+                                i++;
                             }
                         });
                     };
