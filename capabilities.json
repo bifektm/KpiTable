@@ -3,6 +3,7 @@
             "displayName": "Rows",
             "name": "rows",
             "kind": "Grouping"
+
         },
         {
             "displayName": "Values",
@@ -25,8 +26,8 @@
             "categorical": {
 
                 "categories": {
-                    "bind": {
-                        "to": "rows"
+                    "for": {
+                        "in": "rows"
                     }
                 },
                 "values": {
@@ -78,11 +79,12 @@
             }
         }
 
+
     ],
     "objects": {
 
         "TableOptions": {
-            "displayName": "Table Options",
+            "displayName": "Column headers",
             "properties": {
                 "fontSize": {
                     "displayName": "Font-size",
@@ -92,8 +94,18 @@
                         }
                     }
                 },
+                "colorFont": {
+                    "displayName": "Font color",
+                    "type": {
+                        "fill": {
+                            "solid": {
+                                "color": true
+                            }
+                        }
+                    }
+                },
                 "color": {
-                    "displayName": "Color Columns",
+                    "displayName": "Background color",
                     "type": {
 
                         "fill": {
@@ -110,9 +122,72 @@
                     }
                 }
             }
+        },
+        "RowsFormatting": {
+            "displayName": "Rows Formatting",
+            "properties": {
+                "sizeFont": {
+                    "displayName": "Font-size",
+                    "type": {
+                        "formatting": {
+                            "fontSize": true
+                        }
+                    }
+                },
+                "fontFamily": {
+                    "displayName": "Font-family",
+                    "type": {
+                        "enumeration": [{
+                                "value": "Segoe UI Light",
+                                "displayName": "Segoe UI Light"
+                            },
+                            {
+                                "value": "Verdana",
+                                "displayName": "Verdana"
+                            },
+                            {
+                                "value": "Sans-Serif",
+                                "displayName": "Sans-Serif"
+                            },
+                            {
+                                "value": "Times",
+                                "displayName": "Times"
+                            }
+                        ]
+                    }
+                },
+                "rowcolor": {
+                    "displayName": "Font color",
+                    "type": {
+
+                        "fill": {
+                            "solid": {
+                                "color": true
+                            }
+                        }
+                    }
+                },
+                "rowBackground": {
+                    "displayName": "Background color",
+                    "type": {
+
+                        "fill": {
+                            "solid": {
+                                "color": true
+                            }
+                        }
+                    }
+                }
+            }
         }
     },
     "sorting": {
         "default": {}
-    }
+    },
+    "drilldown": {
+        "roles": [
+            "values"
+        ]
+    },
+    "suppressDefaultTitle": true
 }

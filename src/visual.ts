@@ -63,22 +63,22 @@ module powerbi.extensibility.visual {
         @logExceptions()
         public update(optionsUpdate: VisualUpdateOptions) {
             console.log("update");
-            this.events(optionsUpdate.viewMode);
 
+            this.events(optionsUpdate.viewMode);
             if (this.init || (optionsUpdate.viewport.height == this.height && optionsUpdate.viewport.width == this.width)) {
                 if (optionsUpdate.dataViews[0]) {
                     this.dataview = optionsUpdate.dataViews[0];
                     if (Visual.config.length == 0) {
                         try {
-                            if(COMMON.Core.getConfig(optionsUpdate.dataViews).length == 0){
-                                 Visual.config = JSON.parse(getValue(this.dataview.metadata.objects, "TableOptions", "config", "[]"));
-                            }else{
+                            if (COMMON.Core.getConfig(optionsUpdate.dataViews).length == 0) {
+                                Visual.config = JSON.parse(getValue(this.dataview.metadata.objects, "TableOptions", "config", "[]"));
+                            } else {
                                 Visual.config = COMMON.Core.getConfig(optionsUpdate.dataViews);
                             }
-                        } catch (Error) { 
-                            Visual.config = []; 
+                        } catch (Error) {
+                            Visual.config = [];
                         }
-                    }   
+                    }
                     this.parseData();
                     this.tableStyling();
                     STYLE.Customize.setHTML(this.Option, this.dataViewModel);
@@ -93,8 +93,10 @@ module powerbi.extensibility.visual {
             this.cleanDataModel();
             if (this.select) {                                                                          //select manager
                 d3.selectAll(".fixed_headers tr").classed("select-table", true);
-                d3.select(".select-table" + (this.rowSelected)).style("background-color", "white");
+                d3.select(".select-table" + (this.rowSelected)).style("font-weight", "bold").classed("select-table", false);
             }
+            d3.select("select[name='typeCol']").on("change", this.changeType);
+            d3.select("select[name='cols']").on("change", this.setConfigEvents);
 
         }
         private events(mode: number) {
@@ -119,8 +121,52 @@ module powerbi.extensibility.visual {
                 this.Option.style("display", "block");
             }.bind(this));
 
+            //  d3.select("select[name='typeCol']").on("change", this.changeType);
 
 
+        }
+        private changeType() {
+            let typeCol;
+            d3.select("select[name='typeCol']")
+                .selectAll("option")
+                .filter(function (d, i) {
+                    if (this.selected) {
+                        typeCol = this.value;
+                        return this.value;
+                    }
+                });
+
+            if (typeCol == "score") {
+                d3.select("select[name='polarity']").property("disabled", true);
+                d3.select("select[name='typeIcon']").property("disabled", false);
+                d3.select("input[id='bullet']").property("disabled", false);
+                d3.select("input[id='arrow']").property("disabled", false);
+            } else if (typeCol == "variation") {
+                d3.select("select[name='polarity']").property("disabled", false);
+                d3.select("select[name='typeIcon']").property("disabled", true);
+                d3.selectAll("input[id='bullet']").property("disabled", true);
+                d3.select("input[id='arrow']").property("disabled", true);
+            } else {
+                d3.select("select[name='polarity']").property("disabled", true);
+                d3.select("select[name='typeIcon']").property("disabled", true);
+                d3.selectAll("input[id='bullet']").property("disabled", true);
+                d3.select("input[id='arrow']").property("disabled", true);
+            }
+        }
+        private setConfigEvents() {
+            let col, setting;
+            d3.select("select[name='cols']")
+                .selectAll("option")
+                .filter(function (d, i) {
+                    if (this.selected) {
+                        col = this.value;
+                        return this.value;
+                    }
+                });
+            setting = _.findWhere(Visual.config, { columnName: col });
+            if (setting != undefined) {
+                d3.select("select[name='typeCol']").property("value", setting.typeColumn.toLowerCase());
+            }
 
         }
         /**
@@ -130,7 +176,7 @@ module powerbi.extensibility.visual {
             let colOther, iconType, colName, typeCol;
 
             d3.select("button[id='configButton']").on('click', function () {
-                console.log("click");
+
                 d3.select("select[name='cols'] ")
                     .selectAll("option")
                     .filter(function (d, i) {
@@ -148,7 +194,7 @@ module powerbi.extensibility.visual {
                             return this.value;
                         }
                     });
-                console.log(typeCol);
+
                 let icon = d3.select("input[name='icon']:checked").property("value");
                 let id = _.findIndex(Visual.config, { columnName: colName });
 
@@ -190,9 +236,9 @@ module powerbi.extensibility.visual {
 
                 } else { if (id != -1) { Visual.config.splice(id, 1) }; }
 
-                console.log(JSON.stringify(Visual.config));
+
                 this.enumerateObjectInstances({ objectName: "TableOptions" });
-                 this.update(optionsUpdate);
+                this.update(optionsUpdate);
 
             }.bind(this));
         }
@@ -220,15 +266,22 @@ module powerbi.extensibility.visual {
         private setHeaders() {
 
             let data = this.dataview.categorical.values;
-            let row = this.dataview.categorical.categories[0];
+            let rows = this.dataview.categorical.categories;
             //insert header row
-            this.dataViewModel.columns.push({
-                name: row.source.displayName,
-                iconType: strucData.IconType.TEXT,
-                type: strucData.Type.NOTHING,
-                icon: [],
-                polarityColumn: ""
+            rows.forEach(item => {
+                if (item.source.roles["rows"]) {
+                    this.dataViewModel.columns.push({
+                        name: item.source.displayName,
+                        iconType: strucData.IconType.TEXT,
+                        type: strucData.Type.NOTHING,
+                        icon: [],
+                        polarityColumn: ""
+                    });
+                }
+
             });
+
+
             if (!data) { return; }
             //insert header values
             data.forEach(item => {
@@ -255,13 +308,13 @@ module powerbi.extensibility.visual {
             this.dataViewModel.polarity = polarity;
             let colsLenght = this.dataViewModel.columns.length - 1;//4
             let type;
-            let row = { id: null, polarity: 1, row: [] };
-            let i = 0, j = 0,pol;
- 
+            let row = { id: null, row: [] };
+            let i = 0, j = 0, pol, other;
+
             if (!data) {
                 indicator.forEach(item => {
-                    row = { id: null, polarity: 1, row: [] };
-                    row.row.push(item);
+                    row = { id: null, row: [] };
+                    row.row.push({ value: item, polarity: 1 });
                     row.id = j;
                     this.selectionIds[item] = this.host.createSelectionIdBuilder()
                         .withCategory(this.dataview.categorical.categories[0], j)
@@ -276,59 +329,64 @@ module powerbi.extensibility.visual {
             data.forEach(item => {
 
                 if (i % colsLenght == 0) {
-                    if (polarity.length < 1) { 
+                    if (polarity.length < 1) {
                         polarity = [{ name: "", values: [] }];
                     }
-                   
-                    row = { id: null, polarity: 1, row: [] };
-                    row.row.push(indicator[j]);
+
+                    row = { id: null, row: [] };
+                    row.row.push({ value: indicator[j], polarity: 1 });
                     row.id = j;
                     this.selectionIds[indicator[j]] = this.host.createSelectionIdBuilder()
                         .withCategory(this.dataview.categorical.categories[0], j)
                         .createSelectionId();
 
                 }
-                pol = _.findIndex(this.dataViewModel.polarity,{name:this.dataViewModel.columns[(i % colsLenght) + 1].polarityColumn});
+                pol = _.findIndex(this.dataViewModel.polarity, { name: this.dataViewModel.columns[(i % colsLenght) + 1].polarityColumn });
                 type = this.dataViewModel.columns[(i % colsLenght) + 1].type;
-                if(pol != -1){
-                    
-                    row.polarity = polarity[pol].values[j];
+                if (pol != -1) {
+
+                    other = polarity[pol].values[j];
                 }
                 row.row.push(
-                    this.setConfigRows(type, item.values[j], (i % colsLenght) + 1)
+                    this.setConfigRows(type, item.values[j], (i % colsLenght) + 1, other)
                 );
                 if (i % colsLenght == colsLenght - 1) {
-
                     this.dataViewModel.values.push(row);
                     j++;
                 }
                 i++;
             });
+
         }
-        private setConfigRows(type: any, value: any, k: number) {
+        /**
+         * config valid value
+         */
+        private setConfigRows(type: any, value: any, k: number, pol: any) {
 
             let score, iconType;
+            let row = { value: null, polarity: 1 };
             if (type == strucData.Type.SCORE) { //SCORE
                 iconType = this.dataViewModel.columns[k].iconType;
                 score = COMMON.Core.getScore(+value);
 
                 if (iconType == strucData.IconType.ICON) {
 
-                    value = this.dataViewModel.columns[k].icon[score];
+                    row.value = this.dataViewModel.columns[k].icon[score];
 
                 } else if (iconType == strucData.IconType.ICONTEXT) {
 
-                    value = COMMON.Core.formatNumber(<any>value)
+                    row.value = COMMON.Core.formatNumber(<any>value)
                         + " " + this.dataViewModel.columns[k].icon[score];
                 } else {
-                    return value;
+                    row.value = value;
                 }
             } else if (type == strucData.Type.VARIATION) { //type variation
-                return value;
+                row.value = value;
+                row.polarity = pol;
             } else {
-                return value;
+                row.value = value;
             }
-            return value;
+            return row;
         }
         /**
        * set config columns in dataview model 
@@ -413,7 +471,7 @@ module powerbi.extensibility.visual {
                 .data(function (row) {
                     return columns.map(
                         function (column, i) {
-                            return { column: column, value: row.row[i], type: column.type, polarity: row.polarity, id: row.id };
+                            return { column: column, value: row.row[i].value, type: column.type, polarity: row.row[i].polarity, id: row.id };
                         });
                 })
                 .enter()
@@ -434,7 +492,7 @@ module powerbi.extensibility.visual {
                 });
 
             rows.on('click', function (d) {
-                this.selectionManager.select(this.selectionIds[d.row[0]]).then((ids: ISelectionId[]) => {
+                this.selectionManager.select(this.selectionIds[d.row[0].value]).then((ids: ISelectionId[]) => {
                     if (ids.length > 0) {
                         this.select = true;
                         this.rowSelected = d.id;
@@ -469,7 +527,20 @@ module powerbi.extensibility.visual {
                         properties: {
                             fontSize: _.fontSize,
                             color: _.color,
-                            config: ""
+                            config: "",
+                            colorFont: _.colorFont
+                        },
+                        selector: null
+                    });
+                    break;
+                case 'RowsFormatting':
+                    objectEnumeration.push({
+                        objectName: objectName,
+                        properties: {
+                            sizeFont: _.rowsFont,
+                            fontFamily: _.rowsFamily,
+                            rowcolor:_.rowsColor,
+                            rowBackground:_.rowsBackground
                         },
                         selector: null
                     });
@@ -482,20 +553,17 @@ module powerbi.extensibility.visual {
                 properties: {
                     config: JSON.stringify(Visual.config),
                     color: _.color,
-                    fontSize: _.fontSize
+                    fontSize: _.fontSize,
+                    colorFont: _.colorFont
                 },
                 selector: null
             }
-
             objectEnumeration1.push(config);
 
             let propertToChange: VisualObjectInstancesToPersist = {
                 merge: objectEnumeration1
             }
             this.host.persistProperties(objectEnumeration1);
-
-            console.log("now" + JSON.stringify(objectEnumeration));
-
             return objectEnumeration;
         }
 
@@ -506,10 +574,20 @@ module powerbi.extensibility.visual {
 
             this.tableOptions = {
                 fontSize: getValue(this.dataview.metadata.objects, "TableOptions", "fontSize", 19),
-                color: getValue<Fill>(this.dataview.metadata.objects, "TableOptions", "color", { solid: { color: "#178BCA" } }).solid.color
+                color: getValue<Fill>(this.dataview.metadata.objects, "TableOptions", "color", { solid: { color: "#178BCA" } }).solid.color,
+                colorFont: getValue<Fill>(this.dataview.metadata.objects, "TableOptions", "colorFont", { solid: { color: "white" } }).solid.color,
+                rowsFont: getValue(this.dataview.metadata.objects, "RowsFormatting", "sizeFont", 19),
+                rowsFamily: getValue(this.dataview.metadata.objects, "RowsFormatting", "fontFamily", "Segoe UI Light"),
+                rowsColor: getValue<Fill>(this.dataview.metadata.objects, "RowsFormatting", "rowcolor", { solid: { color: "black" } }).solid.color,
+                rowsBackground :getValue<Fill>(this.dataview.metadata.objects, "RowsFormatting", "rowBackground", { solid: { color: "white" } }).solid.color
             };
-            STYLE.Customize.setZoom(this.target, this.tableOptions.fontSize);
+            STYLE.Customize.setFontsize(this.tHead, this.tableOptions.fontSize);
             STYLE.Customize.setColor(this.tHead, this.tableOptions.color);
+            STYLE.Customize.setColorFont(this.tHead, this.tableOptions.colorFont);
+            STYLE.Customize.setSizerFont(this.tBody, this.tableOptions.rowsFont);
+            STYLE.Customize.setFamily(this.tBody, this.tableOptions.rowsFamily);
+            STYLE.Customize.setRowColor(this.tBody, this.tableOptions.rowsColor);
+            STYLE.Customize.setRowBackground(this.tBody, this.tableOptions.rowsBackground);
         }
         /**
       * clear data model

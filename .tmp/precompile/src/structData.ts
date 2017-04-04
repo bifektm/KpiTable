@@ -8,12 +8,6 @@ module strucData {
         values: IRows[];
         polarity:IPolarity[];
     }
-    
-    export interface IRows{
-        row:string[]
-        id:any;
-        polarity:any;
-    }
     export interface IColumns{
         name:string;
         iconType: IconType;
@@ -21,6 +15,15 @@ module strucData {
         icon :string[];
         polarityColumn:string;
 
+    }
+    export interface IRows{
+        row:IValue[]
+        id:any;
+    }
+    
+    export interface IValue{
+        value:any;
+        polarity:any;
     }
     export interface IPolarity{
         name:string;
@@ -49,6 +52,11 @@ module strucData {
     export interface IOptions{
         fontSize:any;
         color:any;
+        colorFont:any;
+        rowsFont:any;
+        rowsFamily:any;
+        rowsColor:any;
+        rowsBackground:any;
     }
     //configs
     export interface IConfig{

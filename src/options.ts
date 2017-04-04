@@ -13,8 +13,8 @@ module STYLE {
        /**
         * zoom of visual
         */
-       static setZoom(target: d3.Selection<HTMLElement>, num: any) {
-           target.select('div').style("font-Size", num + "px");
+       static setFontsize(tHead: d3.Selection<HTMLElement>, num: any) {
+           tHead.selectAll('th').style("font-Size", num + "px");
        }
        /**
         * set color headings
@@ -27,8 +27,67 @@ module STYLE {
                     tHead.selectAll('th').style("background-color",color);
                }
            }
-
-
+       }
+       /**
+        * set color font
+        */
+        static setColorFont(tHead: d3.Selection<HTMLElement>, color: any) {
+           if (tHead) {
+               if (color == undefined || color == null) {
+                    tHead.selectAll('th').style("color","white");
+               } else {
+                    tHead.selectAll('th').style("color",color);
+               }
+           }
+       }
+        /**
+        * set size font rows
+        */
+        static setSizerFont(tBody: d3.Selection<HTMLElement>, num: any) {
+           if (tBody) {
+               if (num == undefined || num == null) {
+                    tBody.selectAll('td').style("font-Size", num + "px");
+               } else {
+                    tBody.selectAll('td').style("font-Size", num + "px");
+               }
+           }
+       }
+        /**
+        * set size font rows
+        */
+        static setFamily(tBody: d3.Selection<HTMLElement>, font: any) {
+            console.log(font);
+           if (tBody) {
+               if (font == undefined || font == null) {
+                    tBody.selectAll('td').style("font-family", font);
+               } else {
+                    tBody.selectAll('td').style("font-family", font);
+               }
+           }
+       }
+        /**
+        * set color font row
+        */
+        static setRowColor(tBody: d3.Selection<HTMLElement>, color: any) {
+           if (tBody) {
+               if (color == undefined || color == null) {
+                    tBody.selectAll('td').style("color","black");
+               } else {
+                    tBody.selectAll('td').style("color",color);
+               }
+           }
+       }
+       /**
+        * set color font row
+        */
+        static setRowBackground(tBody: d3.Selection<HTMLElement>, color: any) {
+           if (tBody) {
+               if (color == undefined || color == null) {
+                    tBody.selectAll('td').style("background-color","black");
+               } else {
+                    tBody.selectAll('td').style("background-color",color);
+               }
+           }
        }
        /**
         * options
@@ -50,7 +109,7 @@ module STYLE {
                   </p>
                   <p>
                   <label>Type:</label>
-                  <select name="typeCol" size="1" style="width:100%;font-size:10px;center">
+                  <select   name="typeCol" size="1" style="width:100%;font-size:10px;center">
                     <option value="none">None</option>
                     <option value="score">Score</option>
                     <option value="variation">Variation</option>
@@ -58,7 +117,7 @@ module STYLE {
                   </p>
                   <p class="score">
                   <label>Type Icon :</label>
-                   <select name="typeIcon" size="1" style="width:100%;font-size:10px;center">
+                   <select disabled  name="typeIcon" size="1" style="width:100%;font-size:10px;center">
                     <option value="icon">Icon</option>
                     <option value="icontext">Icon-Text</option>
                     <option value="text">Text</option>
@@ -66,20 +125,20 @@ module STYLE {
                   </p>
                    <p class="polarity">
                   <label>Other :</label>
-                   <select name="polarity" size="1" style="width:100%;font-size:10px;center">
+                   <select disabled name="polarity" size="1" style="width:100%;font-size:10px;center">
                     ${dataViewModel.polarity.map(item =>`<option value="${item.name}">${item.name}</option>`).join('')}
                     </select>
                   </p>
                   <p class="score">
-                  <label><input type="radio" name="icon" value="bullet" checked></label>
+                  <label><input disabled id="bullet" type="radio" name="icon" value="bullet" checked></label>
                    ${bullets.map(item => ``+item).join('&nbsp;&nbsp;  &nbsp;&nbsp;')}
                   </p>
                   <p class="score">
-                  <label><input type="radio" name="icon" value="arrow" ></label>
+                  <label><input disabled id="arrow" type="radio" name="icon" value="arrow" ></label>
                    ${arrow.map(item => ``+item).join('&nbsp;&nbsp;  &nbsp;&nbsp;')}
                   </p> 
               </fieldset>
-              <button id="configButton" class="button">Apply</button>
+              <button  id="configButton" class="button">Apply</button>
              `
              container.append('div').classed("container",true).html(html);
         }

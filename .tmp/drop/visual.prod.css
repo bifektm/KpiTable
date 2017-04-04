@@ -4,7 +4,6 @@
 .visual-PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD_DEBUG .wrapper {
   width: 100%;
   height: 100%;
-  font-family: "Segoe UI Light", Verdana, Sans-Serif;
   font-size: 1.1em;
   overflow-y: auto;
 }
@@ -17,7 +16,6 @@
   cursor: pointer;
 }
 .visual-PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD_DEBUG .fixed_headers table.tr {
-  border: 5px solid red;
   border-bottom: 1pt solid #59B4D9;
   cursor: pointer;
 }
@@ -40,7 +38,6 @@
 }
 .visual-PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD_DEBUG .fixed_headers td {
   font-size: 0.875em;
-  border-bottom: 1px dashed gray;
   vertical-align: middle;
   padding-top: 5px;
   cursor: pointer;
@@ -140,8 +137,7 @@
   text-align: right;
 }
 .visual-PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD_DEBUG .select-table {
-  background-color: rgba(0, 0, 0, 0.1);
-  
+  opacity: 0.5;
 }
 .visual-PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD_DEBUG .bar {
   width: 100%;

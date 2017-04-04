@@ -286,8 +286,8 @@ var STYLE;
         /**
          * zoom of visual
          */
-        Customize.setZoom = function (target, num) {
-            target.select('div').style("font-Size", num + "px");
+        Customize.setFontsize = function (tHead, num) {
+            tHead.selectAll('th').style("font-Size", num + "px");
         };
         /**
          * set color headings
@@ -303,6 +303,72 @@ var STYLE;
             }
         };
         /**
+         * set color font
+         */
+        Customize.setColorFont = function (tHead, color) {
+            if (tHead) {
+                if (color == undefined || color == null) {
+                    tHead.selectAll('th').style("color", "white");
+                }
+                else {
+                    tHead.selectAll('th').style("color", color);
+                }
+            }
+        };
+        /**
+        * set size font rows
+        */
+        Customize.setSizerFont = function (tBody, num) {
+            if (tBody) {
+                if (num == undefined || num == null) {
+                    tBody.selectAll('td').style("font-Size", num + "px");
+                }
+                else {
+                    tBody.selectAll('td').style("font-Size", num + "px");
+                }
+            }
+        };
+        /**
+        * set size font rows
+        */
+        Customize.setFamily = function (tBody, font) {
+            console.log(font);
+            if (tBody) {
+                if (font == undefined || font == null) {
+                    tBody.selectAll('td').style("font-family", font);
+                }
+                else {
+                    tBody.selectAll('td').style("font-family", font);
+                }
+            }
+        };
+        /**
+        * set color font row
+        */
+        Customize.setRowColor = function (tBody, color) {
+            if (tBody) {
+                if (color == undefined || color == null) {
+                    tBody.selectAll('td').style("color", "black");
+                }
+                else {
+                    tBody.selectAll('td').style("color", color);
+                }
+            }
+        };
+        /**
+         * set color font row
+         */
+        Customize.setRowBackground = function (tBody, color) {
+            if (tBody) {
+                if (color == undefined || color == null) {
+                    tBody.selectAll('td').style("background-color", "black");
+                }
+                else {
+                    tBody.selectAll('td').style("background-color", color);
+                }
+            }
+        };
+        /**
          * options
          * @param container
          * @param dataViewModel
@@ -312,7 +378,7 @@ var STYLE;
             var arrow = ICON.ShapeFactory.getShape("ARROW");
             var html;
             container.select(".container").remove();
-            html = "\n              <fieldset>\n                  <p>\n                  <label>Columns:</label>\n                  <select name=\"cols\" size=\"1\" style=\"width:100%;font-size:10px;center\">\n                    " + dataViewModel.columns.map(function (item) { return "<option value=\"" + item.name + "\">" + item.name + "</option>"; }).join('') + "\n              </select>\n                  </p>\n                  <p>\n                  <label>Type:</label>\n                  <select name=\"typeCol\" size=\"1\" style=\"width:100%;font-size:10px;center\">\n                    <option value=\"none\">None</option>\n                    <option value=\"score\">Score</option>\n                    <option value=\"variation\">Variation</option>\n                  </select>\n                  </p>\n                  <p class=\"score\">\n                  <label>Type Icon :</label>\n                   <select name=\"typeIcon\" size=\"1\" style=\"width:100%;font-size:10px;center\">\n                    <option value=\"icon\">Icon</option>\n                    <option value=\"icontext\">Icon-Text</option>\n                    <option value=\"text\">Text</option>\n                    </select>\n                  </p>\n                   <p class=\"polarity\">\n                  <label>Other :</label>\n                   <select name=\"polarity\" size=\"1\" style=\"width:100%;font-size:10px;center\">\n                    " + dataViewModel.polarity.map(function (item) { return "<option value=\"" + item.name + "\">" + item.name + "</option>"; }).join('') + "\n                    </select>\n                  </p>\n                  <p class=\"score\">\n                  <label><input type=\"radio\" name=\"icon\" value=\"bullet\" checked></label>\n                   " + bullets.map(function (item) { return "" + item; }).join('&nbsp;&nbsp;  &nbsp;&nbsp;') + "\n                  </p>\n                  <p class=\"score\">\n                  <label><input type=\"radio\" name=\"icon\" value=\"arrow\" ></label>\n                   " + arrow.map(function (item) { return "" + item; }).join('&nbsp;&nbsp;  &nbsp;&nbsp;') + "\n                  </p> \n              </fieldset>\n              <button id=\"configButton\" class=\"button\">Apply</button>\n             ";
+            html = "\n              <fieldset>\n                  <p>\n                  <label>Columns:</label>\n                  <select name=\"cols\" size=\"1\" style=\"width:100%;font-size:10px;center\">\n                    " + dataViewModel.columns.map(function (item) { return "<option value=\"" + item.name + "\">" + item.name + "</option>"; }).join('') + "\n              </select>\n                  </p>\n                  <p>\n                  <label>Type:</label>\n                  <select   name=\"typeCol\" size=\"1\" style=\"width:100%;font-size:10px;center\">\n                    <option value=\"none\">None</option>\n                    <option value=\"score\">Score</option>\n                    <option value=\"variation\">Variation</option>\n                  </select>\n                  </p>\n                  <p class=\"score\">\n                  <label>Type Icon :</label>\n                   <select disabled  name=\"typeIcon\" size=\"1\" style=\"width:100%;font-size:10px;center\">\n                    <option value=\"icon\">Icon</option>\n                    <option value=\"icontext\">Icon-Text</option>\n                    <option value=\"text\">Text</option>\n                    </select>\n                  </p>\n                   <p class=\"polarity\">\n                  <label>Other :</label>\n                   <select disabled name=\"polarity\" size=\"1\" style=\"width:100%;font-size:10px;center\">\n                    " + dataViewModel.polarity.map(function (item) { return "<option value=\"" + item.name + "\">" + item.name + "</option>"; }).join('') + "\n                    </select>\n                  </p>\n                  <p class=\"score\">\n                  <label><input disabled id=\"bullet\" type=\"radio\" name=\"icon\" value=\"bullet\" checked></label>\n                   " + bullets.map(function (item) { return "" + item; }).join('&nbsp;&nbsp;  &nbsp;&nbsp;') + "\n                  </p>\n                  <p class=\"score\">\n                  <label><input disabled id=\"arrow\" type=\"radio\" name=\"icon\" value=\"arrow\" ></label>\n                   " + arrow.map(function (item) { return "" + item; }).join('&nbsp;&nbsp;  &nbsp;&nbsp;') + "\n                  </p> \n              </fieldset>\n              <button  id=\"configButton\" class=\"button\">Apply</button>\n             ";
             container.append('div').classed("container", true).html(html);
         };
         return Customize;
@@ -449,8 +515,10 @@ var powerbi;
                         this.cleanDataModel();
                         if (this.select) {
                             d3.selectAll(".fixed_headers tr").classed("select-table", true);
-                            d3.select(".select-table" + (this.rowSelected)).style("background-color", "white");
+                            d3.select(".select-table" + (this.rowSelected)).style("font-weight", "bold").classed("select-table", false);
                         }
+                        d3.select("select[name='typeCol']").on("change", this.changeType);
+                        d3.select("select[name='cols']").on("change", this.setConfigEvents);
                     };
                     Visual.prototype.events = function (mode) {
                         if (mode == 0) {
@@ -473,6 +541,51 @@ var powerbi;
                         d3.select(".edit").on('click', function () {
                             this.Option.style("display", "block");
                         }.bind(this));
+                        //  d3.select("select[name='typeCol']").on("change", this.changeType);
+                    };
+                    Visual.prototype.changeType = function () {
+                        var typeCol;
+                        d3.select("select[name='typeCol']")
+                            .selectAll("option")
+                            .filter(function (d, i) {
+                            if (this.selected) {
+                                typeCol = this.value;
+                                return this.value;
+                            }
+                        });
+                        if (typeCol == "score") {
+                            d3.select("select[name='polarity']").property("disabled", true);
+                            d3.select("select[name='typeIcon']").property("disabled", false);
+                            d3.select("input[id='bullet']").property("disabled", false);
+                            d3.select("input[id='arrow']").property("disabled", false);
+                        }
+                        else if (typeCol == "variation") {
+                            d3.select("select[name='polarity']").property("disabled", false);
+                            d3.select("select[name='typeIcon']").property("disabled", true);
+                            d3.selectAll("input[id='bullet']").property("disabled", true);
+                            d3.select("input[id='arrow']").property("disabled", true);
+                        }
+                        else {
+                            d3.select("select[name='polarity']").property("disabled", true);
+                            d3.select("select[name='typeIcon']").property("disabled", true);
+                            d3.selectAll("input[id='bullet']").property("disabled", true);
+                            d3.select("input[id='arrow']").property("disabled", true);
+                        }
+                    };
+                    Visual.prototype.setConfigEvents = function () {
+                        var col, setting;
+                        d3.select("select[name='cols']")
+                            .selectAll("option")
+                            .filter(function (d, i) {
+                            if (this.selected) {
+                                col = this.value;
+                                return this.value;
+                            }
+                        });
+                        setting = _.findWhere(Visual.config, { columnName: col });
+                        if (setting != undefined) {
+                            d3.select("select[name='typeCol']").property("value", setting.typeColumn.toLowerCase());
+                        }
                     };
                     /**
                      * popup configs
@@ -480,7 +593,6 @@ var powerbi;
                     Visual.prototype.configPopup = function (optionsUpdate) {
                         var colOther, iconType, colName, typeCol;
                         d3.select("button[id='configButton']").on('click', function () {
-                            console.log("click");
                             d3.select("select[name='cols'] ")
                                 .selectAll("option")
                                 .filter(function (d, i) {
@@ -497,7 +609,6 @@ var powerbi;
                                     return this.value;
                                 }
                             });
-                            console.log(typeCol);
                             var icon = d3.select("input[name='icon']:checked").property("value");
                             var id = _.findIndex(Visual.config, { columnName: colName });
                             if (typeCol == "variation") {
@@ -546,7 +657,6 @@ var powerbi;
                                 }
                                 ;
                             }
-                            console.log(JSON.stringify(Visual.config));
                             this.enumerateObjectInstances({ objectName: "TableOptions" });
                             this.update(optionsUpdate);
                         }.bind(this));
@@ -571,14 +681,18 @@ var powerbi;
                     Visual.prototype.setHeaders = function () {
                         var _this = this;
                         var data = this.dataview.categorical.values;
-                        var row = this.dataview.categorical.categories[0];
+                        var rows = this.dataview.categorical.categories;
                         //insert header row
-                        this.dataViewModel.columns.push({
-                            name: row.source.displayName,
-                            iconType: strucData.IconType.TEXT,
-                            type: strucData.Type.NOTHING,
-                            icon: [],
-                            polarityColumn: ""
+                        rows.forEach(function (item) {
+                            if (item.source.roles["rows"]) {
+                                _this.dataViewModel.columns.push({
+                                    name: item.source.displayName,
+                                    iconType: strucData.IconType.TEXT,
+                                    type: strucData.Type.NOTHING,
+                                    icon: [],
+                                    polarityColumn: ""
+                                });
+                            }
                         });
                         if (!data) {
                             return;
@@ -607,12 +721,12 @@ var powerbi;
                         this.dataViewModel.polarity = polarity;
                         var colsLenght = this.dataViewModel.columns.length - 1; //4
                         var type;
-                        var row = { id: null, polarity: 1, row: [] };
-                        var i = 0, j = 0, pol;
+                        var row = { id: null, row: [] };
+                        var i = 0, j = 0, pol, other;
                         if (!data) {
                             indicator.forEach(function (item) {
-                                row = { id: null, polarity: 1, row: [] };
-                                row.row.push(item);
+                                row = { id: null, row: [] };
+                                row.row.push({ value: item, polarity: 1 });
                                 row.id = j;
                                 _this.selectionIds[item] = _this.host.createSelectionIdBuilder()
                                     .withCategory(_this.dataview.categorical.categories[0], j)
@@ -629,8 +743,8 @@ var powerbi;
                                 if (polarity.length < 1) {
                                     polarity = [{ name: "", values: [] }];
                                 }
-                                row = { id: null, polarity: 1, row: [] };
-                                row.row.push(indicator[j]);
+                                row = { id: null, row: [] };
+                                row.row.push({ value: indicator[j], polarity: 1 });
                                 row.id = j;
                                 _this.selectionIds[indicator[j]] = _this.host.createSelectionIdBuilder()
                                     .withCategory(_this.dataview.categorical.categories[0], j)
@@ -639,9 +753,9 @@ var powerbi;
                             pol = _.findIndex(_this.dataViewModel.polarity, { name: _this.dataViewModel.columns[(i % colsLenght) + 1].polarityColumn });
                             type = _this.dataViewModel.columns[(i % colsLenght) + 1].type;
                             if (pol != -1) {
-                                row.polarity = polarity[pol].values[j];
+                                other = polarity[pol].values[j];
                             }
-                            row.row.push(_this.setConfigRows(type, item.values[j], (i % colsLenght) + 1));
+                            row.row.push(_this.setConfigRows(type, item.values[j], (i % colsLenght) + 1, other));
                             if (i % colsLenght == colsLenght - 1) {
                                 _this.dataViewModel.values.push(row);
                                 j++;
@@ -649,29 +763,34 @@ var powerbi;
                             i++;
                         });
                     };
-                    Visual.prototype.setConfigRows = function (type, value, k) {
+                    /**
+                     * config valid value
+                     */
+                    Visual.prototype.setConfigRows = function (type, value, k, pol) {
                         var score, iconType;
+                        var row = { value: null, polarity: 1 };
                         if (type == strucData.Type.SCORE) {
                             iconType = this.dataViewModel.columns[k].iconType;
                             score = COMMON.Core.getScore(+value);
                             if (iconType == strucData.IconType.ICON) {
-                                value = this.dataViewModel.columns[k].icon[score];
+                                row.value = this.dataViewModel.columns[k].icon[score];
                             }
                             else if (iconType == strucData.IconType.ICONTEXT) {
-                                value = COMMON.Core.formatNumber(value)
+                                row.value = COMMON.Core.formatNumber(value)
                                     + " " + this.dataViewModel.columns[k].icon[score];
                             }
                             else {
-                                return value;
+                                row.value = value;
                             }
                         }
                         else if (type == strucData.Type.VARIATION) {
-                            return value;
+                            row.value = value;
+                            row.polarity = pol;
                         }
                         else {
-                            return value;
+                            row.value = value;
                         }
-                        return value;
+                        return row;
                     };
                     /**
                    * set config columns in dataview model
@@ -746,7 +865,7 @@ var powerbi;
                         var cells = rows.selectAll('td')
                             .data(function (row) {
                             return columns.map(function (column, i) {
-                                return { column: column, value: row.row[i], type: column.type, polarity: row.polarity, id: row.id };
+                                return { column: column, value: row.row[i].value, type: column.type, polarity: row.row[i].polarity, id: row.id };
                             });
                         })
                             .enter()
@@ -766,7 +885,7 @@ var powerbi;
                         });
                         rows.on('click', function (d) {
                             var _this = this;
-                            this.selectionManager.select(this.selectionIds[d.row[0]]).then(function (ids) {
+                            this.selectionManager.select(this.selectionIds[d.row[0].value]).then(function (ids) {
                                 if (ids.length > 0) {
                                     _this.select = true;
                                     _this.rowSelected = d.id;
@@ -797,7 +916,20 @@ var powerbi;
                                     properties: {
                                         fontSize: _.fontSize,
                                         color: _.color,
-                                        config: ""
+                                        config: "",
+                                        colorFont: _.colorFont
+                                    },
+                                    selector: null
+                                });
+                                break;
+                            case 'RowsFormatting':
+                                objectEnumeration.push({
+                                    objectName: objectName,
+                                    properties: {
+                                        sizeFont: _.rowsFont,
+                                        fontFamily: _.rowsFamily,
+                                        rowcolor: _.rowsColor,
+                                        rowBackground: _.rowsBackground
                                     },
                                     selector: null
                                 });
@@ -809,7 +941,8 @@ var powerbi;
                             properties: {
                                 config: JSON.stringify(Visual.config),
                                 color: _.color,
-                                fontSize: _.fontSize
+                                fontSize: _.fontSize,
+                                colorFont: _.colorFont
                             },
                             selector: null
                         };
@@ -818,7 +951,6 @@ var powerbi;
                             merge: objectEnumeration1
                         };
                         this.host.persistProperties(objectEnumeration1);
-                        console.log("now" + JSON.stringify(objectEnumeration));
                         return objectEnumeration;
                     };
                     /**
@@ -827,10 +959,20 @@ var powerbi;
                     Visual.prototype.tableStyling = function () {
                         this.tableOptions = {
                             fontSize: PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD.getValue(this.dataview.metadata.objects, "TableOptions", "fontSize", 19),
-                            color: PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD.getValue(this.dataview.metadata.objects, "TableOptions", "color", { solid: { color: "#178BCA" } }).solid.color
+                            color: PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD.getValue(this.dataview.metadata.objects, "TableOptions", "color", { solid: { color: "#178BCA" } }).solid.color,
+                            colorFont: PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD.getValue(this.dataview.metadata.objects, "TableOptions", "colorFont", { solid: { color: "white" } }).solid.color,
+                            rowsFont: PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD.getValue(this.dataview.metadata.objects, "RowsFormatting", "sizeFont", 19),
+                            rowsFamily: PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD.getValue(this.dataview.metadata.objects, "RowsFormatting", "fontFamily", "Segoe UI Light"),
+                            rowsColor: PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD.getValue(this.dataview.metadata.objects, "RowsFormatting", "rowcolor", { solid: { color: "black" } }).solid.color,
+                            rowsBackground: PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD.getValue(this.dataview.metadata.objects, "RowsFormatting", "rowBackground", { solid: { color: "white" } }).solid.color
                         };
-                        STYLE.Customize.setZoom(this.target, this.tableOptions.fontSize);
+                        STYLE.Customize.setFontsize(this.tHead, this.tableOptions.fontSize);
                         STYLE.Customize.setColor(this.tHead, this.tableOptions.color);
+                        STYLE.Customize.setColorFont(this.tHead, this.tableOptions.colorFont);
+                        STYLE.Customize.setSizerFont(this.tBody, this.tableOptions.rowsFont);
+                        STYLE.Customize.setFamily(this.tBody, this.tableOptions.rowsFamily);
+                        STYLE.Customize.setRowColor(this.tBody, this.tableOptions.rowsColor);
+                        STYLE.Customize.setRowBackground(this.tBody, this.tableOptions.rowsBackground);
                     };
                     /**
                   * clear data model
