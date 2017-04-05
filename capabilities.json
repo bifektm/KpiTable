@@ -23,31 +23,45 @@
         }
     ],
     "dataViewMappings": [{
+            "conditions": [
+                { "rows": { "max": 1 }, "config": { "max": 1 } }
+            ],
             "categorical": {
 
                 "categories": {
                     "for": {
                         "in": "rows"
+                    },
+                    "dataReductionAlgorithm": {
+                        "top": {}
                     }
                 },
                 "values": {
                     "group": {
                         "by": "rows",
                         "select": [{
-                                "bind": {
-                                    "to": "values"
+                                "for": {
+                                    "in": "values"
                                 }
                             }
 
                         ]
+                    },
+                    "dataReductionAlgorithm": {
+                        "top": {}
                     }
 
-                }
+                },
+                "dataVolume": 1
+
             }
 
 
         },
         {
+            "conditions": [
+                { "rows": { "max": 1 }, "config": { "max": 1 } }
+            ],
             "categorical": {
                 "categories": {
 
@@ -64,6 +78,9 @@
         },
 
         {
+            "conditions": [
+                { "rows": { "max": 1 }, "config": { "max": 1 } }
+            ],
             "categorical": {
                 "categories": {
 
@@ -182,11 +199,6 @@
     },
     "sorting": {
         "default": {}
-    },
-    "drilldown": {
-        "roles": [
-            "values"
-        ]
     },
     "suppressDefaultTitle": true
 }

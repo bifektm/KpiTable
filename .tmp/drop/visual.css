@@ -70,7 +70,7 @@
   display: none;
 }
 .visual-PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD_DEBUG .option {
-  display: block;
+  display: none;
   position: fixed;
   background-color: #f8f8f8;
   z-index: 1;
@@ -94,7 +94,15 @@
   padding-top: 2px;
 }
 .visual-PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD_DEBUG .preview {
-  bottom: 20%;
+  margin: 20px;
+}
+.visual-PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD_DEBUG .config {
+  width: 5px;
+  height: 5px;
+  margin: 3px;
+  display: block-inline;
+  font-size: 14px;
+  color: red;
 }
 .visual-PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD_DEBUG .close1 {
   position: absolute;

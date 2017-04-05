@@ -34,9 +34,11 @@ module COMMON {
             if (variation > 0) {
                 if (polarity == 0) { return "red"; }
                 else { return "green"; }
-            } else {
+            } else if(variation < 0){
                 if (polarity == 0) { return "green"; }
                 else { return "red"; }
+            }else{
+                return "black";
             }
         }
         /**

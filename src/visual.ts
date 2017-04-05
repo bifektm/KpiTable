@@ -39,22 +39,7 @@ module powerbi.extensibility.visual {
             this.cleanDataModel();
             this.InitconfigHTML();
             console.log("cons");
-            Visual.config = [];
-        }
-        /**
-         * init html and events
-         */
-        private InitconfigHTML() {
-
-            this.div = this.target.append('div')
-                .classed('wrapper', true);
-
-            this.div.append('div').classed('edit', true);
-            //
-            this.Option = this.div.append('div').classed('option', true);
-            this.containerOption = this.Option.append('div').classed("header", true).text("Config Columns")
-                .append("span").classed('close1', true).html('&times;');
-            this.Option.append("div").classed("container", true);
+            Visual.config = [];        
         }
 
         /**
@@ -63,11 +48,11 @@ module powerbi.extensibility.visual {
         @logExceptions()
         public update(optionsUpdate: VisualUpdateOptions) {
             console.log("update");
-
-            this.events(optionsUpdate.viewMode);
+             STYLE.Customize.events(optionsUpdate.viewMode,this.Option,this.div);
             if (this.init || (optionsUpdate.viewport.height == this.height && optionsUpdate.viewport.width == this.width)) {
                 if (optionsUpdate.dataViews[0]) {
                     this.dataview = optionsUpdate.dataViews[0];
+                   
                     if (Visual.config.length == 0) {
                         try {
                             if (COMMON.Core.getConfig(optionsUpdate.dataViews).length == 0) {
@@ -75,9 +60,7 @@ module powerbi.extensibility.visual {
                             } else {
                                 Visual.config = COMMON.Core.getConfig(optionsUpdate.dataViews);
                             }
-                        } catch (Error) {
-                            Visual.config = [];
-                        }
+                        } catch (Error) { Visual.config = [];}
                     }
                     this.parseData();
                     this.tableStyling();
@@ -90,157 +73,15 @@ module powerbi.extensibility.visual {
             this.width = optionsUpdate.viewport.width;                                                //update width
             if (this.init) { this.init = false; }
             //flag  prevent drawTable ever
-            this.cleanDataModel();
+
             if (this.select) {                                                                          //select manager
                 d3.selectAll(".fixed_headers tr").classed("select-table", true);
                 d3.select(".select-table" + (this.rowSelected)).style("font-weight", "bold").classed("select-table", false);
             }
-            d3.select("select[name='typeCol']").on("change", this.changeType);
-           // d3.select("select[name='cols']").on("change", this.setConfigEvents);
 
-        }
-        private events(mode: number) {
-            if (mode == 0) {
-                this.Option.style("display", "none");
-                d3.select('.edit').style("display", "none");
-                this.div.on("mouseout", null);
-                this.div.on("mouseover", null);
-            } else {
-                this.div.on("mouseover", function () {
-                    d3.select('.edit').style("display", "block");
-                });
-                this.div.on("mouseout", function () {
-                    d3.select('.edit').style("display", "none");
-                });
-            }
-            d3.select('.close1').on('click', function () {
-                this.Option.style("display", "none");
-
-            }.bind(this));
-            d3.select(".edit").on('click', function () {
-                this.Option.style("display", "block");
-            }.bind(this));
-
-            //  d3.select("select[name='typeCol']").on("change", this.changeType);
-
-
-        }
-        private changeType() {
-            let typeCol;
-            let bullets;
-            d3.select("select[name='typeCol']")
-                .selectAll("option")
-                .filter(function (d, i) {
-                    if (this.selected) {
-                        typeCol = this.value;
-                        return this.value;
-                    }
-                });
-             d3.select(".custtom").empty();   
-            if (typeCol == "score") {
-                bullets = ICON.ShapeFactory.getShape("BULLET");
-               d3.select(".custtom").append("label").text("Type Icon :");
-               d3.select(".custtom").append("select").property("name","typeIcon")
-               .style("width","100%").style("font-size","10px")
-               .append('option').property("value","Icon").text("icon");
-               d3.select(".custtom select").append('option').property("value","Icon-Text")
-               .text("icon-text");
-              d3.select(".preview").select("label").text("Preview :").
-              html(bullets.map(item => ``+item).join('&nbsp;&nbsp;  &nbsp;&nbsp;'));
-              
-            }else if (typeCol == "variation") {
-                
-
-            }else {
-                
-               
-            }
-        }
-        private setConfigEvents() {
-            let col, setting;
-            col = this.getColName();
-            setting = _.findWhere(Visual.config, { columnName: col });
-            //preview config
-            if (setting != undefined) {
-                d3.select("select[name='typeCol']").property("value", setting.typeColumn.toLowerCase());
-            }
-
-        }
-        /**
-         * get col name of combo
-         */
-        private getColName() {
-            let colName;
-            d3.select("select[name='cols'] ")
-                .selectAll("option")
-                .filter(function (d, i) {
-                    if (this.selected) {
-                        colName = this.value;
-                        return this.value;
-                    }
-                });
-             return colName;   
-        }
-       
-        
-        /**
-         * popup configs
-         */
-        private configPopup(optionsUpdate: VisualUpdateOptions) {
-            let colOther, iconType, colName, typeCol;
-
-            d3.select("button[id='configButton']").on('click', function () {
-
-                
-                let colName = this.getColName();
-                let typeCol = this.getTypeCol();
-                let icon = d3.select("input[name='icon']:checked").property("value");
-                let id = _.findIndex(Visual.config, { columnName: colName });
-
-                if (typeCol == "variation") {
-                    if (id != -1) { Visual.config.splice(id, 1) };
-
-                    d3.select("select[name='polarity']").selectAll("option")
-                        .filter(function (d, i) {
-                            if (this.selected) {
-                                colOther = this.value;
-                                return this.value;
-                            }
-                        });
-                    Visual.config.push({
-                        columnName: colName,
-                        typeColumn: "VARIATION",
-                        iconType: "",
-                        visualValue: "",
-                        columnPolarity: colOther
-                    });
-
-                } else if (typeCol == "score") {
-                    if (id != -1) { Visual.config.splice(id, 1) };
-
-                    d3.select("select[name='typeIcon']").selectAll("option")
-                        .filter(function (d, i) {
-                            if (this.selected) {
-                                iconType = this.value;
-                                return this.value;
-                            }
-                        });
-                    Visual.config.push({
-                        columnName: colName,
-                        typeColumn: "SCORE",
-                        iconType: icon,
-                        visualValue: iconType,
-                        columnPolarity: ""
-                    });
-
-                } else { if (id != -1) { Visual.config.splice(id, 1) }; }
-
-
-                this.enumerateObjectInstances({ objectName: "TableOptions" });
-                this.update(optionsUpdate);
-
-            }.bind(this));
-        }
+            d3.select("select[name='typeCol']").on("change", this.changeType.bind(this));
+            d3.select("select[name='cols']").on("change", this.setConfigEvents.bind(this));  
+        }     
         /**
          * parse data to dataviewmodel 
          */
@@ -252,7 +93,7 @@ module powerbi.extensibility.visual {
                 || !this.dataview.categorical.categories
             )
                 return;
-
+            this.cleanDataModel();
             this.setHeaders();                                  //set headers of collumns
             this.setConfigColumns();                            //set config columns in dataview model
             this.setRows();                                     //set values of rows
@@ -423,6 +264,7 @@ module powerbi.extensibility.visual {
                         } catch (Error) { throw new Error("type column name no match"); }
 
                     } else if (item.typeColumn.toUpperCase() == "VARIATION") {
+
                         this.dataViewModel.columns[id].type = strucData.Type.VARIATION;
                         this.dataViewModel.columns[id].polarityColumn = item.columnPolarity;
 
@@ -486,11 +328,24 @@ module powerbi.extensibility.visual {
                 .style('color', function (d) {
 
                     if (d.type == strucData.Type.VARIATION && d.polarity != undefined) {
+
                         return COMMON.Core.getVariation(d.value, d.polarity);
                     }
                 })
                 .html(function (d) {
-                    return COMMON.Core.formatNumber(<any>d.value);
+                    if (d.type == strucData.Type.VARIATION && d.polarity != undefined) {
+                        let value = COMMON.Core.getVariation(d.value, d.polarity);
+                        if (value == "green") {
+                            return COMMON.Core.formatNumber(<any>d.value) + " " + ICON.ShapeFactory.getShape("ARROW")[2];
+                        } else if (value == "red") {
+                            return COMMON.Core.formatNumber(<any>d.value) + " " + ICON.ShapeFactory.getShape("ARROW")[0];
+                        } else {
+                            return COMMON.Core.formatNumber(<any>d.value) + " " + ICON.ShapeFactory.getShape("ARROW")[1];
+                        }
+                    } else {
+                        return COMMON.Core.formatNumber(<any>d.value);
+                    }
+
                 });
 
             rows.on('click', function (d) {
@@ -509,12 +364,11 @@ module powerbi.extensibility.visual {
             }.bind(this));
 
         }
-
         /**
          * Enumerates through the objects defined in the capabilities and adds the properties to the format pane
          */
         public enumerateObjectInstances(options: EnumerateVisualObjectInstancesOptions): VisualObjectInstanceEnumeration {
-            if (this.init) { return; }
+           // if (this.init) { return; }
             let objectName = options.objectName;
             let objectEnumeration: VisualObjectInstance[] = [];
             let objectEnumeration1: VisualObjectInstance[] = [];
@@ -567,7 +421,79 @@ module powerbi.extensibility.visual {
             this.host.persistProperties(objectEnumeration1);
             return objectEnumeration;
         }
+        /**
+         * popup configs
+         */
+        private configPopup(optionsUpdate: VisualUpdateOptions) {
+            let colOther, iconType, colName, typeCol;
 
+            d3.select("button[id='configButton']").on('click', function () {
+
+
+                d3.select("select[name='cols']")
+                    .selectAll("option")
+                    .filter(function (d, i) {
+                        if (this.selected) {
+                            colName = this.value;
+                            return this.value;
+                        }
+                    });
+                d3.select("select[name='typeCol']")
+                    .selectAll("option")
+                    .filter(function (d, i) {
+                        if (this.selected) {
+                            typeCol = this.value;
+                            return this.value;
+                        }
+                    });
+
+                let id = _.findIndex(Visual.config, { columnName: colName });
+
+                if (typeCol == "variation") {
+                    if (id != -1) { Visual.config.splice(id, 1) };
+
+                    d3.select("select[name='polarity']").selectAll("option")
+                        .filter(function (d, i) {
+                            if (this.selected) {
+                                colOther = this.value;
+                                return this.value;
+                            }
+                        });
+
+                    Visual.config.push({
+                        columnName: colName,
+                        typeColumn: "VARIATION",
+                        iconType: "",
+                        visualValue: "",
+                        columnPolarity: colOther
+                    });
+
+                } else if (typeCol == "score") {
+                    if (id != -1) { Visual.config.splice(id, 1) };
+
+                    d3.select("select[name='typeIcon']").selectAll("option")
+                        .filter(function (d, i) {
+                            if (this.selected) {
+                                iconType = this.value;
+                                return this.value;
+                            }
+                        });
+                    Visual.config.push({
+                        columnName: colName,
+                        typeColumn: "SCORE",
+                        iconType: "BULLET",
+                        visualValue: iconType,
+                        columnPolarity: ""
+                    });
+
+                } else { if (id != -1) { Visual.config.splice(id, 1) }; }
+
+                d3.select("select[name='typeCol']").property("value", "none");
+                this.enumerateObjectInstances({ objectName: "TableOptions" });
+                this.update(optionsUpdate);
+
+            }.bind(this));
+        }
         /**
         * styling table
         */
@@ -579,7 +505,7 @@ module powerbi.extensibility.visual {
                 colorFont: getValue<Fill>(this.dataview.metadata.objects, "TableOptions", "colorFont", { solid: { color: "white" } }).solid.color,
                 rowsFont: getValue(this.dataview.metadata.objects, "RowsFormatting", "sizeFont", 19),
                 rowsFamily: getValue(this.dataview.metadata.objects, "RowsFormatting", "fontFamily", "Segoe UI Light"),
-                rowsColor: getValue<Fill>(this.dataview.metadata.objects, "RowsFormatting", "rowcolor", { solid: { color: "black" } }).solid.color,
+                rowsColor: getValue<Fill>(this.dataview.metadata.objects, "RowsFormatting", "rowcolor", { solid: { color: "" } }).solid.color,
                 rowsBackground: getValue<Fill>(this.dataview.metadata.objects, "RowsFormatting", "rowBackground", { solid: { color: "white" } }).solid.color
             };
             STYLE.Customize.setFontsize(this.tHead, this.tableOptions.fontSize);
@@ -589,6 +515,33 @@ module powerbi.extensibility.visual {
             STYLE.Customize.setFamily(this.tBody, this.tableOptions.rowsFamily);
             STYLE.Customize.setRowColor(this.tBody, this.tableOptions.rowsColor);
             STYLE.Customize.setRowBackground(this.tBody, this.tableOptions.rowsBackground);
+        }
+        /**
+         * maping config columns
+         */
+        private changeType() {
+            STYLE.Customize.changeType(this.dataViewModel);
+        }
+        /**
+         * set avaiable configs
+         */
+        private setConfigEvents() {
+            STYLE.Customize.setConfigEvents(this.dataViewModel,Visual.config);
+        }
+         /**
+         * init html and events
+         */
+        private InitconfigHTML() {
+         
+            this.div = this.target.append('div')
+                .classed('wrapper', true);
+
+            this.div.append('div').classed('edit', true);
+            //
+            this.Option = this.div.append('div').classed('option', true);
+            this.containerOption = this.Option.append('div').classed("header", true).text("Config Columns")
+                .append("span").classed('close1', true).html('&times;');
+            this.Option.append("div").classed("container", true);
         }
         /**
       * clear data model
