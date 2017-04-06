@@ -514,8 +514,6 @@ var STYLE;
          * @param dataViewModel
          */
         Customize.setHTML = function (container, dataViewModel) {
-            var bullets = ICON.ShapeFactory.getShape("BULLET");
-            var arrow = ICON.ShapeFactory.getShape("ARROW");
             var html;
             container.select(".container").remove();
             html = "\n              <fieldset>\n                  <p>\n                  <label class=\"conf\">Columns:</label>\n                  <select name=\"cols\" size=\"1\" style=\"width:100%;font-size:10px;center\">\n                    " + dataViewModel.columns.map(function (item) { return "<option value=\"" + item.name + "\">" + item.name + "</option>"; }).join('') + "\n              </select>\n                  </p>\n                  <p>\n                  <label>Type:</label>\n                  <select name=\"typeCol\" size=\"1\" style=\"width:100%;font-size:10px;center\">\n                    <option value=\"none\">None</option>\n                    <option value=\"score\">Score</option>\n                    <option value=\"variation\">Variation</option>\n                  </select>\n                  </p>\n                  <p class=\"custtom\"></p>\n                 <p class=\"preview\"></p>\n                  \n              </fieldset>\n              <button  id=\"configButton\" class=\"button\">Apply</button>\n             ";
@@ -629,7 +627,7 @@ var powerbi;
                                 this.parseData();
                                 this.tableStyling();
                                 STYLE.Customize.setHTML(this.Option, this.dataViewModel);
-                                this.configPopup(optionsUpdate);
+                                this.configPopup();
                             }
                         }
                         this.height = optionsUpdate.viewport.height; //update height 
@@ -671,6 +669,8 @@ var powerbi;
                             i++;
                         });
                         if (itens.length != 0) {
+                            this.rowSelected = [];
+                            this.select = false;
                             d3.selectAll(".fixed_headers tr").classed("select-table", true);
                             itens.forEach(function (item) {
                                 d3.select(".select-table" + item).style("font-weight", "bold").classed("select-table", false);
@@ -1006,7 +1006,7 @@ var powerbi;
                     /**
                      * popup configs
                      */
-                    Visual.prototype.configPopup = function (optionsUpdate) {
+                    Visual.prototype.configPopup = function () {
                         var colOther, iconType, colName, typeCol;
                         d3.select("button[id='configButton']").on('click', function () {
                             d3.select("select[name='cols']")
@@ -1072,9 +1072,9 @@ var powerbi;
                                 }
                                 ;
                             }
+                            console.log(Visual.config.length);
                             d3.select("select[name='typeCol']").property("value", "none");
-                            this.enumerateObjectInstances({ objectName: "general" });
-                            this.update(optionsUpdate);
+                            this.enumerateObjectInstances({ objectName: "Settings" });
                         }.bind(this));
                     };
                     /**

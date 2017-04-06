@@ -47,7 +47,7 @@ module powerbi.extensibility.visual {
          */
         @logExceptions()
         public update(optionsUpdate: VisualUpdateOptions) {
-            
+           
 
             STYLE.Customize.events(optionsUpdate.viewMode, this.Option, this.div);
             if (this.init || (optionsUpdate.viewport.height == this.height && optionsUpdate.viewport.width == this.width)) {
@@ -63,10 +63,11 @@ module powerbi.extensibility.visual {
                             }
                         } catch (Error) { Visual.config = []; }
                     }
+                    
                     this.parseData();
                     this.tableStyling();
                     STYLE.Customize.setHTML(this.Option, this.dataViewModel);
-                    this.configPopup(optionsUpdate);
+                    this.configPopup();
                 }
             }
 
@@ -112,6 +113,8 @@ module powerbi.extensibility.visual {
                 i++;
             });
             if(itens.length != 0){
+                this.rowSelected = [];
+                this.select = false;
                 d3.selectAll(".fixed_headers tr").classed("select-table", true);
                 itens.forEach(item =>{
                 d3.select(".select-table" + item).style("font-weight", "bold").classed("select-table", false);
@@ -486,7 +489,7 @@ module powerbi.extensibility.visual {
         /**
          * popup configs
          */
-        private configPopup(optionsUpdate: VisualUpdateOptions) {
+        private configPopup() {
             let colOther, iconType, colName, typeCol;
 
             d3.select("button[id='configButton']").on('click', function () {
@@ -549,11 +552,11 @@ module powerbi.extensibility.visual {
                     });
 
                 } else { if (id != -1) { Visual.config.splice(id, 1) }; }
-
+                console.log(Visual.config.length);
                 d3.select("select[name='typeCol']").property("value", "none");
-                this.enumerateObjectInstances({ objectName: "general" });
+                this.enumerateObjectInstances({ objectName: "Settings" });
 
-                this.update(optionsUpdate);
+        
 
             }.bind(this));
         }

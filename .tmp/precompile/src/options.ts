@@ -234,8 +234,6 @@ module STYLE {
         * @param dataViewModel 
         */
         static setHTML(container:d3.Selection < HTMLElement >,dataViewModel: strucData.ITableViewModel){
-            let bullets = ICON.ShapeFactory.getShape("BULLET");
-            let arrow = ICON.ShapeFactory.getShape("ARROW");
             let html;
             container.select(".container").remove();
             html=`

@@ -1,24 +1,24 @@
 {
-  "visual": {
-    "name": "test",
-    "displayName": "test",
-    "guid": "PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD",
-    "visualClassName": "Visual",
-    "version": "1.0.0",
-    "description": "",
-    "supportUrl": "",
-    "gitHubUrl": ""
-  },
-  "apiVersion": "1.5.0",
-  "author": {
-    "name": "",
-    "email": ""
-  },
-  "assets": {
-    "icon": "assets/icon.png"
-  },
-  "externalJS": ["node_modules/d3/d3.min.js","node_modules/underscore/underscore-min.js"],
-  "style": "style/visual.less",
-  "capabilities": "capabilities.json",
-  "dependencies": "dependencies.json"
+    "visual": {
+        "name": "KPI Table",
+        "displayName": "KPI Table",
+        "guid": "PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD",
+        "visualClassName": "Visual",
+        "version": "1.0.0",
+        "description": "KPI Table",
+        "supportUrl": "",
+        "gitHubUrl": ""
+    },
+    "apiVersion": "1.5.0",
+    "author": {
+        "name": "Joao Pires",
+        "email": "joao.pires@devscope.net"
+    },
+    "assets": {
+        "icon": "assets/icon.png"
+    },
+    "externalJS": ["node_modules/d3/d3.min.js", "node_modules/underscore/underscore-min.js"],
+    "style": "style/visual.less",
+    "capabilities": "capabilities.json",
+    "dependencies": "dependencies.json"
 }
