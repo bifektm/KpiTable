@@ -657,17 +657,21 @@ var powerbi;
                      * highlights
                      */
                     Visual.prototype.highlights = function () {
-                        var i = 0, itens = [];
+                        var i, itens = [];
                         this.dataview.categorical.values.forEach(function (item) {
                             if (item.highlights) {
+                                i = 0;
                                 item.highlights.forEach(function (val) {
                                     if (val != null) {
-                                        itens.push(i);
+                                        if (!_.contains(itens, i)) {
+                                            itens.push(i);
+                                        }
                                     }
+                                    i++;
                                 });
                             }
-                            i++;
                         });
+                        console.log(itens);
                         if (itens.length != 0) {
                             this.rowSelected = [];
                             this.select = false;
@@ -1158,7 +1162,7 @@ var powerbi;
         (function (plugins) {
             plugins.PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD_DEBUG = {
                 name: 'PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD_DEBUG',
-                displayName: 'test',
+                displayName: 'KPI Table',
                 class: 'Visual',
                 version: '1.0.0',
                 apiVersion: '1.5.0',

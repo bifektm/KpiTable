@@ -1,7 +1,7 @@
 module powerbi.visuals.plugins {
     export var PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD_DEBUG = {
         name: 'PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD_DEBUG',
-        displayName: 'test',
+        displayName: 'KPI Table',
         class: 'Visual',
         version: '1.0.0',
         apiVersion: '1.5.0',

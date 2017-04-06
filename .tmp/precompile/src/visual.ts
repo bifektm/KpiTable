@@ -99,19 +99,26 @@ module powerbi.extensibility.visual.PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD 
          * highlights
          */
         private highlights() {
-            let i = 0,itens:number[]=[];
+            let i,itens:number[]=[];
             
             this.dataview.categorical.values.forEach(item => {
                 if (item.highlights) {
+                    i=0;
                     item.highlights.forEach(val => {
+                        
                         if (val != null) {
-                            itens.push(i);
+                            if(!_.contains(itens,i)){
+                                itens.push(i);
+                            }
+                                
                            
                         }
+                        i++;
                     });
                 }
-                i++;
+                
             });
+            console.log(itens);
             if(itens.length != 0){
                 this.rowSelected = [];
                 this.select = false;
