@@ -23,9 +23,14 @@
         }
     ],
     "dataViewMappings": [{
-            "conditions": [
-                { "rows": { "max": 1 }, "config": { "max": 1 } }
-            ],
+            "conditions": [{
+                "rows": {
+                    "max": 1
+                },
+                "config": {
+                    "max": 1
+                }
+            }],
             "categorical": {
 
                 "categories": {
@@ -59,9 +64,14 @@
 
         },
         {
-            "conditions": [
-                { "rows": { "max": 1 }, "config": { "max": 1 } }
-            ],
+            "conditions": [{
+                "rows": {
+                    "max": 1
+                },
+                "config": {
+                    "max": 1
+                }
+            }],
             "categorical": {
                 "categories": {
 
@@ -78,9 +88,14 @@
         },
 
         {
-            "conditions": [
-                { "rows": { "max": 1 }, "config": { "max": 1 } }
-            ],
+            "conditions": [{
+                "rows": {
+                    "max": 1
+                },
+                "config": {
+                    "max": 1
+                }
+            }],
             "categorical": {
                 "categories": {
 
@@ -99,6 +114,22 @@
 
     ],
     "objects": {
+        "Settings": {
+            "properties": {
+
+                "config": {
+                    "type": {
+                        "text": false
+                    }
+                },
+                "show": {
+                    "type": {
+                        "bool": true
+                    }
+                }
+
+            }
+        },
         "TableOptions": {
             "displayName": "Column headers",
             "properties": {
@@ -130,13 +161,8 @@
                             }
                         }
                     }
-                },
-                "config": {
-                    "displayName": "Config",
-                    "type": {
-                        "text": false
-                    }
                 }
+
             }
         },
         "RowsFormatting": {
@@ -200,5 +226,6 @@
     "sorting": {
         "default": {}
     },
-    "suppressDefaultTitle": true
+    "suppressDefaultTitle": true,
+    "supportsHighlight": true
 }
