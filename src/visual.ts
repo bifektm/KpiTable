@@ -99,7 +99,6 @@ module powerbi.extensibility.visual {
          */
         private highlights() {
             let i = 0,itens:number[]=[];
-            this.select = false;
             
             this.dataview.categorical.values.forEach(item => {
                 if (item.highlights) {

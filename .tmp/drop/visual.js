@@ -660,7 +660,6 @@ var powerbi;
                      */
                     Visual.prototype.highlights = function () {
                         var i = 0, itens = [];
-                        this.select = false;
                         this.dataview.categorical.values.forEach(function (item) {
                             if (item.highlights) {
                                 item.highlights.forEach(function (val) {
