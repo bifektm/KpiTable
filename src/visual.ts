@@ -118,7 +118,7 @@ module powerbi.extensibility.visual {
                 }
                 
             });
-            console.log(itens);
+            
             if(itens.length != 0){
                 this.rowSelected = [];
                 this.select = false;
@@ -405,17 +405,32 @@ module powerbi.extensibility.visual {
                             key = true;
                         }
                     }
-                    if (ids.length == 1) {
+                    if (ids.length == 1 && !key) {
                         this.rowSelected = [];
-                        this.select = !this.select;
-                        this.rowSelected.push(d.id);
-                    } else if (ids.length > 1 && !key) {
-                        this.rowSelected = [];
-                        this.selectionManager.clear();
-                        this.selectionManager.select(this.selectionIds[d.row[0].value], true).then((ids: ISelectionId[]) => { });
                         this.select = true;
                         this.rowSelected.push(d.id);
-                    } else if (ids.length > 1 && key) {
+                    } else if(ids.length == 1 && key){
+                        
+                        this.select = true;
+                        index = this.rowSelected.indexOf(d.id);
+                        
+                        if (index != -1) {
+                            this.rowSelected.splice(index, 1);
+                        } else {
+                            this.rowSelected.push(d.id);
+                        }
+                    }
+                    else if (ids.length >= 1 && !key) {
+                       
+                        this.rowSelected = [];
+                        this.selectionManager.clear();
+                        this.selectionManager.select(this.selectionIds[d.row[0].value],true).then((ids: ISelectionId[]) => { 
+                            this.select = true;
+                        this.rowSelected.push(d.id);
+                        });
+                        
+                    } else if (ids.length >= 1 && key) {
+                         
                         this.select = true;
                         index = this.rowSelected.indexOf(d.id);
                         

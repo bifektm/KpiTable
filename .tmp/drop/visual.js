@@ -671,7 +671,6 @@ var powerbi;
                                 });
                             }
                         });
-                        console.log(itens);
                         if (itens.length != 0) {
                             this.rowSelected = [];
                             this.select = false;
@@ -928,19 +927,30 @@ var powerbi;
                                         key = true;
                                     }
                                 }
-                                if (ids.length == 1) {
+                                if (ids.length == 1 && !key) {
                                     _this.rowSelected = [];
-                                    _this.select = !_this.select;
-                                    _this.rowSelected.push(d.id);
-                                }
-                                else if (ids.length > 1 && !key) {
-                                    _this.rowSelected = [];
-                                    _this.selectionManager.clear();
-                                    _this.selectionManager.select(_this.selectionIds[d.row[0].value], true).then(function (ids) { });
                                     _this.select = true;
                                     _this.rowSelected.push(d.id);
                                 }
-                                else if (ids.length > 1 && key) {
+                                else if (ids.length == 1 && key) {
+                                    _this.select = true;
+                                    index = _this.rowSelected.indexOf(d.id);
+                                    if (index != -1) {
+                                        _this.rowSelected.splice(index, 1);
+                                    }
+                                    else {
+                                        _this.rowSelected.push(d.id);
+                                    }
+                                }
+                                else if (ids.length >= 1 && !key) {
+                                    _this.rowSelected = [];
+                                    _this.selectionManager.clear();
+                                    _this.selectionManager.select(_this.selectionIds[d.row[0].value], true).then(function (ids) {
+                                        _this.select = true;
+                                        _this.rowSelected.push(d.id);
+                                    });
+                                }
+                                else if (ids.length >= 1 && key) {
                                     _this.select = true;
                                     index = _this.rowSelected.indexOf(d.id);
                                     if (index != -1) {
