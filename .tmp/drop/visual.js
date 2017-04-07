@@ -784,8 +784,8 @@ var powerbi;
                      */
                     Visual.prototype.setConfigRows = function (type, value, k, pol) {
                         var score, iconType;
-                        var row = { value: "", polarity: 1 };
-                        if (value == null) {
+                        var row = { value: null, polarity: 1 };
+                        if (value == null || value == undefined) {
                             return row;
                         }
                         if (type == strucData.Type.SCORE) {

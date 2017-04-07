@@ -253,8 +253,8 @@ module powerbi.extensibility.visual {
         private setConfigRows(type: any, value: any, k: number, pol: any) {
            
             let score, iconType;
-            let row = { value: "", polarity: 1 };
-            if(value == null){return row;}
+            let row = { value: null, polarity: 1 };
+            if(value == null || value == undefined ){return row;}
             if (type == strucData.Type.SCORE) { //SCORE
                 iconType = this.dataViewModel.columns[k].iconType;
                 score = COMMON.Core.getScore(+value);
@@ -276,6 +276,7 @@ module powerbi.extensibility.visual {
             } else {
                 row.value = value;
             }
+            
             return row;
         }
         /**
