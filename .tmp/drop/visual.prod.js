@@ -324,10 +324,12 @@ var STYLE;
         Customize.setSizerFont = function (tBody, num) {
             if (tBody) {
                 if (num == undefined || num == null) {
-                    tBody.selectAll('td').style("font-Size", num + "px");
+                    tBody.selectAll('td').style("font-Size", 16 + "px");
+                    d3.selectAll('svg').attr("width", 16).attr("height", 16);
                 }
                 else {
                     tBody.selectAll('td').style("font-Size", num + "px");
+                    d3.selectAll('svg').attr("width", num).attr("height", num);
                 }
             }
         };
@@ -345,17 +347,6 @@ var STYLE;
             }
         };
         /**
-        * set color font row
-        */
-        Customize.setRowColor = function (tBody, color) {
-            if (tBody) {
-                if (color == undefined || color == null) {
-                }
-                else {
-                }
-            }
-        };
-        /**
          * set color font row
          */
         Customize.setRowBackground = function (tBody, color) {
@@ -367,6 +358,22 @@ var STYLE;
                     tBody.selectAll('td').style("background-color", color);
                 }
             }
+        };
+        Customize.eventScore = function () {
+            d3.select("select[name='typeIcon']").on("change", function (d, i) {
+                var bullets = ICON.ShapeFactory.getShape("BULLET");
+                d3.select(".preview").selectAll("*").remove();
+                d3.select(".preview").append("label").text("Preview :");
+                if (this.value == "icon") {
+                    d3.select(".preview").append("span").html(bullets.map(function (item) { return "" + item; }).join('&nbsp;&nbsp;&nbsp;&nbsp;'));
+                }
+                else if (this.value == "icontext") {
+                    d3.select(".preview").append("span").html(bullets.map(function (item) { return "55&nbsp;&nbsp;" + item; }).join('&nbsp;&nbsp;&nbsp;&nbsp;'));
+                }
+                else {
+                    d3.select(".preview").selectAll("*").remove();
+                }
+            });
         };
         /**
          * maping config columns
@@ -385,26 +392,12 @@ var STYLE;
             d3.select(".custtom").selectAll("*").remove();
             d3.select(".preview").selectAll("*").remove();
             if (typeCol == "score") {
-                var bullets_1 = ICON.ShapeFactory.getShape("BULLET");
                 d3.select(".custtom").append("label").text("Type Icon :");
                 d3.select(".custtom").append("select").property("name", "typeIcon")
-                    .style("width", "100%").style("font-size", "10px")
-                    .append('option').property("value", "").text("");
+                    .style("width", "100%").style("font-size", "10px");
                 d3.select(".custtom select").append('option').property("value", "icon").text("Icon");
                 d3.select(".custtom select").append('option').property("value", "icontext").text("Icon-text");
-                d3.select("select[name='typeIcon']").on("change", function (d, i) {
-                    d3.select(".preview").selectAll("*").remove();
-                    d3.select(".preview").append("label").text("Preview :");
-                    if (this.value == "icon") {
-                        d3.select(".preview").append("span").html(bullets_1.map(function (item) { return "" + item; }).join('&nbsp;&nbsp;&nbsp;&nbsp;'));
-                    }
-                    else if (this.value == "icontext") {
-                        d3.select(".preview").append("span").html(bullets_1.map(function (item) { return "55&nbsp;&nbsp;" + item; }).join('&nbsp;&nbsp;&nbsp;&nbsp;'));
-                    }
-                    else {
-                        d3.select(".preview").selectAll("*").remove();
-                    }
-                });
+                this.eventScore();
             }
             else if (typeCol == "variation") {
                 var arrow = ICON.ShapeFactory.getShape("ARROW");
@@ -449,8 +442,7 @@ var STYLE;
                     var bullets = ICON.ShapeFactory.getShape("BULLET");
                     d3.select(".custtom").append("label").text("Type Icon :");
                     d3.select(".custtom").append("select").property("name", "typeIcon")
-                        .style("width", "100%").style("font-size", "10px")
-                        .append('option').property("value", "").text("");
+                        .style("width", "100%").style("font-size", "10px");
                     d3.select(".custtom select").append('option').property("value", "icon").text("Icon");
                     d3.select(".custtom select").append('option').property("value", "icontext").text("Icon-text");
                     d3.select("select[name='typeIcon']").property("value", setting.visualValue.toLowerCase());
@@ -465,6 +457,7 @@ var STYLE;
                     else {
                         d3.select(".preview").selectAll("*").remove();
                     }
+                    this.eventScore();
                 }
                 else if (setting.typeColumn.toLowerCase() == "variation") {
                     var arrow = ICON.ShapeFactory.getShape("ARROW");
@@ -542,9 +535,9 @@ var ICON;
                 return new Bullet().getIcon();
             }
             if (shape.toUpperCase() == "ARROW") {
-                return new Arrow().getIcon();
+                return new BulletWhite().getIcon();
             }
-            return new Arrow().getIcon();
+            return new BulletWhite().getIcon();
         };
         return ShapeFactory;
     }());
@@ -565,18 +558,18 @@ var ICON;
         return Bullet;
     }());
     /**
-     * class Arrow
+     * class BulletWhite
      */
-    var Arrow = (function () {
-        function Arrow() {
-            this.ICON_TREND_UP = '<svg width="16" height="16" viewBox="0 0 9 9" xmlns="http://www.w3.org/2000/svg"><path d="M7.6.75H4.39V0h4.5v4.5h-.75V1.266L.526 8.888 0 8.36 7.6.75z" fill="#000" fill-rule="evenodd"/></svg>';
-            this.ICON_TREND_STEADY = '<svg width="16" height="16" viewBox="0 0 9 9" xmlns="http://www.w3.org/2000/svg"><path d="M7.756 3.8l-2.27-2.27.53-.53 3.182 3.182-3.182 3.182-.53-.53 2.286-2.287L0 4.555V3.81l6.756-.01z" fill="#000" fill-rule="evenodd"/></svg>';
-            this.ICON_TREND_DOWN = '<svg width="16" height="16" viewBox="0 0 9 9" xmlns="http://www.w3.org/2000/svg"><path d="M8.89 4.388v4.5h-4.5v-.75h3.215L0 .528.527 0 8.14 7.605V4.388h.75" fill="#000" fill-rule="evenodd"/></svg>';
+    var BulletWhite = (function () {
+        function BulletWhite() {
+            this.ICON_TREND_DOWN = '<svg width="16" height="16" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16"><path fill="#808080" d="M7.5 0c.688 0 1.353.09 1.992.267s1.238.43 1.794.754 1.063.716 1.52 1.173.847.963 1.172 1.52.576 1.155.754 1.794S15 6.812 15 7.5s-.09 1.353-.267 1.992-.43 1.238-.754 1.794-.716 1.063-1.173 1.52-.963.847-1.52 1.172-1.155.576-1.794.754S8.188 15 7.5 15s-1.353-.09-1.992-.267-1.238-.43-1.794-.754-1.063-.716-1.52-1.173-.847-.963-1.172-1.52-.576-1.154-.754-1.79S0 8.192 0 7.5c0-.688.09-1.353.267-1.992s.43-1.238.754-1.794.716-1.063 1.173-1.52.963-.847 1.52-1.172S4.867.446 5.503.268 6.808 0 7.5 0z"/><path fill="#FFF" d="M10.92 4.358l.66.66-5.486 5.485L3.42 7.83l.66-.66 2.014 2.015"/></svg>';
+            this.ICON_TREND_STEADY = '<svg width="16" height="16" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16"><path fill="#808080" d="M7.5 0L15 15H0L7.5 0z"/><path fill="#FFFFFF" d="M7 6h1v5H7zM7 12h1v1H7z"/></svg>';
+            this.ICON_TREND_UP = '<svg width="16" height="16" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16"><path fill="#808080" d="M7.5 0c.693 0 1.358.09 1.996.266s1.236.428 1.793.754 1.063.716 1.52 1.172.845.962 1.17 1.52.578 1.155.755 1.793S15 6.807 15 7.5s-.09 1.358-.266        1.996-.428.236-.754 1.793-.716 1.063-1.172 1.52-.962.845-1.52 1.17-1.155.578-1.793.755S8.193 15 7.5 15s-1.358-.09-1.996-.266-1.236-.428-1.793-.754-1.063-.716-1.52-1.172-.845-.962-1.17-1.52S.44 10.133.264 9.495 0 8.193 0 7.5s.09-1.358.266-1.996.428-1.236.754-1.793.716-1.063 1.172-1.52.962-.845 1.52-1.17S4.867.44 5.505.264 6.807 0 7.5 0z"/><path fill="#FFF" d="M7 4h1v5H7zM7 10h1v1H7z"/></svg>';
         }
-        Arrow.prototype.getIcon = function () {
-            return [this.ICON_TREND_DOWN, this.ICON_TREND_STEADY, this.ICON_TREND_UP];
+        BulletWhite.prototype.getIcon = function () {
+            return [this.ICON_TREND_UP, this.ICON_TREND_STEADY, this.ICON_TREND_DOWN];
         };
-        return Arrow;
+        return BulletWhite;
     }());
 })(ICON || (ICON = {}));
 var powerbi;
@@ -617,7 +610,6 @@ var powerbi;
                                             Visual.config = JSON.parse(PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD.getValue(this.dataview.metadata.objects, "Settings", "config", "[]"));
                                         }
                                         else {
-                                            Visual.config = COMMON.Core.getConfig(optionsUpdate.dataViews);
                                         }
                                     }
                                     catch (Error) {
@@ -658,6 +650,8 @@ var powerbi;
                      */
                     Visual.prototype.highlights = function () {
                         var i, itens = [];
+                        if (!this.dataview)
+                            return;
                         this.dataview.categorical.values.forEach(function (item) {
                             if (item.highlights) {
                                 i = 0;
@@ -790,7 +784,10 @@ var powerbi;
                      */
                     Visual.prototype.setConfigRows = function (type, value, k, pol) {
                         var score, iconType;
-                        var row = { value: null, polarity: 1 };
+                        var row = { value: "", polarity: 1 };
+                        if (value == null) {
+                            return row;
+                        }
                         if (type == strucData.Type.SCORE) {
                             iconType = this.dataViewModel.columns[k].iconType;
                             score = COMMON.Core.getScore(+value);
@@ -897,12 +894,15 @@ var powerbi;
                             }
                         })
                             .style('color', function (d) {
-                            if (d.type == strucData.Type.VARIATION && d.polarity != undefined) {
+                            if (d.type == strucData.Type.VARIATION && d.polarity != undefined && d.polarity != null) {
                                 return COMMON.Core.getVariation(d.value, d.polarity);
                             }
                         })
                             .html(function (d) {
-                            if (d.type == strucData.Type.VARIATION && d.polarity != undefined) {
+                            if (d.value == null) {
+                                return "";
+                            }
+                            if (d.type == strucData.Type.VARIATION && d.polarity != undefined && d.polarity != null) {
                                 var value = COMMON.Core.getVariation(d.value, d.polarity);
                                 if (value == "green") {
                                     return COMMON.Core.formatNumber(d.value) + " " + ICON.ShapeFactory.getShape("ARROW")[2];
@@ -992,9 +992,8 @@ var powerbi;
                                 objectEnumeration.push({
                                     objectName: objectName,
                                     properties: {
-                                        sizeFont: _.rowsFont,
+                                        fontSize: _.rowsFont,
                                         fontFamily: _.rowsFamily,
-                                        rowcolor: _.rowsColor,
                                         rowBackground: _.rowsBackground
                                     },
                                     selector: null
@@ -1086,7 +1085,6 @@ var powerbi;
                                 }
                                 ;
                             }
-                            console.log(Visual.config.length);
                             d3.select("select[name='typeCol']").property("value", "none");
                             this.enumerateObjectInstances({ objectName: "Settings" });
                         }.bind(this));
@@ -1096,12 +1094,11 @@ var powerbi;
                     */
                     Visual.prototype.tableStyling = function () {
                         this.tableOptions = {
-                            fontSize: PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD.getValue(this.dataview.metadata.objects, "TableOptions", "fontSize", 19),
+                            fontSize: PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD.getValue(this.dataview.metadata.objects, "TableOptions", "fontSize", 14),
                             color: PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD.getValue(this.dataview.metadata.objects, "TableOptions", "color", { solid: { color: "#178BCA" } }).solid.color,
                             colorFont: PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD.getValue(this.dataview.metadata.objects, "TableOptions", "colorFont", { solid: { color: "white" } }).solid.color,
-                            rowsFont: PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD.getValue(this.dataview.metadata.objects, "RowsFormatting", "sizeFont", 19),
+                            rowsFont: PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD.getValue(this.dataview.metadata.objects, "RowsFormatting", "fontSize", 14),
                             rowsFamily: PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD.getValue(this.dataview.metadata.objects, "RowsFormatting", "fontFamily", "Segoe UI Light"),
-                            rowsColor: PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD.getValue(this.dataview.metadata.objects, "RowsFormatting", "rowcolor", { solid: { color: "" } }).solid.color,
                             rowsBackground: PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD.getValue(this.dataview.metadata.objects, "RowsFormatting", "rowBackground", { solid: { color: "white" } }).solid.color
                         };
                         STYLE.Customize.setFontsize(this.tHead, this.tableOptions.fontSize);
@@ -1109,7 +1106,6 @@ var powerbi;
                         STYLE.Customize.setColorFont(this.tHead, this.tableOptions.colorFont);
                         STYLE.Customize.setSizerFont(this.tBody, this.tableOptions.rowsFont);
                         STYLE.Customize.setFamily(this.tBody, this.tableOptions.rowsFamily);
-                        STYLE.Customize.setRowColor(this.tBody, this.tableOptions.rowsColor);
                         STYLE.Customize.setRowBackground(this.tBody, this.tableOptions.rowsBackground);
                     };
                     /**

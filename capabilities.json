@@ -15,11 +15,6 @@
             "name": "polarity",
             "kind": "Grouping"
 
-        },
-        {
-            "displayName": "Config",
-            "name": "config",
-            "kind": "Grouping"
         }
     ],
     "dataViewMappings": [{
@@ -85,33 +80,7 @@
                     }
                 }
             }
-        },
-
-        {
-            "conditions": [{
-                "rows": {
-                    "max": 1
-                },
-                "config": {
-                    "max": 1
-                }
-            }],
-            "categorical": {
-                "categories": {
-
-                    "bind": {
-                        "to": "config"
-                    }
-                },
-                "values": {
-                    "bind": {
-                        "to": "config"
-                    }
-                }
-            }
         }
-
-
     ],
     "objects": {
         "Settings": {
@@ -166,9 +135,9 @@
             }
         },
         "RowsFormatting": {
-            "displayName": "Rows Formatting",
+            "displayName": "Rows formatting",
             "properties": {
-                "sizeFont": {
+                "fontSize": {
                     "displayName": "Font-size",
                     "type": {
                         "formatting": {

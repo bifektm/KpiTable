@@ -59,7 +59,7 @@ module powerbi.extensibility.visual.PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD 
                             if (COMMON.Core.getConfig(optionsUpdate.dataViews).length == 0) {
                                 Visual.config = JSON.parse(getValue(this.dataview.metadata.objects, "Settings", "config", "[]"));
                             } else {
-                                Visual.config = COMMON.Core.getConfig(optionsUpdate.dataViews);
+                              //  Visual.config = COMMON.Core.getConfig(optionsUpdate.dataViews);
                             }
                         } catch (Error) { Visual.config = []; }
                     }
@@ -81,6 +81,7 @@ module powerbi.extensibility.visual.PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD 
             this.selected();
             d3.select("select[name='typeCol']").on("change", this.changeType.bind(this));
             d3.select("select[name='cols']").on("change", this.setConfigEvents.bind(this));
+            
         }
         /**
          * selected row
@@ -100,7 +101,7 @@ module powerbi.extensibility.visual.PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD 
          */
         private highlights() {
             let i,itens:number[]=[];
-            
+            if(!this.dataview) return;
             this.dataview.categorical.values.forEach(item => {
                 if (item.highlights) {
                     i=0;
@@ -109,9 +110,7 @@ module powerbi.extensibility.visual.PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD 
                         if (val != null) {
                             if(!_.contains(itens,i)){
                                 itens.push(i);
-                            }
-                                
-                           
+                            }    
                         }
                         i++;
                     });
@@ -252,9 +251,10 @@ module powerbi.extensibility.visual.PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD 
          * config valid value
          */
         private setConfigRows(type: any, value: any, k: number, pol: any) {
-
+           
             let score, iconType;
-            let row = { value: null, polarity: 1 };
+            let row = { value: "", polarity: 1 };
+            if(value == null){return row;}
             if (type == strucData.Type.SCORE) { //SCORE
                 iconType = this.dataViewModel.columns[k].iconType;
                 score = COMMON.Core.getScore(+value);
@@ -374,14 +374,16 @@ module powerbi.extensibility.visual.PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD 
                 })
                 .style('color', function (d) {
 
-                    if (d.type == strucData.Type.VARIATION && d.polarity != undefined) {
+                    if (d.type == strucData.Type.VARIATION && d.polarity != undefined && d.polarity != null) {
 
                         return COMMON.Core.getVariation(d.value, d.polarity);
                     }
                 })
                 .html(function (d) {
-                    if (d.type == strucData.Type.VARIATION && d.polarity != undefined) {
+                     if(d.value == null){return "";}
+                    if (d.type == strucData.Type.VARIATION && d.polarity != undefined && d.polarity != null) {
                         let value = COMMON.Core.getVariation(d.value, d.polarity);
+                       
                         if (value == "green") {
                             return COMMON.Core.formatNumber(<any>d.value) + " " + ICON.ShapeFactory.getShape("ARROW")[2];
                         } else if (value == "red") {
@@ -478,9 +480,8 @@ module powerbi.extensibility.visual.PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD 
                     objectEnumeration.push({
                         objectName: objectName,
                         properties: {
-                            sizeFont: _.rowsFont,
+                            fontSize: _.rowsFont,
                             fontFamily: _.rowsFamily,
-                            rowcolor: _.rowsColor,
                             rowBackground: _.rowsBackground
                         },
                         selector: null
@@ -574,7 +575,6 @@ module powerbi.extensibility.visual.PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD 
                     });
 
                 } else { if (id != -1) { Visual.config.splice(id, 1) }; }
-                console.log(Visual.config.length);
                 d3.select("select[name='typeCol']").property("value", "none");
                 this.enumerateObjectInstances({ objectName: "Settings" });
 
@@ -588,12 +588,11 @@ module powerbi.extensibility.visual.PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD 
         private tableStyling() {
 
             this.tableOptions = {
-                fontSize: getValue(this.dataview.metadata.objects, "TableOptions", "fontSize", 19),
+                fontSize: getValue(this.dataview.metadata.objects, "TableOptions", "fontSize", 14),
                 color: getValue<Fill>(this.dataview.metadata.objects, "TableOptions", "color", { solid: { color: "#178BCA" } }).solid.color,
                 colorFont: getValue<Fill>(this.dataview.metadata.objects, "TableOptions", "colorFont", { solid: { color: "white" } }).solid.color,
-                rowsFont: getValue(this.dataview.metadata.objects, "RowsFormatting", "sizeFont", 19),
+                rowsFont: getValue(this.dataview.metadata.objects, "RowsFormatting", "fontSize", 14),
                 rowsFamily: getValue(this.dataview.metadata.objects, "RowsFormatting", "fontFamily", "Segoe UI Light"),
-                rowsColor: getValue<Fill>(this.dataview.metadata.objects, "RowsFormatting", "rowcolor", { solid: { color: "" } }).solid.color,
                 rowsBackground: getValue<Fill>(this.dataview.metadata.objects, "RowsFormatting", "rowBackground", { solid: { color: "white" } }).solid.color
             };
             STYLE.Customize.setFontsize(this.tHead, this.tableOptions.fontSize);
@@ -601,7 +600,6 @@ module powerbi.extensibility.visual.PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD 
             STYLE.Customize.setColorFont(this.tHead, this.tableOptions.colorFont);
             STYLE.Customize.setSizerFont(this.tBody, this.tableOptions.rowsFont);
             STYLE.Customize.setFamily(this.tBody, this.tableOptions.rowsFamily);
-            STYLE.Customize.setRowColor(this.tBody, this.tableOptions.rowsColor);
             STYLE.Customize.setRowBackground(this.tBody, this.tableOptions.rowsBackground);
         }
         /**

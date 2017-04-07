@@ -55,7 +55,6 @@ module strucData {
         colorFont:any;
         rowsFont:any;
         rowsFamily:any;
-        rowsColor:any;
         rowsBackground:any;
     }
     //configs

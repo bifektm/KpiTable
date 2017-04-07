@@ -46,9 +46,11 @@ module STYLE {
         static setSizerFont(tBody: d3.Selection<HTMLElement>, num: any) {
             if (tBody) {
                 if (num == undefined || num == null) {
-                    tBody.selectAll('td').style("font-Size", num + "px");
+                    tBody.selectAll('td').style("font-Size", 16 + "px");
+                    d3.selectAll('svg').attr("width",16).attr("height",16);
                 } else {
                     tBody.selectAll('td').style("font-Size", num + "px");
+                    d3.selectAll('svg').attr("width",num).attr("height",num);
                 }
             }
         }
@@ -64,18 +66,7 @@ module STYLE {
                 }
             }
         }
-        /**
-        * set color font row
-        */
-        static setRowColor(tBody: d3.Selection<HTMLElement>, color: any) {
-            if (tBody) {
-                if (color == undefined || color == null) {
-                    // tBody.selectAll('td').style("color","black");
-                } else {
-                    //tBody.selectAll('td').style("color",color);
-                }
-            }
-        }
+       
         /**
          * set color font row
          */
@@ -87,6 +78,20 @@ module STYLE {
                     tBody.selectAll('td').style("background-color", color);
                 }
             }
+        }
+        private static eventScore(){
+            d3.select("select[name='typeIcon']").on("change", function (d, i) {
+                    let bullets = ICON.ShapeFactory.getShape("BULLET");
+                    d3.select(".preview").selectAll("*").remove();
+                    d3.select(".preview").append("label").text("Preview :");
+                    if (this.value == "icon") {
+                        d3.select(".preview").append("span").html(bullets.map(item => `` + item).join('&nbsp;&nbsp;&nbsp;&nbsp;'));
+                    } else if (this.value == "icontext") {
+                        d3.select(".preview").append("span").html(bullets.map(item => `55&nbsp;&nbsp;` + item).join('&nbsp;&nbsp;&nbsp;&nbsp;'));
+                    } else {
+                        d3.select(".preview").selectAll("*").remove();
+                    }
+                });
         }
         /**
          * maping config columns
@@ -106,25 +111,13 @@ module STYLE {
             d3.select(".preview").selectAll("*").remove();
             if (typeCol == "score") {
 
-                let bullets = ICON.ShapeFactory.getShape("BULLET");
                 d3.select(".custtom").append("label").text("Type Icon :");
                 d3.select(".custtom").append("select").property("name", "typeIcon")
-                    .style("width", "100%").style("font-size", "10px")
-                    .append('option').property("value", "").text("");
+                    .style("width", "100%").style("font-size", "10px");
                 d3.select(".custtom select").append('option').property("value", "icon").text("Icon");
                 d3.select(".custtom select").append('option').property("value", "icontext").text("Icon-text");
-
-                d3.select("select[name='typeIcon']").on("change", function (d, i) {
-                    d3.select(".preview").selectAll("*").remove();
-                    d3.select(".preview").append("label").text("Preview :");
-                    if (this.value == "icon") {
-                        d3.select(".preview").append("span").html(bullets.map(item => `` + item).join('&nbsp;&nbsp;&nbsp;&nbsp;'));
-                    } else if (this.value == "icontext") {
-                        d3.select(".preview").append("span").html(bullets.map(item => `55&nbsp;&nbsp;` + item).join('&nbsp;&nbsp;&nbsp;&nbsp;'));
-                    } else {
-                        d3.select(".preview").selectAll("*").remove();
-                    }
-                });
+                this.eventScore();
+                
             } else if (typeCol == "variation") {
                 let arrow = ICON.ShapeFactory.getShape("ARROW");
                 d3.select(".custtom").append("label").text("Other :");
@@ -171,8 +164,8 @@ module STYLE {
                     let bullets = ICON.ShapeFactory.getShape("BULLET");
                     d3.select(".custtom").append("label").text("Type Icon :");
                     d3.select(".custtom").append("select").property("name", "typeIcon")
-                        .style("width", "100%").style("font-size", "10px")
-                        .append('option').property("value", "").text("");
+                        .style("width", "100%").style("font-size", "10px");
+                       
                     d3.select(".custtom select").append('option').property("value", "icon").text("Icon");
                     d3.select(".custtom select").append('option').property("value", "icontext").text("Icon-text");
                     d3.select("select[name='typeIcon']").property("value", setting.visualValue.toLowerCase());
@@ -180,12 +173,15 @@ module STYLE {
                     d3.select(".preview").append("label").text("Preview :");
                     
                     if(setting.visualValue.toLowerCase() == "icon"){
+                     
                         d3.select(".preview").append("span").html(bullets.map(item => `` + item).join('&nbsp;&nbsp;&nbsp;&nbsp;'));
                     }else if(setting.visualValue.toLowerCase() == "icontext"){
+                    
                         d3.select(".preview").append("span").html(bullets.map(item => `55&nbsp;&nbsp;` + item).join('&nbsp;&nbsp;&nbsp;&nbsp;'));
                     }else{
                         d3.select(".preview").selectAll("*").remove();
                     }
+                    this.eventScore();
                 } else if (setting.typeColumn.toLowerCase() == "variation") {
                     let arrow = ICON.ShapeFactory.getShape("ARROW");
                     d3.select(".custtom").append("label").text("Other :");
