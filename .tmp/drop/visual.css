@@ -19,6 +19,10 @@
   border-bottom: 1pt solid #59B4D9;
   cursor: pointer;
 }
+.visual-PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD_DEBUG .dropdown {
+  width: 100%;
+  font-size: 10px;
+}
 .visual-PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD_DEBUG .selected {
   background-color: lightgoldenrodyellow;
 }

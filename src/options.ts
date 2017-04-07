@@ -240,13 +240,13 @@ module STYLE {
               <fieldset>
                   <p>
                   <label class="conf">Columns:</label>
-                  <select name="cols" size="1" style="width:100%;font-size:10px;center">
+                  <select name="cols" size="1" class="dropdown">
                     ${dataViewModel.columns.map(item => `<option value="${item.name}">${item.name}</option>`).join('')}
               </select>
                   </p>
                   <p>
                   <label>Type:</label>
-                  <select name="typeCol" size="1" style="width:100%;font-size:10px;center">
+                  <select name="typeCol" size="1" class="dropdown">
                     <option value="none">None</option>
                     <option value="score">Score</option>
                     <option value="variation">Variation</option>

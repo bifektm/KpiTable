@@ -6,13 +6,13 @@
         "visualClassName": "Visual",
         "version": "1.0.0",
         "description": "KPI Table",
-        "supportUrl": "",
-        "gitHubUrl": ""
+        "supportUrl": "https://github.com/bifektm/KpiTable",
+        "gitHubUrl": "https://github.com/bifektm/KpiTable"
     },
     "apiVersion": "1.5.0",
     "author": {
         "name": "Joao Pires",
-        "email": "joao.pires@devscope.net"
+        "email": "bifektm@gmail.com"
     },
     "assets": {
         "icon": "assets/icon.png"
