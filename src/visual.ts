@@ -79,8 +79,10 @@ module powerbi.extensibility.visual {
 
             this.highlights();
             this.selected();
+            this.resetConfig();
             d3.select("select[name='typeCol']").on("change", this.changeType.bind(this));
             d3.select("select[name='cols']").on("change", this.setConfigEvents.bind(this));
+            
             
         }
         /**
@@ -198,7 +200,7 @@ module powerbi.extensibility.visual {
             let colsLenght = this.dataViewModel.columns.length - 1;//4
             let type;
             let row = { id: null, row: [] };
-            let i = 0, j = 0, pol, other;
+            let i = 0, j = 0, pol, other,colPol;
 
             if (!data) {
                 indicator.forEach(item => {
@@ -215,6 +217,7 @@ module powerbi.extensibility.visual {
             }
             j = 0;
             let rowsLength = data.length / colsLenght;//8
+            
             data.forEach(item => {
 
                 if (i % colsLenght == 0) {
@@ -230,11 +233,18 @@ module powerbi.extensibility.visual {
                         .createSelectionId();
 
                 }
-                pol = _.findIndex(this.dataViewModel.polarity, { name: this.dataViewModel.columns[(i % colsLenght) + 1].polarityColumn });
+                colPol = this.dataViewModel.columns[(i % colsLenght) + 1].polarityColumn;
+               
+                pol = _.findIndex(this.dataViewModel.polarity, { name: colPol });
                 type = this.dataViewModel.columns[(i % colsLenght) + 1].type;
                 if (pol != -1) {
-
-                    other = polarity[pol].values[j];
+                        other = polarity[pol].values[j];
+                }else{
+                    if(colPol == "1"){
+                        other = 1;
+                    }else {
+                        other = 0;
+                    }
                 }
                 row.row.push(
                     this.setConfigRows(type, item.values[j], (i % colsLenght) + 1, other)
@@ -315,7 +325,6 @@ module powerbi.extensibility.visual {
 
                         this.dataViewModel.columns[id].type = strucData.Type.VARIATION;
                         this.dataViewModel.columns[id].polarityColumn = item.columnPolarity;
-
 
                     } else { }
                 });
@@ -509,7 +518,16 @@ module powerbi.extensibility.visual {
 
             return objectEnumeration;
         }
-
+        /**
+         * clear all configs
+         */
+        private resetConfig(){
+             d3.select("button[id='resetButton']").on('click', function () {
+                    Visual.config = [];
+                    d3.select("select[name='typeCol']").property("value", "none");
+                   this.enumerateObjectInstances({ objectName: "Settings" });
+             }.bind(this));
+        }
         /**
          * popup configs
          */
@@ -590,8 +608,8 @@ module powerbi.extensibility.visual {
 
             this.tableOptions = {
                 fontSize: getValue(this.dataview.metadata.objects, "TableOptions", "fontSize", 14),
-                color: getValue<Fill>(this.dataview.metadata.objects, "TableOptions", "color", { solid: { color: "#178BCA" } }).solid.color,
-                colorFont: getValue<Fill>(this.dataview.metadata.objects, "TableOptions", "colorFont", { solid: { color: "white" } }).solid.color,
+                color: getValue<Fill>(this.dataview.metadata.objects, "TableOptions", "color", { solid: { color: "white" } }).solid.color,
+                colorFont: getValue<Fill>(this.dataview.metadata.objects, "TableOptions", "colorFont", { solid: { color: "black" } }).solid.color,
                 rowsFont: getValue(this.dataview.metadata.objects, "RowsFormatting", "fontSize", 14),
                 rowsFamily: getValue(this.dataview.metadata.objects, "RowsFormatting", "fontFamily", "Segoe UI Light"),
                 rowsBackground: getValue<Fill>(this.dataview.metadata.objects, "RowsFormatting", "rowBackground", { solid: { color: "white" } }).solid.color

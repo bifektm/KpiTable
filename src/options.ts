@@ -47,10 +47,10 @@ module STYLE {
             if (tBody) {
                 if (num == undefined || num == null) {
                     tBody.selectAll('td').style("font-Size", 16 + "px");
-                    d3.selectAll('svg').attr("width",16).attr("height",16);
+                    d3.selectAll('svg').attr("width", 16).attr("height", 16);
                 } else {
                     tBody.selectAll('td').style("font-Size", num + "px");
-                    d3.selectAll('svg').attr("width",num).attr("height",num);
+                    d3.selectAll('svg').attr("width", num).attr("height", num);
                 }
             }
         }
@@ -66,7 +66,7 @@ module STYLE {
                 }
             }
         }
-       
+
         /**
          * set color font row
          */
@@ -79,25 +79,25 @@ module STYLE {
                 }
             }
         }
-        private static eventScore(){
+        private static eventScore() {
             d3.select("select[name='typeIcon']").on("change", function (d, i) {
-                    let bullets = ICON.ShapeFactory.getShape("BULLET");
+                let bullets = ICON.ShapeFactory.getShape("BULLET");
+                d3.select(".preview").selectAll("*").remove();
+                d3.select(".preview").append("label").text("Preview :");
+                if (this.value == "icon") {
+                    d3.select(".preview").append("span").html(bullets.map(item => `` + item).join('&nbsp;&nbsp;&nbsp;&nbsp;'));
+                } else if (this.value == "icontext") {
+                    d3.select(".preview").append("span").html(bullets.map(item => `55&nbsp;&nbsp;` + item).join('&nbsp;&nbsp;&nbsp;&nbsp;'));
+                } else {
                     d3.select(".preview").selectAll("*").remove();
-                    d3.select(".preview").append("label").text("Preview :");
-                    if (this.value == "icon") {
-                        d3.select(".preview").append("span").html(bullets.map(item => `` + item).join('&nbsp;&nbsp;&nbsp;&nbsp;'));
-                    } else if (this.value == "icontext") {
-                        d3.select(".preview").append("span").html(bullets.map(item => `55&nbsp;&nbsp;` + item).join('&nbsp;&nbsp;&nbsp;&nbsp;'));
-                    } else {
-                        d3.select(".preview").selectAll("*").remove();
-                    }
-                });
+                }
+            });
         }
         /**
          * maping config columns
          * @param dataViewModel 
          */
-        static changeType(dataViewModel:any) {
+        static changeType(dataViewModel: any) {
             let typeCol;
             d3.select("select[name='typeCol']")
                 .selectAll("option")
@@ -117,13 +117,16 @@ module STYLE {
                 d3.select(".custtom select").append('option').property("value", "icon").text("Icon");
                 d3.select(".custtom select").append('option').property("value", "icontext").text("Icon-text");
                 this.eventScore();
-                
+
             } else if (typeCol == "variation") {
                 let arrow = ICON.ShapeFactory.getShape("ARROW");
                 d3.select(".custtom").append("label").text("Other :");
                 d3.select(".custtom").append("select").property("name", "polarity")
-                    .style("width", "100%").style("font-size", "10px").append('option').property("value", "").text("");
+                    .style("width", "100%").style("font-size", "10px");
+
                 d3.select("select[name='polarity']").html(`${dataViewModel.polarity.map(item => `<option value="${item.name}">${item.name}</option>`).join('')}`);
+                d3.select("select[name='polarity']").append('option').property("value", "1").text("Ascending");
+                d3.select("select[name='polarity']").append('option').property("value", "0").text("Descending");
                 d3.select(".preview").selectAll("*").remove();
                 d3.select(".preview").append("label").text("Preview :");
                 d3.select(".preview").append("span").html(arrow.map(item => `55&nbsp;&nbsp;` + item).join('&nbsp;&nbsp;&nbsp;&nbsp;'));
@@ -132,14 +135,14 @@ module STYLE {
                 d3.select(".preview").selectAll("*").remove();
 
             }
-        
+
         }
         /**
          * set avaiable configs
          * @param dataViewModel 
          * @param config 
          */
-        static setConfigEvents(dataViewModel:any,config:any){
+        static setConfigEvents(dataViewModel: any, config: any) {
             let colName, setting;
             d3.select(".custtom").selectAll("*").remove();
             d3.select(".preview").selectAll("*").remove();
@@ -165,20 +168,20 @@ module STYLE {
                     d3.select(".custtom").append("label").text("Type Icon :");
                     d3.select(".custtom").append("select").property("name", "typeIcon")
                         .style("width", "100%").style("font-size", "10px");
-                       
+
                     d3.select(".custtom select").append('option').property("value", "icon").text("Icon");
                     d3.select(".custtom select").append('option').property("value", "icontext").text("Icon-text");
                     d3.select("select[name='typeIcon']").property("value", setting.visualValue.toLowerCase());
                     d3.select(".preview").selectAll("*").remove();
                     d3.select(".preview").append("label").text("Preview :");
-                    
-                    if(setting.visualValue.toLowerCase() == "icon"){
-                     
+
+                    if (setting.visualValue.toLowerCase() == "icon") {
+
                         d3.select(".preview").append("span").html(bullets.map(item => `` + item).join('&nbsp;&nbsp;&nbsp;&nbsp;'));
-                    }else if(setting.visualValue.toLowerCase() == "icontext"){
-                    
+                    } else if (setting.visualValue.toLowerCase() == "icontext") {
+
                         d3.select(".preview").append("span").html(bullets.map(item => `55&nbsp;&nbsp;` + item).join('&nbsp;&nbsp;&nbsp;&nbsp;'));
-                    }else{
+                    } else {
                         d3.select(".preview").selectAll("*").remove();
                     }
                     this.eventScore();
@@ -188,56 +191,58 @@ module STYLE {
                     d3.select(".custtom").append("select").property("name", "polarity")
                         .style("width", "100%").style("font-size", "10px").append('option').property("value", "").text("");
                     d3.select("select[name='polarity']").html(`${dataViewModel.polarity.map(item => `<option value="${item.name}">${item.name}</option>`).join('')}`);
-                    d3.select("select[name='polarity']").property("value",setting.columnPolarity);
+                    d3.select("select[name='polarity']").append('option').property("value", "1").text("Ascending");
+                    d3.select("select[name='polarity']").append('option').property("value", "0").text("Descending");
+                    d3.select("select[name='polarity']").property("value", setting.columnPolarity); 
                     d3.select(".preview").selectAll("*").remove();
                     d3.select(".preview").append("label").text("Preview :");
                     d3.select(".preview").append("span").html(arrow.map(item => `55&nbsp;&nbsp;` + item).join('&nbsp;&nbsp;&nbsp;&nbsp;'));
                 } else { }
 
-            } 
+            }
         }
-       /**
-        * events
-        * @param mode 
-        * @param Option 
-        * @param div 
-        */
-       static events(mode: number, Option:d3.Selection < HTMLElement >,div:d3.Selection<HTMLElement>){
-        if(mode == 0) {
-            Option.style("display", "none");
-            d3.select('.edit').style("display", "none");
-            div.on("mouseout", null);
-            div.on("mouseover", null);
-        } else {
-            div.on("mouseover", function () {
-                d3.select('.edit').style("display", "block");
-            });
-            div.on("mouseout", function () {
+        /**
+         * events
+         * @param mode 
+         * @param Option 
+         * @param div 
+         */
+        static events(mode: number, Option: d3.Selection<HTMLElement>, div: d3.Selection<HTMLElement>) {
+            if (mode == 0) {
+                Option.style("display", "none");
                 d3.select('.edit').style("display", "none");
-            });
-        }
+                div.on("mouseout", null);
+                div.on("mouseover", null);
+            } else {
+                div.on("mouseover", function () {
+                    d3.select('.edit').style("display", "block");
+                });
+                div.on("mouseout", function () {
+                    d3.select('.edit').style("display", "none");
+                });
+            }
             d3.select('.close1').on('click', function () {
-            Option.style("display", "none");
+                Option.style("display", "none");
 
-        }.bind(this));
-        d3.select(".edit").on('click', function () {
-            Option.style("display", "block");
-        }.bind(this));
-    }
-       /**
-        * options
-        * @param container 
-        * @param dataViewModel 
-        */
-        static setHTML(container:d3.Selection < HTMLElement >,dataViewModel: strucData.ITableViewModel){
+            }.bind(this));
+            d3.select(".edit").on('click', function () {
+                Option.style("display", "block");
+            }.bind(this));
+        }
+        /**
+         * options
+         * @param container 
+         * @param dataViewModel 
+         */
+        static setHTML(container: d3.Selection<HTMLElement>, dataViewModel: strucData.ITableViewModel) {
             let html;
             container.select(".container").remove();
-            html=`
+            html = `
               <fieldset>
                   <p>
                   <label class="conf">Columns:</label>
                   <select name="cols" size="1" class="dropdown">
-                    ${dataViewModel.columns.map(item => `<option value="${item.name}">${item.name}</option>`).join('')}
+                    ${dataViewModel.columns.filter(function (d, i) { return i != 0; }).map(item => `<option value="${item.name}">${item.name}</option>`).join('')}
               </select>
                   </p>
                   <p>
@@ -252,9 +257,10 @@ module STYLE {
                  <p class="preview"></p>
                   
               </fieldset>
+              <button  id="resetButton" class="button">Reset</button>
               <button  id="configButton" class="button">Apply</button>
              `
-             container.append('div').classed("container", true).html(html);
+            container.append('div').classed("container", true).html(html);
         }
     }
 }
