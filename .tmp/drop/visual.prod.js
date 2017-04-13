@@ -118,6 +118,7 @@ var strucData;
         Type[Type["SCORE"] = 0] = "SCORE";
         Type[Type["VARIATION"] = 1] = "VARIATION";
         Type[Type["NOTHING"] = 2] = "NOTHING";
+        Type[Type["COMPARE"] = 3] = "COMPARE";
     })(Type = strucData.Type || (strucData.Type = {}));
     /**
      * type score
@@ -359,6 +360,9 @@ var STYLE;
                 }
             }
         };
+        /**
+         * event score
+         */
         Customize.eventScore = function () {
             d3.select("select[name='typeIcon']").on("change", function (d, i) {
                 var bullets = ICON.ShapeFactory.getShape("BULLET");
@@ -407,6 +411,16 @@ var STYLE;
                 d3.select("select[name='polarity']").html("" + dataViewModel.polarity.map(function (item) { return "<option value=\"" + item.name + "\">" + item.name + "</option>"; }).join(''));
                 d3.select("select[name='polarity']").append('option').property("value", "1").text("Ascending");
                 d3.select("select[name='polarity']").append('option').property("value", "0").text("Descending");
+                d3.select(".preview").selectAll("*").remove();
+                d3.select(".preview").append("label").text("Preview :");
+                d3.select(".preview").append("span").html(arrow.map(function (item) { return "55&nbsp;&nbsp;" + item; }).join('&nbsp;&nbsp;&nbsp;&nbsp;'));
+            }
+            else if (typeCol == "comparison") {
+                var arrow = ICON.ShapeFactory.getShape("ARROW");
+                d3.select(".custtom").append("label").text("Compare to :");
+                d3.select(".custtom").append("select").property("name", "compare")
+                    .style("width", "100%").style("font-size", "10px");
+                d3.select("select[name='compare']").html("" + dataViewModel.columns.filter(function (d, i) { return i != 0; }).map(function (item) { return "<option value=\"" + item.name + "\">" + item.name + "</option>"; }).join(''));
                 d3.select(".preview").selectAll("*").remove();
                 d3.select(".preview").append("label").text("Preview :");
                 d3.select(".preview").append("span").html(arrow.map(function (item) { return "55&nbsp;&nbsp;" + item; }).join('&nbsp;&nbsp;&nbsp;&nbsp;'));
@@ -462,7 +476,7 @@ var STYLE;
                     this.eventScore();
                 }
                 else if (setting.typeColumn.toLowerCase() == "variation") {
-                    var arrow = ICON.ShapeFactory.getShape("ARROW");
+                    var bulletWhite = ICON.ShapeFactory.getShape("BulletWhite");
                     d3.select(".custtom").append("label").text("Other :");
                     d3.select(".custtom").append("select").property("name", "polarity")
                         .style("width", "100%").style("font-size", "10px").append('option').property("value", "").text("");
@@ -472,7 +486,7 @@ var STYLE;
                     d3.select("select[name='polarity']").property("value", setting.columnPolarity);
                     d3.select(".preview").selectAll("*").remove();
                     d3.select(".preview").append("label").text("Preview :");
-                    d3.select(".preview").append("span").html(arrow.map(function (item) { return "55&nbsp;&nbsp;" + item; }).join('&nbsp;&nbsp;&nbsp;&nbsp;'));
+                    d3.select(".preview").append("span").html(bulletWhite.map(function (item) { return "55&nbsp;&nbsp;" + item; }).join('&nbsp;&nbsp;&nbsp;&nbsp;'));
                 }
                 else { }
             }
@@ -513,7 +527,7 @@ var STYLE;
         Customize.setHTML = function (container, dataViewModel) {
             var html;
             container.select(".container").remove();
-            html = "\n              <fieldset>\n                  <p>\n                  <label class=\"conf\">Columns:</label>\n                  <select name=\"cols\" size=\"1\" class=\"dropdown\">\n                    " + dataViewModel.columns.filter(function (d, i) { return i != 0; }).map(function (item) { return "<option value=\"" + item.name + "\">" + item.name + "</option>"; }).join('') + "\n              </select>\n                  </p>\n                  <p>\n                  <label>Type:</label>\n                  <select name=\"typeCol\" size=\"1\" class=\"dropdown\">\n                    <option value=\"none\">None</option>\n                    <option value=\"score\">Score</option>\n                    <option value=\"variation\">Variation</option>\n                  </select>\n                  </p>\n                  <p class=\"custtom\"></p>\n                 <p class=\"preview\"></p>\n                  \n              </fieldset>\n              <button  id=\"resetButton\" class=\"button\">Reset</button>\n              <button  id=\"configButton\" class=\"button\">Apply</button>\n             ";
+            html = "\n              <fieldset>\n                  <p>\n                  <label class=\"conf\">Columns:</label>\n                  <select name=\"cols\" size=\"1\" class=\"dropdown\">\n                    " + dataViewModel.columns.filter(function (d, i) { return i != 0; }).map(function (item) { return "<option value=\"" + item.name + "\">" + item.name + "</option>"; }).join('') + "\n              </select>\n                  </p>\n                  <p>\n                  <label>Type:</label>\n                  <select name=\"typeCol\" size=\"1\" class=\"dropdown\">\n                    <option value=\"none\">None</option>\n                    <option value=\"score\">Score</option>\n                    <option value=\"variation\">Variation</option>\n                    <option value=\"comparison\">Comparison</option>\n                  </select>\n                  </p>\n                  <p class=\"custtom\"></p>\n                 <p class=\"preview\"></p>\n                  \n              </fieldset>\n              <button  id=\"resetButton\" class=\"button\">Reset</button>\n              <button  id=\"configButton\" class=\"button\">Apply</button>\n             ";
             container.append('div').classed("container", true).html(html);
         };
         return Customize;
@@ -539,6 +553,9 @@ var ICON;
                 return new Bullet().getIcon();
             }
             if (shape.toUpperCase() == "ARROW") {
+                return new Arrow().getIcon();
+            }
+            if (shape.toUpperCase() == "BulletWhite") {
                 return new BulletWhite().getIcon();
             }
             return new BulletWhite().getIcon();
@@ -566,14 +583,28 @@ var ICON;
      */
     var BulletWhite = (function () {
         function BulletWhite() {
-            this.ICON_TREND_DOWN = '<svg width="16" height="16" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16"><path fill="#808080" d="M7.5 0c.688 0 1.353.09 1.992.267s1.238.43 1.794.754 1.063.716 1.52 1.173.847.963 1.172 1.52.576 1.155.754 1.794S15 6.812 15 7.5s-.09 1.353-.267 1.992-.43 1.238-.754 1.794-.716 1.063-1.173 1.52-.963.847-1.52 1.172-1.155.576-1.794.754S8.188 15 7.5 15s-1.353-.09-1.992-.267-1.238-.43-1.794-.754-1.063-.716-1.52-1.173-.847-.963-1.172-1.52-.576-1.154-.754-1.79S0 8.192 0 7.5c0-.688.09-1.353.267-1.992s.43-1.238.754-1.794.716-1.063 1.173-1.52.963-.847 1.52-1.172S4.867.446 5.503.268 6.808 0 7.5 0z"/><path fill="#FFF" d="M10.92 4.358l.66.66-5.486 5.485L3.42 7.83l.66-.66 2.014 2.015"/></svg>';
-            this.ICON_TREND_STEADY = '<svg width="16" height="16" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16"><path fill="#808080" d="M7.5 0L15 15H0L7.5 0z"/><path fill="#FFFFFF" d="M7 6h1v5H7zM7 12h1v1H7z"/></svg>';
-            this.ICON_TREND_UP = '<svg width="16" height="16" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16"><path fill="#808080" d="M7.5 0c.693 0 1.358.09 1.996.266s1.236.428 1.793.754 1.063.716 1.52 1.172.845.962 1.17 1.52.578 1.155.755 1.793S15 6.807 15 7.5s-.09 1.358-.266        1.996-.428.236-.754 1.793-.716 1.063-1.172 1.52-.962.845-1.52 1.17-1.155.578-1.793.755S8.193 15 7.5 15s-1.358-.09-1.996-.266-1.236-.428-1.793-.754-1.063-.716-1.52-1.172-.845-.962-1.17-1.52S.44 10.133.264 9.495 0 8.193 0 7.5s.09-1.358.266-1.996.428-1.236.754-1.793.716-1.063 1.172-1.52.962-.845 1.52-1.17S4.867.44 5.505.264 6.807 0 7.5 0z"/><path fill="#FFF" d="M7 4h1v5H7zM7 10h1v1H7z"/></svg>';
+            this.ICON_BULLET_DOWN = '<svg width="16" height="16" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16"><path fill="#808080" d="M7.5 0c.688 0 1.353.09 1.992.267s1.238.43 1.794.754 1.063.716 1.52 1.173.847.963 1.172 1.52.576 1.155.754 1.794S15 6.812 15 7.5s-.09 1.353-.267 1.992-.43 1.238-.754 1.794-.716 1.063-1.173 1.52-.963.847-1.52 1.172-1.155.576-1.794.754S8.188 15 7.5 15s-1.353-.09-1.992-.267-1.238-.43-1.794-.754-1.063-.716-1.52-1.173-.847-.963-1.172-1.52-.576-1.154-.754-1.79S0 8.192 0 7.5c0-.688.09-1.353.267-1.992s.43-1.238.754-1.794.716-1.063 1.173-1.52.963-.847 1.52-1.172S4.867.446 5.503.268 6.808 0 7.5 0z"/><path fill="#FFF" d="M10.92 4.358l.66.66-5.486 5.485L3.42 7.83l.66-.66 2.014 2.015"/></svg>';
+            this.ICON_BULLET_STEADY = '<svg width="16" height="16" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16"><path fill="#808080" d="M7.5 0L15 15H0L7.5 0z"/><path fill="#FFFFFF" d="M7 6h1v5H7zM7 12h1v1H7z"/></svg>';
+            this.ICON_BULLET_UP = '<svg width="16" height="16" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16"><path fill="#808080" d="M7.5 0c.693 0 1.358.09 1.996.266s1.236.428 1.793.754 1.063.716 1.52 1.172.845.962 1.17 1.52.578 1.155.755 1.793S15 6.807 15 7.5s-.09 1.358-.266        1.996-.428.236-.754 1.793-.716 1.063-1.172 1.52-.962.845-1.52 1.17-1.155.578-1.793.755S8.193 15 7.5 15s-1.358-.09-1.996-.266-1.236-.428-1.793-.754-1.063-.716-1.52-1.172-.845-.962-1.17-1.52S.44 10.133.264 9.495 0 8.193 0 7.5s.09-1.358.266-1.996.428-1.236.754-1.793.716-1.063 1.172-1.52.962-.845 1.52-1.17S4.867.44 5.505.264 6.807 0 7.5 0z"/><path fill="#FFF" d="M7 4h1v5H7zM7 10h1v1H7z"/></svg>';
         }
         BulletWhite.prototype.getIcon = function () {
-            return [this.ICON_TREND_UP, this.ICON_TREND_STEADY, this.ICON_TREND_DOWN];
+            return [this.ICON_BULLET_UP, this.ICON_BULLET_STEADY, this.ICON_BULLET_DOWN];
         };
         return BulletWhite;
+    }());
+    /**
+     * class ARROW
+     */
+    var Arrow = (function () {
+        function Arrow() {
+            this.ICON_TREND_UP = '<svg width="16" height="14" viewBox="0 0 9 9" xmlns="http://www.w3.org/2000/svg"><path d="M7.6.75H4.39V0h4.5v4.5h-.75V1.266L.526 8.888 0 8.36 7.6.75z" fill="#3CB371" fill-rule="evenodd"/></svg>';
+            this.ICON_TREND_STEADY = '<svg width="16" height="14" viewBox="0 0 9 9" xmlns="http://www.w3.org/2000/svg"><path d="M7.756 3.8l-2.27-2.27.53-.53 3.182 3.182-3.182 3.182-.53-.53 2.286-2.287L0 4.555V3.81l6.756-.01z" fill="#000" fill-rule="evenodd"/></svg>';
+            this.ICON_TREND_DOWN = '<svg width="16" height="14" viewBox="0 0 9 9" xmlns="http://www.w3.org/2000/svg"><path d="M8.89 4.388v4.5h-4.5v-.75h3.215L0 .528.527 0 8.14 7.605V4.388h.75" fill="#B22222" fill-rule="evenodd"/></svg>';
+        }
+        Arrow.prototype.getIcon = function () {
+            return [this.ICON_TREND_UP, this.ICON_TREND_STEADY, this.ICON_TREND_DOWN];
+        };
+        return Arrow;
     }());
 })(ICON || (ICON = {}));
 var powerbi;
@@ -1044,7 +1075,7 @@ var powerbi;
                      * popup configs
                      */
                     Visual.prototype.configPopup = function () {
-                        var colOther, iconType, colName, typeCol;
+                        var colOther, iconType, colName, typeCol, compare;
                         d3.select("button[id='configButton']").on('click', function () {
                             d3.select("select[name='cols']")
                                 .selectAll("option")
@@ -1080,7 +1111,8 @@ var powerbi;
                                     typeColumn: "VARIATION",
                                     iconType: "",
                                     visualValue: "",
-                                    columnPolarity: colOther
+                                    columnPolarity: colOther,
+                                    compare: ""
                                 });
                             }
                             else if (typeCol == "score") {
@@ -1100,7 +1132,29 @@ var powerbi;
                                     typeColumn: "SCORE",
                                     iconType: "BULLET",
                                     visualValue: iconType,
-                                    columnPolarity: ""
+                                    columnPolarity: "",
+                                    compare: ""
+                                });
+                            }
+                            else if (typeCol == "comparison") {
+                                if (id != -1) {
+                                    Visual.config.splice(id, 1);
+                                }
+                                ;
+                                d3.select("select[name='compare']").selectAll("option")
+                                    .filter(function (d, i) {
+                                    if (this.selected) {
+                                        compare = this.value;
+                                        return this.value;
+                                    }
+                                });
+                                Visual.config.push({
+                                    columnName: colName,
+                                    typeColumn: "COMPARE",
+                                    iconType: "ARROW",
+                                    visualValue: "icon",
+                                    columnPolarity: "",
+                                    compare: compare
                                 });
                             }
                             else {

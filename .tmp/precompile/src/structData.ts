@@ -36,7 +36,8 @@ module strucData {
     export enum Type{
        SCORE,
        VARIATION,
-       NOTHING
+       NOTHING,
+       COMPARE
     }
     /**
      * type score
@@ -64,6 +65,7 @@ module strucData {
         iconType:string;
         visualValue:string;
         columnPolarity:string;
+        compare:string;
         
     }
     

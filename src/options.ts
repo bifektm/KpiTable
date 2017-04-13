@@ -79,6 +79,9 @@ module STYLE {
                 }
             }
         }
+        /**
+         * event score
+         */
         private static eventScore() {
             d3.select("select[name='typeIcon']").on("change", function (d, i) {
                 let bullets = ICON.ShapeFactory.getShape("BULLET");
@@ -130,7 +133,16 @@ module STYLE {
                 d3.select(".preview").selectAll("*").remove();
                 d3.select(".preview").append("label").text("Preview :");
                 d3.select(".preview").append("span").html(arrow.map(item => `55&nbsp;&nbsp;` + item).join('&nbsp;&nbsp;&nbsp;&nbsp;'));
-            } else {
+            } else if(typeCol == "comparison"){
+                let arrow = ICON.ShapeFactory.getShape("ARROW");
+                d3.select(".custtom").append("label").text("Compare to :");
+                d3.select(".custtom").append("select").property("name", "compare")
+                    .style("width", "100%").style("font-size", "10px");
+                d3.select("select[name='compare']").html(`${dataViewModel.columns.filter(function (d, i) { return i != 0; }).map(item => `<option value="${item.name}">${item.name}</option>`).join('')}`);
+                d3.select(".preview").selectAll("*").remove();
+                d3.select(".preview").append("label").text("Preview :");
+                d3.select(".preview").append("span").html(arrow.map(item => `55&nbsp;&nbsp;` + item).join('&nbsp;&nbsp;&nbsp;&nbsp;'));    
+            }else {
                 d3.select(".custtom").selectAll("*").remove();
                 d3.select(".preview").selectAll("*").remove();
 
@@ -186,7 +198,7 @@ module STYLE {
                     }
                     this.eventScore();
                 } else if (setting.typeColumn.toLowerCase() == "variation") {
-                    let arrow = ICON.ShapeFactory.getShape("ARROW");
+                    let bulletWhite = ICON.ShapeFactory.getShape("BulletWhite");
                     d3.select(".custtom").append("label").text("Other :");
                     d3.select(".custtom").append("select").property("name", "polarity")
                         .style("width", "100%").style("font-size", "10px").append('option').property("value", "").text("");
@@ -196,7 +208,7 @@ module STYLE {
                     d3.select("select[name='polarity']").property("value", setting.columnPolarity); 
                     d3.select(".preview").selectAll("*").remove();
                     d3.select(".preview").append("label").text("Preview :");
-                    d3.select(".preview").append("span").html(arrow.map(item => `55&nbsp;&nbsp;` + item).join('&nbsp;&nbsp;&nbsp;&nbsp;'));
+                    d3.select(".preview").append("span").html(bulletWhite.map(item => `55&nbsp;&nbsp;` + item).join('&nbsp;&nbsp;&nbsp;&nbsp;'));
                 } else { }
 
             }
@@ -251,6 +263,7 @@ module STYLE {
                     <option value="none">None</option>
                     <option value="score">Score</option>
                     <option value="variation">Variation</option>
+                    <option value="comparison">Comparison</option>
                   </select>
                   </p>
                   <p class="custtom"></p>

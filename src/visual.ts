@@ -532,7 +532,7 @@ module powerbi.extensibility.visual {
          * popup configs
          */
         private configPopup() {
-            let colOther, iconType, colName, typeCol;
+            let colOther, iconType, colName, typeCol,compare;
 
             d3.select("button[id='configButton']").on('click', function () {
 
@@ -572,7 +572,8 @@ module powerbi.extensibility.visual {
                         typeColumn: "VARIATION",
                         iconType: "",
                         visualValue: "",
-                        columnPolarity: colOther
+                        columnPolarity: colOther,
+                        compare:""
                     });
 
                 } else if (typeCol == "score") {
@@ -590,7 +591,28 @@ module powerbi.extensibility.visual {
                         typeColumn: "SCORE",
                         iconType: "BULLET",
                         visualValue: iconType,
-                        columnPolarity: ""
+                        columnPolarity: "",
+                        compare:""
+                    });
+
+                } else if(typeCol == "comparison"){
+
+                   if (id != -1) { Visual.config.splice(id, 1) };
+
+                   d3.select("select[name='compare']").selectAll("option")
+                        .filter(function (d, i) {
+                            if (this.selected) {
+                                compare = this.value;
+                                return this.value;
+                            }
+                        });
+                    Visual.config.push({
+                        columnName: colName,
+                        typeColumn: "COMPARE",
+                        iconType: "ARROW",
+                        visualValue: "icon",
+                        columnPolarity: "",
+                        compare:compare
                     });
 
                 } else { if (id != -1) { Visual.config.splice(id, 1) }; }
