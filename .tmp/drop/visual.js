@@ -1302,8 +1302,8 @@ var powerbi;
     (function (visuals) {
         var plugins;
         (function (plugins) {
-            plugins.PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD_DEBUG = {
-                name: 'PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD_DEBUG',
+            plugins.PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD = {
+                name: 'PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD',
                 displayName: 'KPI Table',
                 class: 'Visual',
                 version: '1.0.0',
