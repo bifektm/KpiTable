@@ -7,7 +7,7 @@ module STYLE {
          * check icon -> styling
          */
         static isIcon(cell: string): boolean {
-            var matcher = new RegExp("<svg");
+            var matcher = new RegExp("^<svg");
             return matcher.test(cell);
         }
         /**
@@ -111,6 +111,7 @@ module STYLE {
                     }
                 });
             d3.select(".custtom").selectAll("*").remove();
+            d3.select(".aux").selectAll("*").remove();
             d3.select(".preview").selectAll("*").remove();
             if (typeCol == "score") {
 
@@ -120,7 +121,7 @@ module STYLE {
                 d3.select(".custtom select").append('option').property("value", "icon").text("Icon");
                 d3.select(".custtom select").append('option').property("value", "icontext").text("Icon-text");
                 this.eventScore();
-
+                d3.select(".aux").selectAll("*").remove();
             } else if (typeCol == "variation") {
                 let arrow = ICON.ShapeFactory.getShape("ARROW");
                 d3.select(".custtom").append("label").text("Other :");
@@ -133,18 +134,27 @@ module STYLE {
                 d3.select(".preview").selectAll("*").remove();
                 d3.select(".preview").append("label").text("Preview :");
                 d3.select(".preview").append("span").html(arrow.map(item => `55&nbsp;&nbsp;` + item).join('&nbsp;&nbsp;&nbsp;&nbsp;'));
-            } else if(typeCol == "comparison"){
+            } else if (typeCol == "compare") {
                 let arrow = ICON.ShapeFactory.getShape("ARROW");
                 d3.select(".custtom").append("label").text("Compare to :");
                 d3.select(".custtom").append("select").property("name", "compare")
                     .style("width", "100%").style("font-size", "10px");
                 d3.select("select[name='compare']").html(`${dataViewModel.columns.filter(function (d, i) { return i != 0; }).map(item => `<option value="${item.name}">${item.name}</option>`).join('')}`);
+
+                d3.select(".aux").append("label").text("Other :");
+                d3.select(".aux").append("select").property("name", "polarity")
+                    .style("width", "100%").style("font-size", "10px");
+                d3.select("select[name='polarity']").html(`${dataViewModel.polarity.map(item => `<option value="${item.name}">${item.name}</option>`).join('')}`);
+                d3.select("select[name='polarity']").append('option').property("value", "1").text("Ascending");
+                d3.select("select[name='polarity']").append('option').property("value", "0").text("Descending");
+
                 d3.select(".preview").selectAll("*").remove();
                 d3.select(".preview").append("label").text("Preview :");
-                d3.select(".preview").append("span").html(arrow.map(item => `55&nbsp;&nbsp;` + item).join('&nbsp;&nbsp;&nbsp;&nbsp;'));    
-            }else {
+                d3.select(".preview").append("span").html(arrow.map(item => `55&nbsp;&nbsp;` + item).join('&nbsp;&nbsp;&nbsp;&nbsp;'));
+            } else {
                 d3.select(".custtom").selectAll("*").remove();
                 d3.select(".preview").selectAll("*").remove();
+                d3.select(".aux").selectAll("*").remove();
 
             }
 
@@ -158,6 +168,7 @@ module STYLE {
             let colName, setting;
             d3.select(".custtom").selectAll("*").remove();
             d3.select(".preview").selectAll("*").remove();
+            d3.select(".aux").selectAll("*").remove();
             d3.select("select[name='typeCol']").property("value", "none");
             d3.select("select[name='cols'] ")
                 .selectAll("option")
@@ -169,6 +180,7 @@ module STYLE {
                 });
 
             setting = _.findWhere(config, { columnName: colName });
+
             d3.select(".config").remove();
             //preview config
             if (setting != undefined) {
@@ -176,6 +188,7 @@ module STYLE {
                 d3.select("select[name='typeCol']").property("value", setting.typeColumn.toLowerCase());
 
                 if (setting.typeColumn.toLowerCase() == "score") {
+                    d3.select(".aux").selectAll("*").remove();
                     let bullets = ICON.ShapeFactory.getShape("BULLET");
                     d3.select(".custtom").append("label").text("Type Icon :");
                     d3.select(".custtom").append("select").property("name", "typeIcon")
@@ -198,6 +211,7 @@ module STYLE {
                     }
                     this.eventScore();
                 } else if (setting.typeColumn.toLowerCase() == "variation") {
+                    d3.select(".aux").selectAll("*").remove();
                     let bulletWhite = ICON.ShapeFactory.getShape("BulletWhite");
                     d3.select(".custtom").append("label").text("Other :");
                     d3.select(".custtom").append("select").property("name", "polarity")
@@ -205,11 +219,29 @@ module STYLE {
                     d3.select("select[name='polarity']").html(`${dataViewModel.polarity.map(item => `<option value="${item.name}">${item.name}</option>`).join('')}`);
                     d3.select("select[name='polarity']").append('option').property("value", "1").text("Ascending");
                     d3.select("select[name='polarity']").append('option').property("value", "0").text("Descending");
-                    d3.select("select[name='polarity']").property("value", setting.columnPolarity); 
+                    d3.select("select[name='polarity']").property("value", setting.columnPolarity);
                     d3.select(".preview").selectAll("*").remove();
                     d3.select(".preview").append("label").text("Preview :");
                     d3.select(".preview").append("span").html(bulletWhite.map(item => `55&nbsp;&nbsp;` + item).join('&nbsp;&nbsp;&nbsp;&nbsp;'));
-                } else { }
+                } else if (setting.typeColumn.toLowerCase() == "compare") {
+                    d3.select(".aux").selectAll("*").remove();
+                    let arrow = ICON.ShapeFactory.getShape("ARROW");
+                    d3.select(".custtom").append("label").text("Compare to :");
+                    d3.select(".custtom").append("select").property("name", "compare")
+                        .style("width", "100%").style("font-size", "10px");
+                    d3.select("select[name='compare']").html(`${dataViewModel.columns.filter(function (d, i) { return i != 0; }).map(item => `<option value="${item.name}">${item.name}</option>`).join('')}`);
+                    d3.select("select[name='compare']").property("value", setting.compare);
+                    d3.select(".aux").append("label").text("Other :");
+                    d3.select(".aux").append("select").property("name", "polarity")
+                        .style("width", "100%").style("font-size", "10px");
+                    d3.select("select[name='polarity']").html(`${dataViewModel.polarity.map(item => `<option value="${item.name}">${item.name}</option>`).join('')}`);
+                    d3.select("select[name='polarity']").append('option').property("value", "1").text("Ascending");
+                    d3.select("select[name='polarity']").append('option').property("value", "0").text("Descending");
+                    d3.select("select[name='polarity']").property("value", setting.columnPolarity);
+                    d3.select(".preview").selectAll("*").remove();
+                    d3.select(".preview").append("label").text("Preview :");
+                    d3.select(".preview").append("span").html(arrow.map(item => `55&nbsp;&nbsp;` + item).join('&nbsp;&nbsp;&nbsp;&nbsp;'));
+                } else { d3.select(".aux").selectAll("*").remove();}
 
             }
         }
@@ -263,10 +295,11 @@ module STYLE {
                     <option value="none">None</option>
                     <option value="score">Score</option>
                     <option value="variation">Variation</option>
-                    <option value="comparison">Comparison</option>
+                    <option value="compare">Comparison</option>
                   </select>
                   </p>
                   <p class="custtom"></p>
+                  <p class="aux"></p>
                  <p class="preview"></p>
                   
               </fieldset>

@@ -47,10 +47,10 @@ module powerbi.extensibility.visual {
          */
         @logExceptions()
         public update(optionsUpdate: VisualUpdateOptions) {
-           
+
 
             STYLE.Customize.events(optionsUpdate.viewMode, this.Option, this.div);
-            if (this.init || (optionsUpdate.viewport.height == this.height && optionsUpdate.viewport.width == this.width)) {
+            if (optionsUpdate.type == VisualUpdateType.Data || optionsUpdate.type == VisualUpdateType.All || (optionsUpdate.viewport.height == this.height && optionsUpdate.viewport.width == this.width)) {
                 if (optionsUpdate.dataViews[0]) {
                     this.dataview = optionsUpdate.dataViews[0];
 
@@ -59,11 +59,11 @@ module powerbi.extensibility.visual {
                             if (COMMON.Core.getConfig(optionsUpdate.dataViews).length == 0) {
                                 Visual.config = JSON.parse(getValue(this.dataview.metadata.objects, "Settings", "config", "[]"));
                             } else {
-                              //  Visual.config = COMMON.Core.getConfig(optionsUpdate.dataViews);
+                                //  Visual.config = COMMON.Core.getConfig(optionsUpdate.dataViews);
                             }
                         } catch (Error) { Visual.config = []; }
                     }
-                    
+
                     this.parseData();
                     this.tableStyling();
                     STYLE.Customize.setHTML(this.Option, this.dataViewModel);
@@ -73,7 +73,7 @@ module powerbi.extensibility.visual {
 
             this.height = optionsUpdate.viewport.height;           //update height 
             this.width = optionsUpdate.viewport.width;            //update width
-            if (this.init) { this.init = false; }                //flag  prevent drawTable ever
+            
 
 
 
@@ -82,19 +82,19 @@ module powerbi.extensibility.visual {
             this.resetConfig();
             d3.select("select[name='typeCol']").on("change", this.changeType.bind(this));
             d3.select("select[name='cols']").on("change", this.setConfigEvents.bind(this));
-            
-            
+
+
         }
         /**
          * selected row
          */
-        private selected(){
+        private selected() {
             if (this.select) {
                 d3.selectAll(".fixed_headers tr").classed("select-table", true);
                 this.rowSelected.forEach(item => {
                     d3.select(".select-table" + item).
-                    style("font-weight", "bold")
-                    .classed("select-table", false);
+                        style("font-weight", "bold")
+                        .classed("select-table", false);
                 });
             }
         }
@@ -102,33 +102,33 @@ module powerbi.extensibility.visual {
          * highlights
          */
         private highlights() {
-            let i,itens:number[]=[];
-            if(!this.dataview) return;
+            let i, itens: number[] = [];
+            if (!this.dataview || !this.dataview.categorical || !this.dataview.categorical.values) return;
             this.dataview.categorical.values.forEach(item => {
                 if (item.highlights) {
-                    i=0;
+                    i = 0;
                     item.highlights.forEach(val => {
-                        
+
                         if (val != null) {
-                            if(!_.contains(itens,i)){
+                            if (!_.contains(itens, i)) {
                                 itens.push(i);
-                            }    
+                            }
                         }
                         i++;
                     });
                 }
-                
+
             });
-            
-            if(itens.length != 0){
+
+            if (itens.length != 0) {
                 this.rowSelected = [];
                 this.select = false;
                 d3.selectAll(".fixed_headers tr").classed("select-table", true);
-                itens.forEach(item =>{
-                d3.select(".select-table" + item).style("font-weight", "bold").classed("select-table", false);
-            });
+                itens.forEach(item => {
+                    d3.select(".select-table" + item).style("font-weight", "bold").classed("select-table", false);
+                });
             }
-            
+
         }
         /**
          * parse data to dataviewmodel 
@@ -163,7 +163,8 @@ module powerbi.extensibility.visual {
                         iconType: strucData.IconType.TEXT,
                         type: strucData.Type.NOTHING,
                         icon: [],
-                        polarityColumn: ""
+                        polarityColumn: "",
+                        compare: ""
                     });
                 }
 
@@ -180,7 +181,8 @@ module powerbi.extensibility.visual {
                         iconType: strucData.IconType.TEXT,
                         type: strucData.Type.NOTHING,
                         icon: [],
-                        polarityColumn: ""
+                        polarityColumn: "",
+                        compare: ""
                     });
 
                     i++;
@@ -200,7 +202,7 @@ module powerbi.extensibility.visual {
             let colsLenght = this.dataViewModel.columns.length - 1;//4
             let type;
             let row = { id: null, row: [] };
-            let i = 0, j = 0, pol, other,colPol;
+            let i = 0, j = 0, pol, other, colPol;
 
             if (!data) {
                 indicator.forEach(item => {
@@ -217,7 +219,7 @@ module powerbi.extensibility.visual {
             }
             j = 0;
             let rowsLength = data.length / colsLenght;//8
-            
+
             data.forEach(item => {
 
                 if (i % colsLenght == 0) {
@@ -234,20 +236,20 @@ module powerbi.extensibility.visual {
 
                 }
                 colPol = this.dataViewModel.columns[(i % colsLenght) + 1].polarityColumn;
-               
+
                 pol = _.findIndex(this.dataViewModel.polarity, { name: colPol });
                 type = this.dataViewModel.columns[(i % colsLenght) + 1].type;
                 if (pol != -1) {
-                        other = polarity[pol].values[j];
-                }else{
-                    if(colPol == "1"){
+                    other = polarity[pol].values[j];
+                } else {
+                    if (colPol == "1") {
                         other = 1;
-                    }else {
+                    } else {
                         other = 0;
                     }
                 }
                 row.row.push(
-                    this.setConfigRows(type, item.values[j], (i % colsLenght) + 1, other)
+                    this.setConfigCell(type, item.values[j], (i % colsLenght) + 1, other)
                 );
                 if (i % colsLenght == colsLenght - 1) {
                     this.dataViewModel.values.push(row);
@@ -260,11 +262,11 @@ module powerbi.extensibility.visual {
         /**
          * config valid value
          */
-        private setConfigRows(type: any, value: any, k: number, pol: any) {
-           
+        private setConfigCell(type: any, value: any, k: number, pol: any) {
+
             let score, iconType;
             let row = { value: null, polarity: 1 };
-            if(value == null || value == undefined ){return row;}
+            if (value == null || value == undefined) { return row; }
             if (type == strucData.Type.SCORE) { //SCORE
                 iconType = this.dataViewModel.columns[k].iconType;
                 score = COMMON.Core.getScore(+value);
@@ -280,13 +282,13 @@ module powerbi.extensibility.visual {
                 } else {
                     row.value = value;
                 }
-            } else if (type == strucData.Type.VARIATION) { //type variation
+            } else if (type == strucData.Type.VARIATION || type == strucData.Type.COMPARE) { //type variation
                 row.value = value;
                 row.polarity = pol;
             } else {
                 row.value = value;
             }
-            
+
             return row;
         }
         /**
@@ -295,7 +297,7 @@ module powerbi.extensibility.visual {
         private setConfigColumns() {
             let config = Visual.config;
             var id;
-
+            
             if (config.length > 0) {
 
                 _.each(config, item => {
@@ -325,7 +327,11 @@ module powerbi.extensibility.visual {
 
                         this.dataViewModel.columns[id].type = strucData.Type.VARIATION;
                         this.dataViewModel.columns[id].polarityColumn = item.columnPolarity;
-
+                    } else if (item.typeColumn.toUpperCase() == "COMPARE") {
+                        this.dataViewModel.columns[id].icon = ICON.ShapeFactory.getShape(item.iconType);
+                        this.dataViewModel.columns[id].type = strucData.Type.COMPARE;
+                        this.dataViewModel.columns[id].compare = item.compare;
+                        this.dataViewModel.columns[id].polarityColumn = item.columnPolarity;
                     } else { }
                 });
             }
@@ -336,7 +342,7 @@ module powerbi.extensibility.visual {
          * draw table to my target 
          */
         private drawTable() {
-           
+
             if (this.dataViewModel.columns.length < 1) { return; }
 
             //if exists, remove existing table
@@ -348,7 +354,7 @@ module powerbi.extensibility.visual {
 
             //init table
             this.table = this.div.append('table')
-                .classed("fixed_headers", true);
+                .classed("fixed_headers", true).attr("cellspacing","0");
 
 
             this.tHead = this.table.append('thead');
@@ -384,20 +390,35 @@ module powerbi.extensibility.visual {
                 })
                 .style('color', function (d) {
 
-                    if (d.type == strucData.Type.VARIATION && d.polarity != undefined && d.polarity != null) {
+                    if (d.type == strucData.Type.VARIATION || d.type == strucData.Type.COMPARE && d.polarity != undefined && d.polarity != null) {
 
                         return COMMON.Core.getVariation(d.value, d.polarity);
                     }
+                 
                 })
-                .html(function (d) {
-                     if(d.value == null){return "";}
+                .html(function (d, i) {
+
+                    if (d.value == null) { return ""; }
+
                     if (d.type == strucData.Type.VARIATION && d.polarity != undefined && d.polarity != null) {
                         let value = COMMON.Core.getVariation(d.value, d.polarity);
-                       
+
                         if (value == "green") {
-                            return COMMON.Core.formatNumber(<any>d.value) + " " + ICON.ShapeFactory.getShape("ARROW")[2];
+                            return COMMON.Core.formatNumber(<any>d.value) + " " + ICON.ShapeFactory.getShape("BulletWhite")[2];
                         } else if (value == "red") {
+                            return COMMON.Core.formatNumber(<any>d.value) + " " + ICON.ShapeFactory.getShape("BulletWhite")[0];
+                        } else {
+                            return COMMON.Core.formatNumber(<any>d.value) + " " + ICON.ShapeFactory.getShape("BulletWhite")[1];
+                        }
+                    } else if (d.type == strucData.Type.COMPARE) {
+
+                        let colComapre = columns[i].compare;
+                        let compareColumn = _.findIndex(columns, { name: colComapre });
+
+                        if (d.value > values[d.id].row[compareColumn].value) {
                             return COMMON.Core.formatNumber(<any>d.value) + " " + ICON.ShapeFactory.getShape("ARROW")[0];
+                        } else if (d.value < values[d.id].row[compareColumn].value) {
+                            return COMMON.Core.formatNumber(<any>d.value) + " " + ICON.ShapeFactory.getShape("ARROW")[2];
                         } else {
                             return COMMON.Core.formatNumber(<any>d.value) + " " + ICON.ShapeFactory.getShape("ARROW")[1];
                         }
@@ -421,11 +442,11 @@ module powerbi.extensibility.visual {
                         this.rowSelected = [];
                         this.select = true;
                         this.rowSelected.push(d.id);
-                    } else if(ids.length == 1 && key){
-                        
+                    } else if (ids.length == 1 && key) {
+
                         this.select = true;
                         index = this.rowSelected.indexOf(d.id);
-                        
+
                         if (index != -1) {
                             this.rowSelected.splice(index, 1);
                         } else {
@@ -433,25 +454,25 @@ module powerbi.extensibility.visual {
                         }
                     }
                     else if (ids.length >= 1 && !key) {
-                       
+
                         this.rowSelected = [];
                         this.selectionManager.clear();
-                        this.selectionManager.select(this.selectionIds[d.row[0].value],true).then((ids: ISelectionId[]) => { 
+                        this.selectionManager.select(this.selectionIds[d.row[0].value], true).then((ids: ISelectionId[]) => {
                             this.select = true;
-                        this.rowSelected.push(d.id);
+                            this.rowSelected.push(d.id);
                         });
-                        
+
                     } else if (ids.length >= 1 && key) {
-                         
+
                         this.select = true;
                         index = this.rowSelected.indexOf(d.id);
-                        
+
                         if (index != -1) {
                             this.rowSelected.splice(index, 1);
                         } else {
                             this.rowSelected.push(d.id);
                         }
-                        
+
                     }
                     else {
                         this.select = false;
@@ -521,18 +542,18 @@ module powerbi.extensibility.visual {
         /**
          * clear all configs
          */
-        private resetConfig(){
-             d3.select("button[id='resetButton']").on('click', function () {
-                    Visual.config = [];
-                    d3.select("select[name='typeCol']").property("value", "none");
-                   this.enumerateObjectInstances({ objectName: "Settings" });
-             }.bind(this));
+        private resetConfig() {
+            d3.select("button[id='resetButton']").on('click', function () {
+                Visual.config = [];
+                d3.select("select[name='typeCol']").property("value", "none");
+                this.enumerateObjectInstances({ objectName: "Settings" });
+            }.bind(this));
         }
         /**
          * popup configs
          */
         private configPopup() {
-            let colOther, iconType, colName, typeCol,compare;
+            let colOther, iconType, colName, typeCol, compare;
 
             d3.select("button[id='configButton']").on('click', function () {
 
@@ -573,7 +594,7 @@ module powerbi.extensibility.visual {
                         iconType: "",
                         visualValue: "",
                         columnPolarity: colOther,
-                        compare:""
+                        compare: ""
                     });
 
                 } else if (typeCol == "score") {
@@ -592,34 +613,42 @@ module powerbi.extensibility.visual {
                         iconType: "BULLET",
                         visualValue: iconType,
                         columnPolarity: "",
-                        compare:""
+                        compare: ""
                     });
 
-                } else if(typeCol == "comparison"){
+                } else if (typeCol == "compare") {
 
-                   if (id != -1) { Visual.config.splice(id, 1) };
+                    if (id != -1) { Visual.config.splice(id, 1) };
 
-                   d3.select("select[name='compare']").selectAll("option")
+                    d3.select("select[name='compare']").selectAll("option")
                         .filter(function (d, i) {
                             if (this.selected) {
                                 compare = this.value;
                                 return this.value;
                             }
                         });
+                    d3.select("select[name='polarity']").selectAll("option")
+                        .filter(function (d, i) {
+                            if (this.selected) {
+                                colOther = this.value;
+                                return this.value;
+                            }
+                        });
+
                     Visual.config.push({
                         columnName: colName,
                         typeColumn: "COMPARE",
                         iconType: "ARROW",
-                        visualValue: "icon",
-                        columnPolarity: "",
-                        compare:compare
+                        visualValue: "icontext",
+                        columnPolarity: colOther,
+                        compare: compare
                     });
 
                 } else { if (id != -1) { Visual.config.splice(id, 1) }; }
                 d3.select("select[name='typeCol']").property("value", "none");
                 this.enumerateObjectInstances({ objectName: "Settings" });
 
-        
+
 
             }.bind(this));
         }
@@ -683,7 +712,7 @@ module powerbi.extensibility.visual {
         /**
          * DESTROY 
          */
-        public destroy() { console.log("destroy"); }
+        public destroy() { }
 
     }
 }

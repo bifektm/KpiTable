@@ -284,7 +284,7 @@ var STYLE;
          * check icon -> styling
          */
         Customize.isIcon = function (cell) {
-            var matcher = new RegExp("<svg");
+            var matcher = new RegExp("^<svg");
             return matcher.test(cell);
         };
         /**
@@ -394,6 +394,7 @@ var STYLE;
                 }
             });
             d3.select(".custtom").selectAll("*").remove();
+            d3.select(".aux").selectAll("*").remove();
             d3.select(".preview").selectAll("*").remove();
             if (typeCol == "score") {
                 d3.select(".custtom").append("label").text("Type Icon :");
@@ -402,6 +403,7 @@ var STYLE;
                 d3.select(".custtom select").append('option').property("value", "icon").text("Icon");
                 d3.select(".custtom select").append('option').property("value", "icontext").text("Icon-text");
                 this.eventScore();
+                d3.select(".aux").selectAll("*").remove();
             }
             else if (typeCol == "variation") {
                 var arrow = ICON.ShapeFactory.getShape("ARROW");
@@ -415,12 +417,18 @@ var STYLE;
                 d3.select(".preview").append("label").text("Preview :");
                 d3.select(".preview").append("span").html(arrow.map(function (item) { return "55&nbsp;&nbsp;" + item; }).join('&nbsp;&nbsp;&nbsp;&nbsp;'));
             }
-            else if (typeCol == "comparison") {
+            else if (typeCol == "compare") {
                 var arrow = ICON.ShapeFactory.getShape("ARROW");
                 d3.select(".custtom").append("label").text("Compare to :");
                 d3.select(".custtom").append("select").property("name", "compare")
                     .style("width", "100%").style("font-size", "10px");
                 d3.select("select[name='compare']").html("" + dataViewModel.columns.filter(function (d, i) { return i != 0; }).map(function (item) { return "<option value=\"" + item.name + "\">" + item.name + "</option>"; }).join(''));
+                d3.select(".aux").append("label").text("Other :");
+                d3.select(".aux").append("select").property("name", "polarity")
+                    .style("width", "100%").style("font-size", "10px");
+                d3.select("select[name='polarity']").html("" + dataViewModel.polarity.map(function (item) { return "<option value=\"" + item.name + "\">" + item.name + "</option>"; }).join(''));
+                d3.select("select[name='polarity']").append('option').property("value", "1").text("Ascending");
+                d3.select("select[name='polarity']").append('option').property("value", "0").text("Descending");
                 d3.select(".preview").selectAll("*").remove();
                 d3.select(".preview").append("label").text("Preview :");
                 d3.select(".preview").append("span").html(arrow.map(function (item) { return "55&nbsp;&nbsp;" + item; }).join('&nbsp;&nbsp;&nbsp;&nbsp;'));
@@ -428,6 +436,7 @@ var STYLE;
             else {
                 d3.select(".custtom").selectAll("*").remove();
                 d3.select(".preview").selectAll("*").remove();
+                d3.select(".aux").selectAll("*").remove();
             }
         };
         /**
@@ -439,6 +448,7 @@ var STYLE;
             var colName, setting;
             d3.select(".custtom").selectAll("*").remove();
             d3.select(".preview").selectAll("*").remove();
+            d3.select(".aux").selectAll("*").remove();
             d3.select("select[name='typeCol']").property("value", "none");
             d3.select("select[name='cols'] ")
                 .selectAll("option")
@@ -455,6 +465,7 @@ var STYLE;
                 d3.select("fieldset .conf").append("span").classed("config", true).text("*");
                 d3.select("select[name='typeCol']").property("value", setting.typeColumn.toLowerCase());
                 if (setting.typeColumn.toLowerCase() == "score") {
+                    d3.select(".aux").selectAll("*").remove();
                     var bullets = ICON.ShapeFactory.getShape("BULLET");
                     d3.select(".custtom").append("label").text("Type Icon :");
                     d3.select(".custtom").append("select").property("name", "typeIcon")
@@ -476,6 +487,7 @@ var STYLE;
                     this.eventScore();
                 }
                 else if (setting.typeColumn.toLowerCase() == "variation") {
+                    d3.select(".aux").selectAll("*").remove();
                     var bulletWhite = ICON.ShapeFactory.getShape("BulletWhite");
                     d3.select(".custtom").append("label").text("Other :");
                     d3.select(".custtom").append("select").property("name", "polarity")
@@ -488,7 +500,28 @@ var STYLE;
                     d3.select(".preview").append("label").text("Preview :");
                     d3.select(".preview").append("span").html(bulletWhite.map(function (item) { return "55&nbsp;&nbsp;" + item; }).join('&nbsp;&nbsp;&nbsp;&nbsp;'));
                 }
-                else { }
+                else if (setting.typeColumn.toLowerCase() == "compare") {
+                    d3.select(".aux").selectAll("*").remove();
+                    var arrow = ICON.ShapeFactory.getShape("ARROW");
+                    d3.select(".custtom").append("label").text("Compare to :");
+                    d3.select(".custtom").append("select").property("name", "compare")
+                        .style("width", "100%").style("font-size", "10px");
+                    d3.select("select[name='compare']").html("" + dataViewModel.columns.filter(function (d, i) { return i != 0; }).map(function (item) { return "<option value=\"" + item.name + "\">" + item.name + "</option>"; }).join(''));
+                    d3.select("select[name='compare']").property("value", setting.compare);
+                    d3.select(".aux").append("label").text("Other :");
+                    d3.select(".aux").append("select").property("name", "polarity")
+                        .style("width", "100%").style("font-size", "10px");
+                    d3.select("select[name='polarity']").html("" + dataViewModel.polarity.map(function (item) { return "<option value=\"" + item.name + "\">" + item.name + "</option>"; }).join(''));
+                    d3.select("select[name='polarity']").append('option').property("value", "1").text("Ascending");
+                    d3.select("select[name='polarity']").append('option').property("value", "0").text("Descending");
+                    d3.select("select[name='polarity']").property("value", setting.columnPolarity);
+                    d3.select(".preview").selectAll("*").remove();
+                    d3.select(".preview").append("label").text("Preview :");
+                    d3.select(".preview").append("span").html(arrow.map(function (item) { return "55&nbsp;&nbsp;" + item; }).join('&nbsp;&nbsp;&nbsp;&nbsp;'));
+                }
+                else {
+                    d3.select(".aux").selectAll("*").remove();
+                }
             }
         };
         /**
@@ -527,7 +560,7 @@ var STYLE;
         Customize.setHTML = function (container, dataViewModel) {
             var html;
             container.select(".container").remove();
-            html = "\n              <fieldset>\n                  <p>\n                  <label class=\"conf\">Columns:</label>\n                  <select name=\"cols\" size=\"1\" class=\"dropdown\">\n                    " + dataViewModel.columns.filter(function (d, i) { return i != 0; }).map(function (item) { return "<option value=\"" + item.name + "\">" + item.name + "</option>"; }).join('') + "\n              </select>\n                  </p>\n                  <p>\n                  <label>Type:</label>\n                  <select name=\"typeCol\" size=\"1\" class=\"dropdown\">\n                    <option value=\"none\">None</option>\n                    <option value=\"score\">Score</option>\n                    <option value=\"variation\">Variation</option>\n                    <option value=\"comparison\">Comparison</option>\n                  </select>\n                  </p>\n                  <p class=\"custtom\"></p>\n                 <p class=\"preview\"></p>\n                  \n              </fieldset>\n              <button  id=\"resetButton\" class=\"button\">Reset</button>\n              <button  id=\"configButton\" class=\"button\">Apply</button>\n             ";
+            html = "\n              <fieldset>\n                  <p>\n                  <label class=\"conf\">Columns:</label>\n                  <select name=\"cols\" size=\"1\" class=\"dropdown\">\n                    " + dataViewModel.columns.filter(function (d, i) { return i != 0; }).map(function (item) { return "<option value=\"" + item.name + "\">" + item.name + "</option>"; }).join('') + "\n              </select>\n                  </p>\n                  <p>\n                  <label>Type:</label>\n                  <select name=\"typeCol\" size=\"1\" class=\"dropdown\">\n                    <option value=\"none\">None</option>\n                    <option value=\"score\">Score</option>\n                    <option value=\"variation\">Variation</option>\n                    <option value=\"compare\">Comparison</option>\n                  </select>\n                  </p>\n                  <p class=\"custtom\"></p>\n                  <p class=\"aux\"></p>\n                 <p class=\"preview\"></p>\n                  \n              </fieldset>\n              <button  id=\"resetButton\" class=\"button\">Reset</button>\n              <button  id=\"configButton\" class=\"button\">Apply</button>\n             ";
             container.append('div').classed("container", true).html(html);
         };
         return Customize;
@@ -636,7 +669,7 @@ var powerbi;
                      */
                     Visual.prototype.update = function (optionsUpdate) {
                         STYLE.Customize.events(optionsUpdate.viewMode, this.Option, this.div);
-                        if (this.init || (optionsUpdate.viewport.height == this.height && optionsUpdate.viewport.width == this.width)) {
+                        if (optionsUpdate.type == powerbi.VisualUpdateType.Data || optionsUpdate.type == powerbi.VisualUpdateType.All || (optionsUpdate.viewport.height == this.height && optionsUpdate.viewport.width == this.width)) {
                             if (optionsUpdate.dataViews[0]) {
                                 this.dataview = optionsUpdate.dataViews[0];
                                 if (Visual.config.length == 0) {
@@ -659,9 +692,6 @@ var powerbi;
                         }
                         this.height = optionsUpdate.viewport.height; //update height 
                         this.width = optionsUpdate.viewport.width; //update width
-                        if (this.init) {
-                            this.init = false;
-                        } //flag  prevent drawTable ever
                         this.highlights();
                         this.selected();
                         this.resetConfig();
@@ -686,7 +716,7 @@ var powerbi;
                      */
                     Visual.prototype.highlights = function () {
                         var i, itens = [];
-                        if (!this.dataview)
+                        if (!this.dataview || !this.dataview.categorical || !this.dataview.categorical.values)
                             return;
                         this.dataview.categorical.values.forEach(function (item) {
                             if (item.highlights) {
@@ -740,7 +770,8 @@ var powerbi;
                                     iconType: strucData.IconType.TEXT,
                                     type: strucData.Type.NOTHING,
                                     icon: [],
-                                    polarityColumn: ""
+                                    polarityColumn: "",
+                                    compare: ""
                                 });
                             }
                         });
@@ -756,7 +787,8 @@ var powerbi;
                                     iconType: strucData.IconType.TEXT,
                                     type: strucData.Type.NOTHING,
                                     icon: [],
-                                    polarityColumn: ""
+                                    polarityColumn: "",
+                                    compare: ""
                                 });
                                 i++;
                             }
@@ -816,7 +848,7 @@ var powerbi;
                                     other = 0;
                                 }
                             }
-                            row.row.push(_this.setConfigRows(type, item.values[j], (i % colsLenght) + 1, other));
+                            row.row.push(_this.setConfigCell(type, item.values[j], (i % colsLenght) + 1, other));
                             if (i % colsLenght == colsLenght - 1) {
                                 _this.dataViewModel.values.push(row);
                                 j++;
@@ -827,7 +859,7 @@ var powerbi;
                     /**
                      * config valid value
                      */
-                    Visual.prototype.setConfigRows = function (type, value, k, pol) {
+                    Visual.prototype.setConfigCell = function (type, value, k, pol) {
                         var score, iconType;
                         var row = { value: null, polarity: 1 };
                         if (value == null || value == undefined) {
@@ -847,7 +879,7 @@ var powerbi;
                                 row.value = value;
                             }
                         }
-                        else if (type == strucData.Type.VARIATION) {
+                        else if (type == strucData.Type.VARIATION || type == strucData.Type.COMPARE) {
                             row.value = value;
                             row.polarity = pol;
                         }
@@ -893,6 +925,12 @@ var powerbi;
                                     _this.dataViewModel.columns[id].type = strucData.Type.VARIATION;
                                     _this.dataViewModel.columns[id].polarityColumn = item.columnPolarity;
                                 }
+                                else if (item.typeColumn.toUpperCase() == "COMPARE") {
+                                    _this.dataViewModel.columns[id].icon = ICON.ShapeFactory.getShape(item.iconType);
+                                    _this.dataViewModel.columns[id].type = strucData.Type.COMPARE;
+                                    _this.dataViewModel.columns[id].compare = item.compare;
+                                    _this.dataViewModel.columns[id].polarityColumn = item.columnPolarity;
+                                }
                                 else { }
                             });
                         }
@@ -911,7 +949,7 @@ var powerbi;
                         var values = this.dataViewModel.values;
                         //init table
                         this.table = this.div.append('table')
-                            .classed("fixed_headers", true);
+                            .classed("fixed_headers", true).attr("cellspacing", "0");
                         this.tHead = this.table.append('thead');
                         this.tHead.selectAll('th').data(columns)
                             .enter()
@@ -939,21 +977,34 @@ var powerbi;
                             }
                         })
                             .style('color', function (d) {
-                            if (d.type == strucData.Type.VARIATION && d.polarity != undefined && d.polarity != null) {
+                            if (d.type == strucData.Type.VARIATION || d.type == strucData.Type.COMPARE && d.polarity != undefined && d.polarity != null) {
                                 return COMMON.Core.getVariation(d.value, d.polarity);
                             }
                         })
-                            .html(function (d) {
+                            .html(function (d, i) {
                             if (d.value == null) {
                                 return "";
                             }
                             if (d.type == strucData.Type.VARIATION && d.polarity != undefined && d.polarity != null) {
                                 var value = COMMON.Core.getVariation(d.value, d.polarity);
                                 if (value == "green") {
-                                    return COMMON.Core.formatNumber(d.value) + " " + ICON.ShapeFactory.getShape("ARROW")[2];
+                                    return COMMON.Core.formatNumber(d.value) + " " + ICON.ShapeFactory.getShape("BulletWhite")[2];
                                 }
                                 else if (value == "red") {
+                                    return COMMON.Core.formatNumber(d.value) + " " + ICON.ShapeFactory.getShape("BulletWhite")[0];
+                                }
+                                else {
+                                    return COMMON.Core.formatNumber(d.value) + " " + ICON.ShapeFactory.getShape("BulletWhite")[1];
+                                }
+                            }
+                            else if (d.type == strucData.Type.COMPARE) {
+                                var colComapre = columns[i].compare;
+                                var compareColumn = _.findIndex(columns, { name: colComapre });
+                                if (d.value > values[d.id].row[compareColumn].value) {
                                     return COMMON.Core.formatNumber(d.value) + " " + ICON.ShapeFactory.getShape("ARROW")[0];
+                                }
+                                else if (d.value < values[d.id].row[compareColumn].value) {
+                                    return COMMON.Core.formatNumber(d.value) + " " + ICON.ShapeFactory.getShape("ARROW")[2];
                                 }
                                 else {
                                     return COMMON.Core.formatNumber(d.value) + " " + ICON.ShapeFactory.getShape("ARROW")[1];
@@ -1136,7 +1187,7 @@ var powerbi;
                                     compare: ""
                                 });
                             }
-                            else if (typeCol == "comparison") {
+                            else if (typeCol == "compare") {
                                 if (id != -1) {
                                     Visual.config.splice(id, 1);
                                 }
@@ -1148,12 +1199,19 @@ var powerbi;
                                         return this.value;
                                     }
                                 });
+                                d3.select("select[name='polarity']").selectAll("option")
+                                    .filter(function (d, i) {
+                                    if (this.selected) {
+                                        colOther = this.value;
+                                        return this.value;
+                                    }
+                                });
                                 Visual.config.push({
                                     columnName: colName,
                                     typeColumn: "COMPARE",
                                     iconType: "ARROW",
-                                    visualValue: "icon",
-                                    columnPolarity: "",
+                                    visualValue: "icontext",
+                                    columnPolarity: colOther,
                                     compare: compare
                                 });
                             }
@@ -1224,7 +1282,7 @@ var powerbi;
                     /**
                      * DESTROY
                      */
-                    Visual.prototype.destroy = function () { console.log("destroy"); };
+                    Visual.prototype.destroy = function () { };
                     return Visual;
                 }());
                 __decorate([

@@ -14,7 +14,7 @@ module strucData {
         type: Type;
         icon :string[];
         polarityColumn:string;
-
+        compare:string;
     }
     export interface IRows{
         row:IValue[]
