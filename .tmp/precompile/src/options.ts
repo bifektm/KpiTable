@@ -123,7 +123,7 @@ module STYLE {
                 this.eventScore();
                 d3.select(".aux").selectAll("*").remove();
             } else if (typeCol == "variation") {
-                let arrow = ICON.ShapeFactory.getShape("ARROW");
+                let BulletWhite = ICON.ShapeFactory.getShape("BulletWhite");
                 d3.select(".custtom").append("label").text("Other :");
                 d3.select(".custtom").append("select").property("name", "polarity")
                     .style("width", "100%").style("font-size", "10px");
@@ -133,7 +133,7 @@ module STYLE {
                 d3.select("select[name='polarity']").append('option').property("value", "0").text("Descending");
                 d3.select(".preview").selectAll("*").remove();
                 d3.select(".preview").append("label").text("Preview :");
-                d3.select(".preview").append("span").html(arrow.map(item => `55&nbsp;&nbsp;` + item).join('&nbsp;&nbsp;&nbsp;&nbsp;'));
+                d3.select(".preview").append("span").html(BulletWhite.map(item => `55&nbsp;&nbsp;` + item).join('&nbsp;&nbsp;&nbsp;&nbsp;'));
             } else if (typeCol == "compare") {
                 let arrow = ICON.ShapeFactory.getShape("ARROW");
                 d3.select(".custtom").append("label").text("Compare to :");
@@ -241,7 +241,10 @@ module STYLE {
                     d3.select(".preview").selectAll("*").remove();
                     d3.select(".preview").append("label").text("Preview :");
                     d3.select(".preview").append("span").html(arrow.map(item => `55&nbsp;&nbsp;` + item).join('&nbsp;&nbsp;&nbsp;&nbsp;'));
-                } else { d3.select(".aux").selectAll("*").remove();}
+                } else { 
+                    d3.select(".preview").selectAll("*").remove();
+                    d3.select(".aux").selectAll("*").remove();
+                }
 
             }
         }

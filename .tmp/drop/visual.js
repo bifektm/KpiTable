@@ -406,7 +406,7 @@ var STYLE;
                 d3.select(".aux").selectAll("*").remove();
             }
             else if (typeCol == "variation") {
-                var arrow = ICON.ShapeFactory.getShape("ARROW");
+                var BulletWhite = ICON.ShapeFactory.getShape("BulletWhite");
                 d3.select(".custtom").append("label").text("Other :");
                 d3.select(".custtom").append("select").property("name", "polarity")
                     .style("width", "100%").style("font-size", "10px");
@@ -415,7 +415,7 @@ var STYLE;
                 d3.select("select[name='polarity']").append('option').property("value", "0").text("Descending");
                 d3.select(".preview").selectAll("*").remove();
                 d3.select(".preview").append("label").text("Preview :");
-                d3.select(".preview").append("span").html(arrow.map(function (item) { return "55&nbsp;&nbsp;" + item; }).join('&nbsp;&nbsp;&nbsp;&nbsp;'));
+                d3.select(".preview").append("span").html(BulletWhite.map(function (item) { return "55&nbsp;&nbsp;" + item; }).join('&nbsp;&nbsp;&nbsp;&nbsp;'));
             }
             else if (typeCol == "compare") {
                 var arrow = ICON.ShapeFactory.getShape("ARROW");
@@ -520,6 +520,7 @@ var STYLE;
                     d3.select(".preview").append("span").html(arrow.map(function (item) { return "55&nbsp;&nbsp;" + item; }).join('&nbsp;&nbsp;&nbsp;&nbsp;'));
                 }
                 else {
+                    d3.select(".preview").selectAll("*").remove();
                     d3.select(".aux").selectAll("*").remove();
                 }
             }
@@ -776,6 +777,8 @@ var powerbi;
                             }
                         });
                         if (!data) {
+                            Visual.config = [];
+                            this.enumerateObjectInstances({ objectName: "Settings" });
                             return;
                         }
                         //insert header values
@@ -943,19 +946,25 @@ var powerbi;
                             return;
                         }
                         //if exists, remove existing table
+                        this.target.select("table[class='fixed_headers1']").remove();
                         this.target.select("table[class='fixed_headers']").remove();
+                        this.target.select("div[class='test']").remove();
                         // get columns and values
                         var columns = this.dataViewModel.columns;
                         var values = this.dataViewModel.values;
                         //init table
                         this.table = this.div.append('table')
-                            .classed("fixed_headers", true).attr("cellspacing", "0");
+                            .classed("fixed_headers1", true).attr("cellspacing", "0").attr("cellpadding", "0");
                         this.tHead = this.table.append('thead');
                         this.tHead.selectAll('th').data(columns)
                             .enter()
                             .insert('th')
                             .html(function (column) { return column.name; });
-                        this.tBody = this.table.append('tbody');
+                        //
+                        var tableBody = this.div.append('div').classed("test", true).append('table')
+                            .classed("fixed_headers", true).attr("cellspacing", "0").attr("cellpadding", "0");
+                        //
+                        this.tBody = tableBody.append('tbody');
                         var rows = this.tBody.selectAll("tr")
                             .data(values)
                             .enter()
@@ -971,9 +980,9 @@ var powerbi;
                         })
                             .enter()
                             .append('td')
-                            .style("text-align", function (d) {
+                            .style("padding-right", function (d) {
                             if (STYLE.Customize.isIcon(d.value)) {
-                                return "center";
+                                return "50px";
                             }
                         })
                             .style('color', function (d) {
@@ -1014,6 +1023,13 @@ var powerbi;
                                 return COMMON.Core.formatNumber(d.value);
                             }
                         });
+                        this.selectRow(rows);
+                    };
+                    /**
+                     * interact each other visuals
+                     * @param rows
+                     */
+                    Visual.prototype.selectRow = function (rows) {
                         rows.on('click', function (d) {
                             var _this = this;
                             var key = false, index;
@@ -1024,9 +1040,19 @@ var powerbi;
                                     }
                                 }
                                 if (ids.length == 1 && !key) {
-                                    _this.rowSelected = [];
-                                    _this.select = true;
-                                    _this.rowSelected.push(d.id);
+                                    if (_this.rowSelected.length > 1) {
+                                        _this.selectionManager.clear();
+                                        _this.selectionManager.select(_this.selectionIds[d.row[0].value], true).then(function (ids) {
+                                            _this.select = true;
+                                            _this.rowSelected = [];
+                                            _this.rowSelected.push(d.id);
+                                        });
+                                    }
+                                    else {
+                                        _this.rowSelected = [];
+                                        _this.select = true;
+                                        _this.rowSelected.push(d.id);
+                                    }
                                 }
                                 else if (ids.length == 1 && key) {
                                     _this.select = true;
@@ -1046,7 +1072,7 @@ var powerbi;
                                         _this.rowSelected.push(d.id);
                                     });
                                 }
-                                else if (ids.length >= 1 && key) {
+                                else if (ids.length > 1 && key) {
                                     _this.select = true;
                                     index = _this.rowSelected.indexOf(d.id);
                                     if (index != -1) {
@@ -1302,8 +1328,8 @@ var powerbi;
     (function (visuals) {
         var plugins;
         (function (plugins) {
-            plugins.PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD = {
-                name: 'PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD',
+            plugins.PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD_DEBUG = {
+                name: 'PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD_DEBUG',
                 displayName: 'KPI Table',
                 class: 'Visual',
                 version: '1.0.0',

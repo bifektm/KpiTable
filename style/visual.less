@@ -4,13 +4,11 @@
   height: 100%;
   //font-family: "Segoe UI Light", Verdana, Sans-Serif;
   font-size: 1.1em;//0.875em; /* 14px as 1em = 16px */
- overflow: auto;
+  //overflow: auto;
 }
 
-.fixed_headers table {
-    border-collapse: collapse;
-    
- 
+.fixed_headers,.fixed_headers1  table {
+  //  border-collapse: collapse;
     cursor: pointer;
     padding-bottom:0;
     border:0;
@@ -18,70 +16,72 @@
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
 }
 
-.fixed_headers tbody {
-   flex: 1 1 auto;
-   // display: block;
-    overflow-y: auto;
+.test{
+overflow:auto;
+height: 100%;
+width: 100%;
 }
-.fixed_headers tbody tr{
-   
-   table-layout: fixed;
-}
-.fixed_headers table.tr {
-   // border-bottom: 1pt solid #59B4D9;
+
+.fixed_headers,.fixed_headers1 table.tr {
+
    border-spacing: 0;
     cursor: pointer;
     padding-bottom:0;
 }
+
 .dropdown{
     width:100%;
     font-size:10px;
 }
 
 
-.fixed_headers th {
+.fixed_headers1 th {
     font-size: 0.7em;
     color: white;
-    text-align: center;
-    background-color: #015c55;
-    border-left : 1px solid #FFFFFF;
-    border-right : 1px solid #FFFFFF;
+    text-align: right;
     vertical-align: middle;
     cursor: pointer;
     font-weight: normal;
     height: 30%;
     border-bottom: 1px solid gray;    
-    padding: 10px;
-    margin: 10px;
+    padding: 5px;
+    margin: 5px;
+    min-width: 150px;
+
+   
 }
-
-
+.fixed_headers1 th:first-child {
+    min-width: 150px;
+    text-align:left;
+   
+} 
+table { table-layout: fixed;  }
 .fixed_headers td {
     font-size: 0.875em;
-   // border-bottom: 1px dashed gray;
+   text-align: right;
     vertical-align: middle;
     padding-top: 5px;
     cursor: pointer;
-    
+    min-width: 150px;
+    padding: 5px;
+    margin: 5px;
 }
-table td:first-child {
-border-right: 1px solid gray;
-padding: 0;
-
-}
-
-  td {
-text-align: left;
-}
-   td +  td {
+ table td +  td {
 text-align: right;
 }
- th {
-text-align: left!important;
+ table td:first-child {
+border-right: 1px solid gray;
+padding: 1px;
+min-width: 150px;
+text-align: left;
+font-size: 0.7em;
+
 }
-   th +  th {
-text-align: right!important;
+table td ,th{
+    width: 200px;
 }
+
+
 //
 .edit{
     display: none;
@@ -235,11 +235,4 @@ select {
   background-position: right;
 
 
-}
-.fixed_headers table.scroll tbody {
-    height: 100px;
-    overflow-y: auto;
-    overflow-x: hidden;
-    background-color: red;
- 
 }

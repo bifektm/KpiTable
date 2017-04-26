@@ -59,7 +59,7 @@ module powerbi.extensibility.visual.PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD 
                             if (COMMON.Core.getConfig(optionsUpdate.dataViews).length == 0) {
                                 Visual.config = JSON.parse(getValue(this.dataview.metadata.objects, "Settings", "config", "[]"));
                             } else {
-                                //  Visual.config = COMMON.Core.getConfig(optionsUpdate.dataViews);
+                                //  Visual.config = COMMON.Core.getConfig(optionsUpdate.dataViews); json config retired
                             }
                         } catch (Error) { Visual.config = []; }
                     }
@@ -73,7 +73,7 @@ module powerbi.extensibility.visual.PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD 
 
             this.height = optionsUpdate.viewport.height;           //update height 
             this.width = optionsUpdate.viewport.width;            //update width
-            
+
 
 
 
@@ -171,7 +171,7 @@ module powerbi.extensibility.visual.PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD 
             });
 
 
-            if (!data) { return; }
+            if (!data) { Visual.config = []; this.enumerateObjectInstances({ objectName: "Settings" }); return; }
             //insert header values
             data.forEach(item => {
                 var i = 0, type;
@@ -297,7 +297,7 @@ module powerbi.extensibility.visual.PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD 
         private setConfigColumns() {
             let config = Visual.config;
             var id;
-            
+
             if (config.length > 0) {
 
                 _.each(config, item => {
@@ -346,15 +346,16 @@ module powerbi.extensibility.visual.PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD 
             if (this.dataViewModel.columns.length < 1) { return; }
 
             //if exists, remove existing table
+            this.target.select("table[class='fixed_headers1']").remove();
             this.target.select("table[class='fixed_headers']").remove();
-
+            this.target.select("div[class='test']").remove();
             // get columns and values
             var columns = this.dataViewModel.columns;
             var values = this.dataViewModel.values;
 
             //init table
             this.table = this.div.append('table')
-                .classed("fixed_headers", true).attr("cellspacing","0");
+                .classed("fixed_headers1", true).attr("cellspacing", "0").attr("cellpadding", "0");
 
 
             this.tHead = this.table.append('thead');
@@ -364,7 +365,12 @@ module powerbi.extensibility.visual.PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD 
                 .enter()
                 .insert('th')
                 .html(function (column) { return column.name; });
-            this.tBody = this.table.append('tbody');
+            //
+
+            var tableBody = this.div.append('div').classed("test", true).append('table')
+                .classed("fixed_headers", true).attr("cellspacing", "0").attr("cellpadding", "0");
+            //
+            this.tBody = tableBody.append('tbody');
 
             var rows = this.tBody.selectAll("tr")
                 .data(values)
@@ -383,9 +389,9 @@ module powerbi.extensibility.visual.PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD 
                 })
                 .enter()
                 .append('td')
-                .style("text-align", function (d) {
+                .style("padding-right", function (d) {
                     if (STYLE.Customize.isIcon(d.value)) {
-                        return "center";
+                        return "50px";
                     }
                 })
                 .style('color', function (d) {
@@ -394,7 +400,7 @@ module powerbi.extensibility.visual.PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD 
 
                         return COMMON.Core.getVariation(d.value, d.polarity);
                     }
-                 
+
                 })
                 .html(function (d, i) {
 
@@ -428,7 +434,15 @@ module powerbi.extensibility.visual.PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD 
 
                 });
 
-            rows.on('click', function (d) {
+           this.selectRow(rows);
+
+        }
+        /**
+         * interact each other visuals
+         * @param rows 
+         */
+        private selectRow(rows:any){
+             rows.on('click', function (d) {
                 let key = false, index;
 
                 this.selectionManager.select(this.selectionIds[d.row[0].value], true).then((ids: ISelectionId[]) => {
@@ -438,10 +452,22 @@ module powerbi.extensibility.visual.PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD 
                             key = true;
                         }
                     }
+                    
                     if (ids.length == 1 && !key) {
-                        this.rowSelected = [];
-                        this.select = true;
-                        this.rowSelected.push(d.id);
+                        if (this.rowSelected.length > 1) {
+                            this.selectionManager.clear();
+                            this.selectionManager.select(this.selectionIds[d.row[0].value], true).then((ids: ISelectionId[]) => {
+                                this.select = true;
+                                this.rowSelected = [];
+                                this.rowSelected.push(d.id);
+                            });
+                        } else {
+                            this.rowSelected = [];
+                            this.select = true;
+                            this.rowSelected.push(d.id);
+                        }
+
+
                     } else if (ids.length == 1 && key) {
 
                         this.select = true;
@@ -457,12 +483,13 @@ module powerbi.extensibility.visual.PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD 
 
                         this.rowSelected = [];
                         this.selectionManager.clear();
+
                         this.selectionManager.select(this.selectionIds[d.row[0].value], true).then((ids: ISelectionId[]) => {
                             this.select = true;
                             this.rowSelected.push(d.id);
                         });
 
-                    } else if (ids.length >= 1 && key) {
+                    } else if (ids.length > 1 && key) {
 
                         this.select = true;
                         index = this.rowSelected.indexOf(d.id);
@@ -482,7 +509,6 @@ module powerbi.extensibility.visual.PBI_CV_19182E25_A94F_4FFD_9E99_89A73C9944FD 
                 this.selectionManager.applySelectionFilter();
 
             }.bind(this));
-
         }
         /**
          * Enumerates through the objects defined in the capabilities and adds the properties to the format pane
